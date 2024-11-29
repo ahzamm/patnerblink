@@ -167,6 +167,17 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="cardStatus">Card Status</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <select id="cardStatus" class="form-select js-select2">
+                                        <option value="">-- Select Card Status --</option>
+                                        <option value="active">Active</option>
+                                        <option value="deactive">Deactive</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <button type="button" id="getUsers" class="btn btn-primary mt-3">Get Users</button>
                     </form>
@@ -284,7 +295,7 @@
                 url: "{{route('get.trader')}}",
                 type: 'POST',
                 data: {
-                    dealer_id: contractorId,
+                    dealer_id: params.contractorId,
                     _token: '{{csrf_token()}}'
                 },
                 success: function (response) {
@@ -317,8 +328,8 @@
 
         async function populateFilters(params) {
             isPopulatingFilters = true;
-            const isReseller = $('#reseller-dropdown').length === 0;
 
+            const isReseller = $('#reseller-dropdown').length === 0;
             if (!isReseller) {
                 if (params.resellerId) {
                     await populateResellerDropdown(params.resellerId);
@@ -363,7 +374,7 @@
                     url: "{{route('get.trader')}}",
                     type: 'POST',
                     data: {
-                        dealer_id: contractorId,
+                        dealer_id: params.contractorId,
                         _token: '{{csrf_token()}}'
                     },
                     success: function (response) {
@@ -384,6 +395,7 @@
             if (params.lastExpireOn) $('#lastExpireOn').val(params.lastExpireOn);
             if (params.searchIP) $('#searchIP').val(params.searchIP);
             if (params.verifiedBy) $('#verifiedBy').val(params.verifiedBy).trigger('change');
+            if (params.cardStatus) $('#cardStatus').val(params.cardStatus).trigger('change');
 
             isPopulatingFilters = false;
         }
@@ -406,6 +418,7 @@
                 if ($('#searchIP').val()) params.append('searchIP', $('#searchIP').val());
                 if ($('#verifiedBy').val()) params.append('verifiedBy', $('#verifiedBy').val());
                 if ($('#userStatus').val()) params.append('userStatus', $('#userStatus').val());
+                if ($('#cardStatus').val()) params.append('cardStatus', $('#cardStatus').val());
             }
 
             const newUrl = `/users/get-users?${params.toString()}`;
@@ -429,6 +442,7 @@
                             d.searchIP = $('#searchIP').val();
                             d.verifiedBy = $('#verifiedBy').val();
                             d.userStatus = $('#userStatus').val();
+                            d.cardStatus = $('#cardStatus').val();
                         },
                     },
                     columns: [
@@ -464,7 +478,8 @@
                 !$('#lastExpireOn').val() &&
                 !$('#searchIP').val() &&
                 !$('#verifiedBy').val() &&
-                !$('#userStatus').val()
+                !$('#userStatus').val() &&
+                !$('#cardStatus').val()
             ) {
                 alert('Please select at least one filter.');
                 return;

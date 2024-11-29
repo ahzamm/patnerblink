@@ -18,7 +18,7 @@ class GetUserController extends Controller
 
     public function getFilterdUser(Request $request)
     {
-        $query = UserInfo::query()->where('user_info.status','user');
+        $query = UserInfo::query()->where('user_info.status', 'user');
 
         $query->leftJoin('user_status_info', 'user_info.username', '=', 'user_status_info.username')
             ->leftJoin('user_ip_status', 'user_info.username', '=', 'user_ip_status.username')
@@ -54,18 +54,35 @@ class GetUserController extends Controller
         }
         if ($request->filled('verifiedBy')) {
             $verifiedBy = $request->verifiedBy;
+
             if ($verifiedBy === 'CNIC') {
-                $query->where('user_verification.cnic', 'verified');
+                $query->whereNotNull('user_verification.cnic');
             } elseif ($verifiedBy === 'Mobile') {
-                $query->where('user_verification.mobile', 'verified');
+                $query->whereNotNull('user_verification.mobile');
             } elseif ($verifiedBy === 'All') {
-                $query->where('user_verification.cnic', 'verified')
-                    ->where('user_verification.mobile', 'verified');
+                $query->whereNotNull('user_verification.cnic')
+                      ->whereNotNull('user_verification.mobile');
             }
         }
         if ($request->filled('userStatus')) {
-            $query->where('disabled_users.status', $request->userStatus);
+            if ($request->userStatus === 'enable') {
+                $query->where(function ($subQuery) {
+                    $subQuery->where('disabled_users.status', 'enable')
+                             ->orWhereNull('disabled_users.status');
+                });
+            } elseif ($request->userStatus === 'disable') {
+                $query->where('disabled_users.status', 'disable');
+            }
         }
+        if ($request->filled('cardStatus')) {
+            $today = now()->format('Y-m-d');
+            if ($request->cardStatus === 'active') {
+                $query->where('user_status_info.card_expire_on', '>', $today);
+            } elseif ($request->cardStatus === 'deactive') {
+                $query->where('user_status_info.card_expire_on', '<=', $today);
+            }
+        }
+
 
         $totalRecords = $query->count();
         if ($request->filled('search.value')) {
