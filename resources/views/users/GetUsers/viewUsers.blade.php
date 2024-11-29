@@ -168,6 +168,22 @@
                                     </div>
                                 </div>
                             @endif
+                            @if($panelof == 'manager')
+                                @php $profiles = \App\model\Users\ManagerProfileRate::where('manager_id', Auth::user()->manager_id)->distinct()->get(); @endphp
+                                <div class="col-md-4">
+                                    <div class="form-group position-relative">
+                                        <label for="manager-profile-dropdown">Select Profile <span style="color: red">*</span></label>
+                                        <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                        <select id="manager-profile-dropdown" class="form-select js-select2" required>
+                                            <option value="">-- Select Profile --</option>
+                                            @foreach($profiles  as $profile)
+                                                <option value="{{$profile->name}}">{{$profile->name}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="manager-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
+                            @endif
                             <div class="col-md-4">
                                 <div class="form-group position-relative">
                                     <label for="chargeOnRange">Charge On</label>
@@ -374,6 +390,31 @@
             });
         }
 
+        function populateManagerProfileDropdown(selectedValue = null) {
+            const $managerProfileDropdown = $('#manager-profile-dropdown');
+
+            if ($managerProfileDropdown.length === 0) {
+                console.warn('Manager Profile dropdown not present for this user.');
+                return;
+            }
+
+            const managerProfileData = $('#manager-profile-data').text();
+            if (!managerProfileData) {
+                console.error('No reseller data available.');
+                return;
+            }
+
+            const managerProfiles = JSON.parse(managerProfileData);
+            const options   = managerProfiles.map(function (managerProfile) {
+                return {
+                    value: managerProfile.name,
+                    text: managerProfile.name,
+                };
+            });
+
+            populateDropdown($managerProfileDropdown, options, selectedValue);
+        }
+
         $('#reseller-dropdown').on('change', function () {
             $('#contractor-dropdown').html('<option value="">-- Select Contractor --</option>').val('').trigger('change');
             $('#trader-dropdown').html('<option value="">-- Select Trader --</option>').val('').trigger('change');
@@ -453,6 +494,15 @@
                 });
             }
 
+            const isManagerProfile = $('#manager-profile-dropdown').length === 0;
+            if (!isManagerProfile) {
+                if (params.managerProfile) {
+                    await populateManagerProfileDropdown(params.managerProfile);
+                } else {
+                    await populateManagerProfileDropdown();
+                }
+            }
+
             if (params.userStatus) $('#userStatus').val(params.userStatus).trigger('change');
             if (params.chargeOnRange) $('#chargeOnRange').val(params.chargeOnRange);
             if (params.expireOnRange) $('#expireOnRange').val(params.expireOnRange);
@@ -478,6 +528,7 @@
                 if ($('#reseller-dropdown').val()) params.append('resellerId', $('#reseller-dropdown').val());
                 if ($('#contractor-dropdown').val()) params.append('contractorId', $('#contractor-dropdown').val());
                 if ($('#trader-dropdown').val()) params.append('traderId', $('#trader-dropdown').val());
+                if ($('#manager-profile-dropdown').val()) params.append('managerProfile', $('#manager-profile-dropdown').val());
                 if ($('#chargeOnRange').val()) params.append('chargeOnRange', $('#chargeOnRange').val());
                 if ($('#expireOnRange').val()) params.append('expireOnRange', $('#expireOnRange').val());
                 if ($('#searchIP').val()) params.append('searchIP', $('#searchIP').val());
@@ -501,17 +552,18 @@
                         url: '/users/get-filtered-users',
                         type: 'GET',
                         data: function (d) {
-                            d.resellerId    = $('#reseller-dropdown').val();
-                            d.contractorId  = $('#contractor-dropdown').val();
-                            d.traderId      = $('#trader-dropdown').val();
-                            d.chargeOnRange = $('#chargeOnRange').val();
-                            d.expireOnRange = $('#expireOnRange').val();
-                            d.searchIP      = $('#searchIP').val();
-                            d.verifiedBy    = $('#verifiedBy').val();
-                            d.userStatus    = $('#userStatus').val();
-                            d.cardStatus    = $('#cardStatus').val();
-                            d.searchPhone   = $('#searchPhone').val();
-                            d.searchCNIC    = $('#searchCNIC').val();
+                            d.resellerId     = $('#reseller-dropdown').val();
+                            d.contractorId   = $('#contractor-dropdown').val();
+                            d.traderId       = $('#trader-dropdown').val();
+                            d.managerProfile = $('#manager-profile-dropdown').val();
+                            d.chargeOnRange  = $('#chargeOnRange').val();
+                            d.expireOnRange  = $('#expireOnRange').val();
+                            d.searchIP       = $('#searchIP').val();
+                            d.verifiedBy     = $('#verifiedBy').val();
+                            d.userStatus     = $('#userStatus').val();
+                            d.cardStatus     = $('#cardStatus').val();
+                            d.searchPhone    = $('#searchPhone').val();
+                            d.searchCNIC     = $('#searchCNIC').val();
                         },
                     },
                     columns: [
@@ -544,6 +596,7 @@
                 !$('#reseller-dropdown').val() &&
                 !$('#contractor-dropdown').val() &&
                 !$('#trader-dropdown').val() &&
+                !$('#manager-profile-dropdown').val() &&
                 !$('#chargeOnRange').val() &&
                 !$('#expireOnRange').val() &&
                 !$('#searchIP').val() &&

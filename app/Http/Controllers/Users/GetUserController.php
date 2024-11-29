@@ -23,7 +23,8 @@ class GetUserController extends Controller
         $query->leftJoin('user_status_info', 'user_info.username', '=', 'user_status_info.username')
             ->leftJoin('user_ip_status', 'user_info.username', '=', 'user_ip_status.username')
             ->leftJoin('user_verification', 'user_info.username', '=', 'user_verification.username')
-            ->leftJoin('disabled_users', 'user_info.username', '=', 'disabled_users.username');
+            ->leftJoin('disabled_users', 'user_info.username', '=', 'disabled_users.username')
+            ->leftJoin('manager_profile_rate', 'user_info.manager_id', '=', 'manager_profile_rate.manager_id');
 
         $user = Auth::user();
         if ($user->status === 'reseller') {
@@ -42,6 +43,10 @@ class GetUserController extends Controller
         }
         if ($request->filled('traderId')) {
             $query->where('user_info.sub_dealer_id', $request->traderId);
+        }
+        if ($request->filled('managerProfile')) {
+            // dd($request->managerProfile);
+            $query->where('user_info.name', $request->managerProfile);
         }
         if ($request->filled('chargeOnRange')) {
             $chargeOnRange = explode(' - ', $request->chargeOnRange);
