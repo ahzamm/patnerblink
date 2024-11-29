@@ -136,24 +136,16 @@
                                     </div>
                                 </div>
                             @endif
-                            <div class="col-md-4 d-flex align-items-center">
-                                <div class="form-group position-relative flex-grow-1">
-                                    <label for="chargeOnStart">Charge On</label>
-                                    <input type="date" id="chargeOnStart" class="form-control">
-                                </div>
-                                <strong class="px-2">-</strong>
-                                <div class="form-group position-relative flex-grow-1">
-                                    <input type="date" id="chargeOnEnd" class="form-control" placeholder="End Date">
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="chargeOnRange">Charge On</label>
+                                    <input type="text" id="chargeOnRange" class="form-control" placeholder="Select date range">
                                 </div>
                             </div>
-                            <div class="col-md-4 d-flex align-items-center">
-                                <div class="form-group position-relative flex-grow-1">
-                                    <label for="expireOnStart">Expire On</label>
-                                    <input type="date" id="expireOnStart" class="form-control">
-                                </div>
-                                <strong class="px-2">-</strong>
-                                <div class="form-group position-relative flex-grow-1">
-                                    <input type="date" id="expireOnEnd" class="form-control" placeholder="End Date">
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="expireOnRange">Expire On</label>
+                                    <input type="text" id="expireOnRange" class="form-control" placeholder="Select date range">
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -460,10 +452,8 @@
                             d.resellerId    = $('#reseller-dropdown').val();
                             d.contractorId  = $('#contractor-dropdown').val();
                             d.traderId      = $('#trader-dropdown').val();
-                            d.chargeOnStart = $('#chargeOnStart').val();
-                            d.chargeOnEnd   = $('#chargeOnEnd').val();
-                            d.expireOnStart = $('#expireOnStart').val();
-                            d.expireOnEnd   = $('#expireOnEnd').val();
+                            d.chargeOnRange = $('#chargeOnRange').val();
+                            d.expireOnRange = $('#expireOnRange').val();
                             d.searchIP      = $('#searchIP').val();
                             d.verifiedBy    = $('#verifiedBy').val();
                             d.userStatus    = $('#userStatus').val();
@@ -524,6 +514,43 @@
 
             fetchData();
         });
+
+         // Initialize date range picker for Charge On
+        $('#chargeOnRange').daterangepicker({
+            autoUpdateInput: false, // Prevent auto-filling input
+            locale: {
+                cancelLabel: 'Clear', // Allow clearing
+                format: 'YYYY-MM-DD' // Date format
+            }
+        });
+
+        // When the user selects a range
+        $('#chargeOnRange').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+        });
+
+        // Clear input if user clicks "Clear"
+        $('#chargeOnRange').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+        // Initialize date range picker for Expire On
+        $('#expireOnRange').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                cancelLabel: 'Clear',
+                format: 'YYYY-MM-DD'
+            }
+        });
+
+        $('#expireOnRange').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+        });
+
+        $('#expireOnRange').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
     });
 </script>
 
