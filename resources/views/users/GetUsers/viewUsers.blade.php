@@ -28,6 +28,19 @@
             border: none;
             margin: 0;
         }
+
+        .d-flex {
+            display: flex;
+            align-items: center;
+        }
+        .px-2 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        .flex-grow-1 {
+            flex-grow: 1;
+        }
+
     </style>
 @endsection
 @section('content')
@@ -123,18 +136,24 @@
                                     </div>
                                 </div>
                             @endif
-                            <div class="col-md-4">
-                                <div class="form-group position-relative">
-                                    <label for="lastChargeOn">Last Charge On</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="date" id="lastChargeOn" class="form-control">
+                            <div class="col-md-4 d-flex align-items-center">
+                                <div class="form-group position-relative flex-grow-1">
+                                    <label for="chargeOnStart">Charge On</label>
+                                    <input type="date" id="chargeOnStart" class="form-control">
+                                </div>
+                                <strong class="px-2">-</strong>
+                                <div class="form-group position-relative flex-grow-1">
+                                    <input type="date" id="chargeOnEnd" class="form-control" placeholder="End Date">
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group position-relative">
-                                    <label for="lastExpireOn">Last Expire On</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="date" id="lastExpireOn" class="form-control">
+                            <div class="col-md-4 d-flex align-items-center">
+                                <div class="form-group position-relative flex-grow-1">
+                                    <label for="expireOnStart">Expire On</label>
+                                    <input type="date" id="expireOnStart" class="form-control">
+                                </div>
+                                <strong class="px-2">-</strong>
+                                <div class="form-group position-relative flex-grow-1">
+                                    <input type="date" id="expireOnEnd" class="form-control" placeholder="End Date">
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -391,8 +410,10 @@
             }
 
             if (params.userStatus) $('#userStatus').val(params.userStatus).trigger('change');
-            if (params.lastChargeOn) $('#lastChargeOn').val(params.lastChargeOn);
-            if (params.lastExpireOn) $('#lastExpireOn').val(params.lastExpireOn);
+            if (params.chargeOnStart) $('#chargeOnStart').val(params.chargeOnStart);
+            if (params.chargeOnEnd) $('#chargeOnEnd').val(params.chargeOnEnd);
+            if (params.expireOnStart) $('#expireOnStart').val(params.expireOnStart);
+            if (params.expireOnEnd) $('#expireOnEnd').val(params.expireOnEnd);
             if (params.searchIP) $('#searchIP').val(params.searchIP);
             if (params.verifiedBy) $('#verifiedBy').val(params.verifiedBy).trigger('change');
             if (params.cardStatus) $('#cardStatus').val(params.cardStatus).trigger('change');
@@ -413,8 +434,10 @@
                 if ($('#reseller-dropdown').val()) params.append('resellerId', $('#reseller-dropdown').val());
                 if ($('#contractor-dropdown').val()) params.append('contractorId', $('#contractor-dropdown').val());
                 if ($('#trader-dropdown').val()) params.append('traderId', $('#trader-dropdown').val());
-                if ($('#lastChargeOn').val()) params.append('lastChargeOn', $('#lastChargeOn').val());
-                if ($('#lastExpireOn').val()) params.append('lastExpireOn', $('#lastExpireOn').val());
+                if ($('#chargeOnStart').val()) params.append('chargeOnStart', $('#chargeOnStart').val());
+                if ($('#chargeOnEnd').val()) params.append('End', $('#chargeOnEnd').val());
+                if ($('#expireOnStart').val()) params.append('expireOnStart', $('#expireOnStart').val());
+                if ($('#expireOnEnd').val()) params.append('expireOnEnd', $('#expireOnEnd').val());
                 if ($('#searchIP').val()) params.append('searchIP', $('#searchIP').val());
                 if ($('#verifiedBy').val()) params.append('verifiedBy', $('#verifiedBy').val());
                 if ($('#userStatus').val()) params.append('userStatus', $('#userStatus').val());
@@ -434,15 +457,17 @@
                         url: '/users/get-filtered-users',
                         type: 'GET',
                         data: function (d) {
-                            d.resellerId = $('#reseller-dropdown').val();
-                            d.contractorId = $('#contractor-dropdown').val();
-                            d.traderId = $('#trader-dropdown').val();
-                            d.lastChargeOn = $('#lastChargeOn').val();
-                            d.lastExpireOn = $('#lastExpireOn').val();
-                            d.searchIP = $('#searchIP').val();
-                            d.verifiedBy = $('#verifiedBy').val();
-                            d.userStatus = $('#userStatus').val();
-                            d.cardStatus = $('#cardStatus').val();
+                            d.resellerId    = $('#reseller-dropdown').val();
+                            d.contractorId  = $('#contractor-dropdown').val();
+                            d.traderId      = $('#trader-dropdown').val();
+                            d.chargeOnStart = $('#chargeOnStart').val();
+                            d.chargeOnEnd   = $('#chargeOnEnd').val();
+                            d.expireOnStart = $('#expireOnStart').val();
+                            d.expireOnEnd   = $('#expireOnEnd').val();
+                            d.searchIP      = $('#searchIP').val();
+                            d.verifiedBy    = $('#verifiedBy').val();
+                            d.userStatus    = $('#userStatus').val();
+                            d.cardStatus    = $('#cardStatus').val();
                         },
                     },
                     columns: [
@@ -470,18 +495,30 @@
 
 
         $('#getUsers').on('click', function () {
+            let isSelectFilter = false;
             if (
                 !$('#reseller-dropdown').val() &&
                 !$('#contractor-dropdown').val() &&
                 !$('#trader-dropdown').val() &&
-                !$('#lastChargeOn').val() &&
-                !$('#lastExpireOn').val() &&
+                !$('#chargeOnStart').val() &&
+                !$('#expireOnStart').val() &&
                 !$('#searchIP').val() &&
                 !$('#verifiedBy').val() &&
                 !$('#userStatus').val() &&
                 !$('#cardStatus').val()
             ) {
-                alert('Please select at least one filter.');
+                isSelectFilter = true;
+            }
+            if (($('#chargeOnStart').val() && !$('#chargeOnEnd').val()) || (!$('#chargeOnStart').val() && $('#chargeOnEnd').val())) {
+                alert('Please select both Start and End dates for Charge On.');
+                return;
+            }
+            if (($('#expireOnStart').val() && !$('#expireOnEnd').val()) || (!$('#expireOnStart').val() && $('#expireOnEnd').val())) {
+                alert('Please select both Start and End dates for Expire On.');
+                return;
+            }
+            if(isSelectFilter){
+                alert('Please select atleast one filter');
                 return;
             }
 

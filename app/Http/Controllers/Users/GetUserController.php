@@ -43,11 +43,17 @@ class GetUserController extends Controller
         if ($request->filled('traderId')) {
             $query->where('user_info.sub_dealer_id', $request->traderId);
         }
-        if ($request->filled('lastChargeOn')) {
-            $query->whereDate('user_status_info.card_charge_on', '=', $request->lastChargeOn);
+        if ($request->filled('chargeOnStart') && $request->filled('chargeOnEnd')) {
+            $query->whereBetween('user_status_info.card_charge_on', [
+                $request->chargeOnStart,
+                $request->chargeOnEnd,
+            ]);
         }
-        if ($request->filled('lastExpireOn')) {
-            $query->whereDate('user_status_info.card_expire_on', '=', $request->lastExpireOn);
+        if ($request->filled('expireOnStart') && $request->filled('expireOnEnd')) {
+            $query->whereBetween('user_status_info.card_expire_on', [
+                $request->expireOnStart,
+                $request->expireOnEnd,
+            ]);
         }
         if ($request->filled('searchIP')) {
             $query->where('user_ip_status.ip', 'like', '%' . $request->searchIP . '%');
