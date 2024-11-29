@@ -41,7 +41,39 @@
             flex-grow: 1;
         }
 
-    </style>
+        .input-group {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .input-group .form-control {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .input-group .input-group-text {
+            background-color: #fff;
+            border: 1px solid #ced4da;
+            border-left: none;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.375rem 0.75rem;
+            cursor: pointer;
+        }
+
+        .input-group .input-group-text i {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+
+        .input-group .input-group-text:hover i {
+            color: #495057;
+        }
+
+</style>
 @endsection
 @section('content')
 <?php
@@ -139,13 +171,19 @@
                             <div class="col-md-4">
                                 <div class="form-group position-relative">
                                     <label for="chargeOnRange">Charge On</label>
-                                    <input type="text" id="chargeOnRange" class="form-control" placeholder="Select date range">
+                                    <div class="input-group">
+                                        <input type="text" id="chargeOnRange" class="form-control" placeholder="Select date range">
+                                        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group position-relative">
                                     <label for="expireOnRange">Expire On</label>
-                                    <input type="text" id="expireOnRange" class="form-control" placeholder="Select date range">
+                                    <div class="input-group">
+                                        <input type="text" id="expireOnRange" class="form-control" placeholder="Select date range">
+                                        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -180,10 +218,10 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group position-relative">
-                                    <label for="cardStatus">Card Status</label>
+                                    <label for="cardStatus">Active/Deactive</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                     <select id="cardStatus" class="form-select js-select2">
-                                        <option value="">-- Select Card Status --</option>
+                                        <option value="">-- Select Active/Deactive --</option>
                                         <option value="active">Active</option>
                                         <option value="deactive">Deactive</option>
                                     </select>
@@ -402,10 +440,8 @@
             }
 
             if (params.userStatus) $('#userStatus').val(params.userStatus).trigger('change');
-            if (params.chargeOnStart) $('#chargeOnStart').val(params.chargeOnStart);
-            if (params.chargeOnEnd) $('#chargeOnEnd').val(params.chargeOnEnd);
-            if (params.expireOnStart) $('#expireOnStart').val(params.expireOnStart);
-            if (params.expireOnEnd) $('#expireOnEnd').val(params.expireOnEnd);
+            if (params.chargeOnRange) $('#chargeOnRange').val(params.chargeOnRange);
+            if (params.expireOnRange) $('#expireOnRange').val(params.expireOnRange);
             if (params.searchIP) $('#searchIP').val(params.searchIP);
             if (params.verifiedBy) $('#verifiedBy').val(params.verifiedBy).trigger('change');
             if (params.cardStatus) $('#cardStatus').val(params.cardStatus).trigger('change');
@@ -426,10 +462,8 @@
                 if ($('#reseller-dropdown').val()) params.append('resellerId', $('#reseller-dropdown').val());
                 if ($('#contractor-dropdown').val()) params.append('contractorId', $('#contractor-dropdown').val());
                 if ($('#trader-dropdown').val()) params.append('traderId', $('#trader-dropdown').val());
-                if ($('#chargeOnStart').val()) params.append('chargeOnStart', $('#chargeOnStart').val());
-                if ($('#chargeOnEnd').val()) params.append('End', $('#chargeOnEnd').val());
-                if ($('#expireOnStart').val()) params.append('expireOnStart', $('#expireOnStart').val());
-                if ($('#expireOnEnd').val()) params.append('expireOnEnd', $('#expireOnEnd').val());
+                if ($('#chargeOnRange').val()) params.append('chargeOnRange', $('#chargeOnRange').val());
+                if ($('#expireOnRange').val()) params.append('expireOnRange', $('#expireOnRange').val());
                 if ($('#searchIP').val()) params.append('searchIP', $('#searchIP').val());
                 if ($('#verifiedBy').val()) params.append('verifiedBy', $('#verifiedBy').val());
                 if ($('#userStatus').val()) params.append('userStatus', $('#userStatus').val());
@@ -490,24 +524,13 @@
                 !$('#reseller-dropdown').val() &&
                 !$('#contractor-dropdown').val() &&
                 !$('#trader-dropdown').val() &&
-                !$('#chargeOnStart').val() &&
-                !$('#expireOnStart').val() &&
+                !$('#chargeOnRange').val() &&
+                !$('#expireOnRange').val() &&
                 !$('#searchIP').val() &&
                 !$('#verifiedBy').val() &&
                 !$('#userStatus').val() &&
                 !$('#cardStatus').val()
             ) {
-                isSelectFilter = true;
-            }
-            if (($('#chargeOnStart').val() && !$('#chargeOnEnd').val()) || (!$('#chargeOnStart').val() && $('#chargeOnEnd').val())) {
-                alert('Please select both Start and End dates for Charge On.');
-                return;
-            }
-            if (($('#expireOnStart').val() && !$('#expireOnEnd').val()) || (!$('#expireOnStart').val() && $('#expireOnEnd').val())) {
-                alert('Please select both Start and End dates for Expire On.');
-                return;
-            }
-            if(isSelectFilter){
                 alert('Please select atleast one filter');
                 return;
             }
