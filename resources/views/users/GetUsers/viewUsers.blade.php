@@ -358,7 +358,7 @@
                 url: "{{route('get.trader')}}",
                 type: 'POST',
                 data: {
-                    dealer_id: params.contractorId,
+                    dealer_id: contractorId,
                     _token: '{{csrf_token()}}'
                 },
                 success: function (response) {
@@ -511,7 +511,7 @@
                             d.userStatus    = $('#userStatus').val();
                             d.cardStatus    = $('#cardStatus').val();
                             d.searchPhone   = $('#searchPhone').val();
-                            d.searchCNIC   = $('#searchCNIC').val();
+                            d.searchCNIC    = $('#searchCNIC').val();
                         },
                     },
                     columns: [
