@@ -1,0 +1,154 @@
+@extends('users.layouts.app')
+@section('title') Dashboard @endsection
+@section('content')
+<style>
+  .rotate{
+    animation: 1s rotateicon ease infinite;
+  }
+  @keyframes rotateicon {
+    from{
+      transform: rotate(0deg);
+    }
+    to{
+      transform: rotate(360deg);
+    }
+  }
+</style>
+
+<div class="page-container row-fluid container-fluid">
+  <section id="main-content">
+    <section class="wrapper main-wrapper">
+      <div class="alert alert-danger print-error-msg" data-dismiss="alert" style="display:none">
+        <ul></ul>
+      </div>
+      <div class="alert alert-success success-msg" data-dismiss="alert" style="display:none">
+        <ul></ul>
+      </div>
+      <div class="header_view position-relative">
+        <h2>MRTG Graph
+        <span class="info-mark" onmouseenter="popup_function(this, 'mrtg_graph_user_side');" onmouseleave="popover_dismiss();"><i class="las la-info-circle"></i></span>
+        </h2>
+        <button class="btn refresh"><i class="fa fa-refresh"></i> Refresh</button>
+      </div>
+      <div class="">
+        @if ($message = Session::get('success'))
+        <div class="alert alert-success alert-block">
+          <button type="button" class="close" data-dismiss="alert">×</button>
+          <strong>{{ $message }}</strong>
+        </div>
+        @endif
+        @if(count($errors) > 0)
+        <div class="alert-danger">
+          <ul>
+            @foreach($errors->all() as $error)
+            <li>{{$error}}</li>
+            @endforeach
+          </ul>
+        </div>
+        @endif
+      </div>
+      <div class="box">
+        <div class="content-body">
+          <div class="row reload-graph"></div>
+        </div>
+      </div>
+    </section>
+  </section>
+</div>
+
+<!-- The Modal -->
+<div class="modal" id="graph_modal">
+  <div class="modal-dialog modal-fullscreen" style="width:90%">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title text-white">Graph Modal</h4>
+        <!-- <button type="button" class="btn-close" data-dismiss="modal"></button> -->
+      </div>
+
+      <!-- Modal body -->
+      <div class="modal-body">
+        <img src="" style="width: 100%;margin-bottom:5px" id="" class="img img-responsive dynamic_graph_img">
+      </div>
+
+      <!-- Modal footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+@endsection
+
+
+@section('ownjs')
+
+<script>
+  $(document).ready(function() {
+    
+    graphFunction();
+    function graphFunction() {
+      var graphData = '<?php echo $cacti_id ?>';
+      $(".reload-graph").empty();
+      $.ajax({
+        type: 'POST',
+        url: "{{route('user.graph.refresh')}}",
+        success: function(result) {
+          if ($.isEmptyObject(result.error)) {
+            var mdClass = ''; var test = '';
+            var image_url = result.url;
+            var graphdata = result.data;
+            var length = graphdata.length;
+            if(length == 1){
+              mdClass = 'col-md-12';
+            } 
+
+else if(length == 0)
+{
+   test = '<h5 class="text-center">Apologies for the inconvenience. The MRTG graph is currently unavailable. Please contact our technical support team and company administrator for assistance.</h5>';
+   $('.reload-graph').append(test);
+   $('.refresh .fa-refresh').removeClass('rotate');
+}
+          else {
+              mdClass = 'col-md-6';
+            }
+            $.each(graphdata, function(name, value) {
+              var username = value['user_id'];
+              var graph_no = value['graph_no'];
+              var domain_url = image_url+graph_no;
+           var html = `<div class="`+mdClass+` image"><a href="javascript:void(0);" onclick="showSingleGraph('`+domain_url+`')" ><img src="`+domain_url+`" style="width: 100%;margin-bottom:5px" id="`+graph_no+`" class="img img-responsive dynamic_graph_img"></a></div>`;
+              $('.reload-graph').append(html);
+              $('.refresh .fa-refresh').removeClass('rotate');
+              console.log(html);
+            });
+          } else {
+            printErrorMsg(result.error);
+          }
+        }
+      })
+    }
+    $('.refresh').on('click', function() {
+      $('.refresh .fa-refresh').addClass('rotate');
+      graphFunction();
+    });
+  });
+
+  function printErrorMsg(msg) {
+    $(".print-error-msg").find("ul").html('');
+    $(".success-msg").css('display', 'none');
+    $(".print-error-msg").css('display', 'block');
+    $.each(msg, function(key, value) {
+      $(".print-error-msg").find("ul").append('<li>' + value + '</li>');
+    });
+  }
+
+  function showSingleGraph(url) {
+    $('.modal-body .dynamic_graph_img').attr('src', url);
+    $('#graph_modal').modal('show');
+  }
+
+</script>
+
+@endsection

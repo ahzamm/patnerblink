@@ -1,0 +1,167 @@
+@extends('users.layouts.app')
+@section('title') Dashboard @endsection
+@section('owncss')
+<!-- //head is not necssary  -->
+<style type="text/css">
+
+	#example-1_filter{
+		margin-right: 15px;
+	}
+	
+	.modal {
+		display: none; /* Hidden by default */
+		position: fixed; /* Stay in place */
+		z-index: 1; /* Sit on top */
+		padding-top: 100px; /* Location of the box */
+		left: 0;
+		top: 0;
+		width: 100%; /* Full width */
+		height: 100%; /* Full height */
+		overflow: auto; /* Enable scroll if needed */
+		background-color: rgb(0,0,0); /* Fallback color */
+		background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+	}
+	/* Modal Content */
+	.modal-content {
+		background-color: #fefefe;
+		margin: auto;
+		padding: 20px;
+		border: 1px solid #888;
+		width: 80%;
+	}
+	/* The Close Button */
+	.close {
+		color: #aaaaaa;
+		float: right;
+		font-size: 28px;
+		font-weight: bold;
+	}
+	.close:hover,
+	.close:focus {
+		color: #000;
+		text-decoration: none;
+		cursor: pointer;
+	}
+</style>
+@endsection
+@section('content')
+<div class="page-container row-fluid container-fluid">
+	<!-- SIDEBAR - START -->
+	<section id="main-content">
+		<section class="wrapper main-wrapper row">
+			<div class="">
+				<div class="col-lg-12">
+					<div class="header_view">
+						<h2>Billing Summary</h2>
+					</div>
+					
+					<div class="col-lg-12">
+						<section class="box ">
+							<header class="panel_header">
+								<!-- <h2 class="title pull-left">Billing Report</h2> -->
+								<div class="actions panel_actions pull-right">
+									<a class="box_toggle fa fa-chevron-down"></a>
+								</div>
+							</header>
+							<div class="content-body">
+								
+											<div class="row">
+											<form action="{{route('users.billing.billingReport_PDF')}}" target="_blank" method="POST">
+													@csrf
+													<div class="col-md-5">
+														<div class="form-group">
+															<label  class="form-label">Select Billing Cycle (MM/DD/YY) <span style="color: red">*</span></label>
+															<div class="controls" style="margin-top: 0px;">
+																<select class="form-control" name="date" required="" oninvalid="this.setCustomValidity('Select Billing Cycle')" onchange="this.setCustomValidity('')">
+														<option value="">Select (MM/DD/YY)</option>
+														@php
+														$from=date('2020-01-25');
+														$startTime = strtotime($from);
+														$now = time();
+														$datediff =($now-$startTime);
+														$range=floor(($datediff / (60 * 60 * 24))+1);
+														for($i=0;$i<$range;$i++){
+														$date = date('Y-m-d',strtotime($from ."+".$i." days"));
+														$newdate=explode("-",$date);
+														if($newdate[2] == 10 || $newdate[2] == 25){
+														@endphp
+														<option value="{{$date}}">{{date('M d,Y' ,strtotime($date))}}</option>
+														@php
+														}
+														
+														}
+														@endphp
+														
+													</select>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-5">
+														<div class="form-group">
+															<label  class="form-label">Select Account <span style="color: red">*</span></label>
+															<select class="form-control" id="username-select" name="username" required oninvalid="this.setCustomValidity('Select Account (ID)')" onchange="this.setCustomValidity('')">
+																<option value="">Select Account</option>
+																@if(Auth::user()->status == "dealer")
+																<option value="own">{{Auth::user()->username}} (Contractor)</option>
+																@endif
+																@foreach($userCollection as $data)
+																<option value="{{$data->username}}">{{$data->username}} (Trader)</option>
+																@endforeach
+
+															</select>
+														</div>
+													</div>
+													<div class="col-md-2">
+														<br>
+														<div class="form-group" style="margin-top: 5px;">
+															<button class="btn btn-flat btn-primary" type="submit">Generate</button>
+														</div>
+													</div>
+												</form>
+												<!-- Report Summary -->
+										
+												<div class="col-md-12"></div>
+												<!-- 2nd table -->
+												<div class="col-md-12" ></div>
+												
+											</div>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+						<div class="chart-container " style="display: none;">
+							<div class="" style="height:200px" id="platform_type_dates"></div>
+							<div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+							<div class="" style="height:200px" id="user_type"></div>
+							<div class="" style="height:200px" id="browser_type"></div>
+							<div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+							<div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+						</div>
+					</section>
+				</section>
+				<!-- END CONTENT -->
+				<!---Model Dialog --->
+			</div>
+			<!---Model Dialog --->
+			@endsection
+			@section('ownjs')
+			<!-- Select User List -->
+			<script>
+				function loadUserList(option){
+					let userStatus = option.value;
+	// ajax call: jquery
+	console.log("URL: " + "{{route('admin.user.status.usernameList')}}?status="+userStatus);
+	$.get(
+		"{{route('admin.user.status.usernameList')}}?status="+userStatus,
+		function(data){
+			console.log(data);
+			let content = "<option>select "+userStatus+"</option>";
+			$.each(data,function(i,obj){
+				content += "<option value='"+obj.username+"'>"+obj.username+"</option>"
+			});
+			$("#username-select").empty().append(content);
+		});
+}
+</script>
+@endsection

@@ -1,0 +1,187 @@
+@extends('users.layouts.app')
+@section('title') Dashboard @endsection
+@section('content')
+<div class="page-container row-fluid container-fluid">
+  <section id="main-content" class=" ">
+    <section class="wrapper main-wrapper row" style=''>
+        <div class="header_view">
+          <h2>Receipt Amount <span style="color: lightgray"><small>(History)</small></span>
+          <span class="info-mark" onmouseenter="popup_function(this, 'receipt_amount');" onmouseleave="popover_dismiss();"><i class="las la-info-circle"></i></span>
+          </h2>
+        </div>
+        <section class="box" style="padding-top:20px">
+          <!-- <header class="panel_header">
+            <h2 class="title pull-left"></h2>
+          </header> -->
+          <div class="content-body">   
+            <table id="example1" class="table table-bordered display dt-responsive data-table w-100">
+               <?php $file_name = 'Receipt-Amount-'.date('d-M-Y[H-i-s]').'.csv'; ?>
+
+              <button class="btn btn-primary" style="float: right;margin-right: 15px;margin-bottom:20px;" onclick="exportTableToCSV('#example1','{{$file_name}}')"><i class="fa fa-download"></i> Download</button>
+              <thead>
+                <tr>
+                  <th style="width:25px">Receipt#</th>
+                  <th>Username</th>
+                  <th>Recieved Amount (PKR)</th>
+                  <th>Payment Mode</th>
+                  <th>Bank Detail</th>
+                  <th>Recieved By</th>
+                  <th>Comment</th>
+                  <th>Date</th>
+                  <th>IP Address</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{-- @php $sno = 100000; @endphp
+                @foreach($paymentTransactions as $data)
+                <tr style="color: {{$data->type == 'reversal'?('red'):'black'}}">
+                  <td>{{++$sno}}</td>
+                  <td class="td__profileName">
+                    <form action="{{route('users.billing.reciept')}}" method="POST" target="_blank">
+                      @csrf
+                    <input type="hidden" name="id" value="{{$data->id}}">
+                    <button type="submit" class="btn btn-link">
+                    {{$data->sender}}</button></form></td>
+                  <td>{{number_format($data->amount,2)}}</td>
+                  <td style="color:red">{{ $data->is_bank==1 ? 'BANK' : 'CASH' }}</td>
+                  <td>{{$data->receiver}}</td>
+                  <td>{{$data->detail}}</td>
+                  <td>{{$data->date}}</td>
+                  <td>{{$data->action_ip}}</td>
+                  @if(Auth::user()->status == "reseller" || Auth::user()->username == "account10")
+                  @if($data->status == "POST")
+                  <td>{{$data->status}}</td>
+                  @else
+                  <td>
+                    {{-- <form id="myform">
+                    <button class="btn btn-link" onclick="formsubmit('{{$data->sender}}','{{$data->amount}}','{{$data->type}}','{{$data->date}}','{{$data->detail}}');">SAVE</button>
+                  {{-- </form> 
+                </td>
+                  @endif
+                  @else
+                  @if($data->status == "POST")
+                  <td>{{$data->status}}</td>
+                  @else
+                  <td>{{$data->status}}
+                    </td>
+                  @endif
+                  @endif
+                  <td>Receipt</td>
+                </tr>
+                @endforeach --}}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="2" style="text-align:center;font-weight:bold;font-size: 15px;">Grand Total (PKR):</th>
+                  <th style="text-align:center;font-weight:bold;font-size: 15px; color: green"> </th>
+                </tr>
+              </tfoot>  
+            </table>
+          </div>
+        </section>
+      </section>
+    </section>
+  </div>
+  @endsection
+  @section('ownjs')
+  <script type="text/javascript">
+    $(function () {
+      var saveOpt = localStorage.getItem("defaultDTentries");
+  	    if(saveOpt == null){ saveOpt = 10;}
+      var table = $('.data-table').DataTable({
+          processing: true,
+          serverSide: true,
+          "lengthMenu": [[saveOpt,10, 25, 50, 100,-1], [saveOpt, 10,25, 50, 100,'All']],
+          
+          ajax: "{{ route('userSideCashReceipt') }}",
+          columns: [
+              {data: 'DT_RowIndex', name: 'DT_RowIndex'},
+              {data: 'senders', name: 'senders'},
+              {data: 'amount', name: 'amount'},
+              {data: 'paymentTypes', name: 'paymentTypes'},
+              {data: 'bank_name', name: 'bank_name'},
+              {data: 'receiver', name: 'receiver'},
+              {data: 'detail', name: 'detail'},
+              {data: 'date', name: 'date'},
+              {data: 'action_ip', name: 'action_ip'},
+              // {data: 'action', name: 'action'},
+              {data: 'status1', name: 'status1'},
+              {data: 'reciptBtn' , name : 'reciptBtn'}
+          ],
+          "footerCallback": function ( row, data, start, end, display ) {
+          var api = this.api(), data;
+
+            // Remove the formatting to get integer data for summation
+            var intVal = function ( i ) {
+              return typeof i === 'string' ?
+              i.replace(/[\$,]/g, '')*1 :
+              typeof i === 'number' ?
+              i : 0;
+            };
+
+            // Total over all pages
+            total = api
+            .column( 2 )
+            .data()
+            .reduce( function (a, b) {
+              return intVal(a) + intVal(b);
+            }, 0 );
+
+            // Total over this page
+            pageTotal = api
+            .column( 2, { page: 'current'} )
+            .data()
+            .reduce( function (a, b) {
+              return intVal(a) + intVal(b);
+            }, 0 );
+
+            // Update footer
+            $( api.column( 2 ).footer() ).html(formatMoney(pageTotal) );
+          }
+      });
+    });
+
+    $(document).on('change','#example1_length select',function(){
+ 	var opt = $(this).val();
+ 	localStorage.setItem("defaultDTentries",opt);
+ });
+  </script>
+  <script type="text/javascript">
+  function formatMoney(n, c, d, t) {
+      var c = isNaN(c = Math.abs(c)) ? 2 : c,
+      d = d == undefined ? "." : d,
+      t = t == undefined ? "," : t,
+      s = n < 0 ? "-" : "",
+      i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))),
+      j = (j = i.length) > 3 ? j % 3 : 0;
+      return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+    }
+</script>
+<script type="text/javascript">
+  function formsubmit(username,amount,type,date,detail) {
+    $.ajax({
+      type : "POST",
+      url : "{{route('users.billing.save')}}",
+      data : {username:username,amount:amount,type:type,date:date,detail:detail},
+      
+      
+      success : function(data){
+      //  $("#n").val('');
+      //  $("#l").val('');
+      // $('#demo').html(data);
+      // $('#body').html(data);
+      // $('#exampleModal').modal('show');
+      location.reload();
+      
+      },
+      error: function(jqXHR, text, error){
+  // Displaying if there are any errors
+  $('#demo').html(error);
+}
+    });
+
+    }
+</script>
+  @endsection

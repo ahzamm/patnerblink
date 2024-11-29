@@ -1,0 +1,210 @@
+@extends('users.layouts.app')
+@section('title') Dashboard @endsection
+@section('owncss')
+<!-- //head is not necssary  -->
+<style type="text/css">
+
+	#loadingnew{
+		display: none;
+	}
+</style>
+@endsection
+@section('content')
+<div class="page-container row-fluid container-fluid">
+	<!-- SIDEBAR - START -->
+	<section id="main-content">
+		<section class="wrapper main-wrapper row">
+			<div class="">
+				<div class="col-lg-12">
+					
+					
+					<div class="header_view">
+						<h2>Single recharge account</h2>
+						
+					</div>
+					<section class="box">
+						<!-- <header class="panel_header"> -->
+							<!-- <h2 class="title">Recharge Account </h2> -->
+							
+						<!-- </header> -->
+						<div class="content-body">
+							@if(session('error'))
+							<div class="alert alert-error alert-dismissible show">
+								{{session('error')}}
+								<button type="button" class="close" data-dismiss="alert">&times;</button>
+							</div>
+							@endif
+							@if(session('success'))
+							<div class="alert alert-success alert-dismissible show">
+								{{session('success')}}
+								<button type="button" class="close" data-dismiss="alert">&times;</button>
+							</div>
+							@endif
+							
+							<div class="row">
+								
+								
+								<form action="{{route('users.single.charge')}}" method="POST" id="myform">
+									<div class="col-md-12">
+										@csrf
+										<table class="table">
+											<tbody>
+												<td style="text-align: left">
+													<label for="form-control">Select Internet Profile <span style="color: red">*</span></label>
+													<select name="profileGroupname" onchange="onProfileChange(this)" class="form-control" required>
+														<option value="">Select Internet Profile</option>
+														@foreach($profileRates as $profile)
+														<option value="{{$profile->profile->name}}">{{$profile->profile->name}}</option>
+														@endforeach
+													</select>
+												</td>
+												<td style="text-align: left">
+												<label for="form-control">Select Consumer (ID) <span style="color: red">*</span></label>
+													<select id="select-username" name="username" class="form-control" required>
+														<option value="">Select Consumer (ID)</option>
+													</select>
+												</td>
+											</tbody>
+										</table>
+									</div>
+									<!--  -->
+									<div class="col-md-12">
+										<div class="form-group pull-right">
+											<button type="submit" class="btn btn-primary " id="chargeBtn">Recharge Now</button>
+											<img src="{{asset('img/loading.gif')}}" id="loadingnew" width="5%" >
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+					</section>
+					
+				</div>
+				<div class="col-md-12">
+					
+					<section class="box">
+					<div class="header_view" style="padding-top: 20px;">
+						<h2 style="font-size: 26px;">Recently Consumer Recharged Accounts <small style="color: ligtgray">(History)</small></h2>
+						
+					</div>
+					<hr>
+						<!-- <header class="panel_header">
+							<h2 class="title">Recently Recharged </h2>
+						</header> -->
+						<div class="content-body">
+							
+							<div class="row">
+								
+								<div class="col-md-12  table-responsive">
+									<table class="table table-bordered dataTables_filter " id="example-1">
+										<thead>
+											<tr>
+												<th>Serial#</th>
+												<th>Consumer (ID)</th>
+												<th>Contractor (ID)</th>
+												<th>Internet Profile</th>
+												<th>Expiry Date & Time</th>
+												
+											</tr>
+										</thead>
+										<tbody>
+											@php
+											$count=1;
+											@endphp
+											@foreach($rechargeUsers as $data)
+											
+											@php
+											
+											if(Auth::user()->status == "dealer"){
+											$rate= $data->dealerrate;
+										}else{
+										$rate= $data->subdealerrate;
+									}
+									$userProfile = App\model\Users\Profile::where('groupname',$data->profile)->first()->name;
+
+									$userStatus = App\model\Users\UserStatusInfo::where('username',$data->username)->first()->card_expire_on;
+									@endphp
+									
+									<tr>
+										<td>{{$count++}}</td>
+										<td>{{$data->username}}</td>
+										<td>{{$data->dealerid}}</td>
+										<td>{{$userProfile}}</td>
+										<td>{{$userStatus}}</td>
+										
+									</tr>
+									@endforeach
+								</tbody>
+							</table>
+						</div>
+						<!--  -->
+						
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+	<div class="chart-container " style="display: none;">
+		<div class="" style="height:200px" id="platform_type_dates"></div>
+		<div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+		<div class="" style="height:200px" id="user_type"></div>
+		<div class="" style="height:200px" id="browser_type"></div>
+		<div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+		<div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+	</div>
+</section>
+</section>
+<!-- END CONTENT -->
+</div>
+@endsection
+@section('ownjs')
+<script>
+	$(document).ready(function(){
+		setTimeout(function(){
+			$('.alert').fadeOut(); }, 3000);
+	});
+</script>
+<script>
+	$(document).ready(function(){
+		$("#myform").submit(function(){
+			$('#chargeBtn').hide();
+			$('#loadingnew').show();
+		});
+	});
+</script>
+<script type="text/javascript">
+	function onProfileChange(profileGroupName){
+		profileGroupName = profileGroupName.value
+		console.log("profileGroupName: " + profileGroupName);
+		// ajax call: jquery
+		$.post(
+			"{{route('users.ajax.charge.profileGroupWiseUsers')}}",
+			{
+				"profileGroupName" : ""+profileGroupName+""
+			},
+			function(data){
+				console.log(data);
+				let content = "<option value=''>Select Username</option>";
+				$.each(data,function(i,user){
+					if(user.user_status_info_expired){
+						content += "<option value="+user.username+">"+user.username+"</option>";
+					}
+				});
+				$("#select-username").empty().append(content);
+			});
+	}
+
+
+	$(document).ready(function() {
+		var table = $('#mytable').DataTable();
+	} );
+</script>
+<script>
+    var msg = '{{Session::get('alert')}}';
+    var exist = '{{Session::has('alert')}}';
+    if(exist){
+      alert(msg);
+    }
+  </script>
+
+@endsection

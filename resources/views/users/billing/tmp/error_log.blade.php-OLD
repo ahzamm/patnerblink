@@ -1,0 +1,85 @@
+@extends('users.layouts.app')
+@section('title') Dashboard @endsection
+@section('content')
+<div class="page-container row-fluid container-fluid">
+
+  <!-- SIDEBAR - START -->
+  <section id="main-content">
+    <section class="wrapper main-wrapper row">
+
+      <div class="">
+        <div class="col-lg-12">
+
+          <div class="header_view">
+            <h2>Invalid Login</h2>
+          </div>
+
+
+          <div class="table-responsive">
+
+
+            <table id="example-1" class="table table-striped dt-responsive display">
+              <thead>
+                <tr>
+                  <th>Consumer (ID)</th>
+                  <th>Assigned (MAC Address) </th>
+                  <th>Requesting (MAC Address)</th>
+                  <th>Valid Reason</th>
+                  <th>Login Attempt</th>
+                  <th>Login Time</th>
+                </tr>
+              </thead>
+              
+              <tbody>
+              
+                
+                
+
+                @foreach($error_log as $value)
+               
+                @php
+                $radcheckmac = App\model\Users\RadCheck::where(['username'=> $value->username])->where(['attribute'=>'Calling-Station-Id'])->first();
+                $check_mac = $radcheckmac->value;
+
+                $radacctmac = App\model\Users\RadPostauth::where(['username' => $value->username])->orderBy('id','DESC')->first();
+                if($radacctmac){
+                $act_mac = $radacctmac->mac;
+              }else{
+              $act_mac ='Not Yet Login';
+            }
+                $count=App\model\Users\RadPostauth::where(['reply'=>'Access-Reject','username'=>$value->username])->count();
+                @endphp
+                
+
+
+              
+              <tr>
+                <td class="td__profileName">{{$value->username}}</td>
+                <td>{{$check_mac}}</td>
+                <td>{{$act_mac}}</td>
+                <td>{{$value->rejectreason}}</td>
+                <td>{{$count}}</td>
+                <td>{{$value->authdate}}</td>
+              </tr>
+              @endforeach
+
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="chart-container " style="display: none;">
+      <div class="" style="height:200px" id="platform_type_dates"></div>
+      <div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+      <div class="" style="height:200px" id="user_type"></div>
+      <div class="" style="height:200px" id="browser_type"></div>
+      <div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+      <div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+    </div>
+  </section>
+</section>
+<!-- END CONTENT -->
+
+</div>
+@endsection

@@ -1,0 +1,93 @@
+@extends('admin.layouts.app')
+@section('title') Dashboard @endsection
+@section('content')
+<div class="page-container row-fluid container-fluid">
+   <!-- SIDEBAR - START -->
+   <section id="main-content">
+      <section class="wrapper main-wrapper row">
+         <div class="">
+            <div class="col-lg-12" >
+               <div class="header_view">
+                  <h2>Assign CGN IPs</h2>
+               </div>
+            </div>
+         </div>
+         <div class="col-md-3">
+         </div>
+         <div class="col-md-6">
+            <section class="box ">
+               <div class="content-body">
+                  <form id="cgnForm">
+                     @csrf
+                     <div class="row">
+                        <div class="col-md-12">
+                           <div class="form-group">
+                              <label  class="form-label">Asgin IP Address (Only Firs & Second) Octets</label>
+                              <input type="text" class="form-control" name="ip" placeholder="Example: 192.168" required pattern="[0-9.]*">
+                           </div>
+                           <div class="form-group">
+                              <label  class="form-label">Asgin Third Octets (Start Range)</label>
+                              <input type="number" name="start" class="form-control" placeholder="Example: (asgin third octets) 0" required>
+                           </div>
+                           <div class="form-group">
+                              <label  class="form-label">Asgin Third Octets (End Range)</label>
+                              <input type="number" name="end" class="form-control" placeholder="Example: (asgin third octets) 1" required>
+                           </div>
+                           <div class="form-group">
+                              <label  class="form-label">Asgin Main group</label>
+                              <input type="number" name="main" class="form-control" placeholder="Asgin Numeric No# Example: 1" required>
+                           </div>
+                           <div class="form-group">
+                              <label  class="form-label">Asgin Sub group</label>
+                              <input type="text" name="sub" class="form-control" placeholder="Asgin Alphabet Example: A" required>
+                           </div>
+                           <div class="form-group">
+                              <label  class="form-label">Select NAS (BRAS)</label>
+                              <!-- <input type="text" name="nasShortName" class="form-control" required> -->
+                              <select name="nasShortName" class="form-control" required>
+                                 <option>Select NAS (BRAS)</option>
+                                 <?php foreach($nas as $value){?>
+                                 <option value="<?= $value->shortname;?>"><?= $value->shortname;?></option>
+                              <?php } ?>
+                              </select>
+                           </div>
+                           <div class="form-group pull-right">
+                              <input type="submit" name="submit" class="btn btn-primary" value="Submit">
+                           </div>
+                        </div>
+                     </div>
+                  </form>
+                  <span id="output22"></span>
+               </div>
+            </section>
+         </div>
+         <div class="chart-container " style="display: none;">
+            <div class="" style="height:200px" id="platform_type_dates"></div>
+            <div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+            <div class="" style="height:200px" id="user_type"></div>
+            <div class="" style="height:200px" id="browser_type"></div>
+            <div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+            <div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+         </div>
+      </section>
+   </section>
+   <!-- END CONTENT -->
+</div>
+@endsection
+@section('ownjs')
+    <script>
+       $('#cgnForm').submit(function(e){
+          $.ajax({
+            url: "{{route('admin.postcgn')}}",
+            type: "POST",
+            data: $( '#cgnForm' ).serialize(),
+            success: function(result){
+               $('#output22').html(result);
+               $("#cgnForm").trigger("reset");
+               setTimeout(function(){ $('#output22').html(""); }, 2000);
+            }
+          });
+          e.preventDefault();
+       });
+    </script>
+@endsection

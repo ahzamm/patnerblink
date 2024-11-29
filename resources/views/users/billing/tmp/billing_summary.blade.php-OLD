@@ -1,0 +1,531 @@
+@extends('users.layouts.app')
+@section('title') Dashboard @endsection
+@section('owncss')
+<!-- //head is not necssary  -->
+<style type="text/css">
+  
+   .modal {
+   display: none; /* Hidden by default */
+   position: fixed; /* Stay in place */
+   z-index: 1; /* Sit on top */
+   padding-top: 100px; /* Location of the box */
+   left: 0;
+   top: 0;
+   width: 100%; /* Full width */
+   height: 100%; /* Full height */
+   overflow: auto; /* Enable scroll if needed */
+   background-color: rgb(0,0,0); /* Fallback color */
+   background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+   }
+   /* Modal Content */
+   .modal-content {
+   background-color: #fefefe;
+   margin: auto;
+   padding: 20px;
+   border: 1px solid #888;
+   width: 80%;
+   }
+   /* The Close Button */
+   .close {
+   color: #aaaaaa;
+   float: right;
+   font-size: 28px;
+   font-weight: bold;
+   }
+   .close:hover,
+   .close:focus {
+   color: #000;
+   text-decoration: none;
+   cursor: pointer;
+   }
+</style>
+@endsection
+@section('content')
+@php
+
+$checkCardType = 'billing_detail';
+if(Auth::user()->status == 'dealer'){
+	$checkBillingType = App\model\Users\DealerProfileRate::where('dealerid',Auth::user()->dealerid)->first()->billing_type;
+	$checkCardType = $checkBillingType == 'amount' ? 'billing_detail' : ($checkBillingType == 'card'  ? 'billing_detail_card' : NULL);
+	// dd($checkCardType);
+}
+if(Auth::user()->status == 'subdealer'){
+	$checkBillingType = App\model\Users\DealerProfileRate::where('dealerid',Auth::user()->dealerid)->first()->billing_type;
+	$checkCardType = $checkBillingType == 'amount' ? 'billing_detail' : ($checkBillingType == 'card'  ? 'billing_detail_card' : NULL);
+	// dd($checkCardType);
+}
+@endphp
+<div class="page-container row-fluid container-fluid">
+	
+   <!-- SIDEBAR - START -->
+   <section id="main-content" class=" ">
+      <section class="wrapper main-wrapper row" style=''>
+		@if($checkCardType == 'billing_detail')
+         <div class="">
+            <div class="col-lg-12">
+               <div class="header_view">
+                  <h2>Billing Report</h2>
+               </div>
+               <!--  -->
+               <div class="col-lg-12">
+                  <section class="box ">
+                     <header class="panel_header">
+                        <!-- <h2 class="title pull-left">Billing Report</h2> -->
+                        <div class="actions panel_actions pull-right">
+                           <a class="box_toggle fa fa-chevron-down"></a>
+                        </div>
+                     </header>
+                     <div class="content-body">
+                        <div class="row">
+                           <form action="{{route('users.billing.summary.generate')}}" method="POST">
+                              @csrf
+                              <div class="col-md-5">
+                                 <div class="form-group">
+                                    <label  class="form-label">Select Date & Time Range <span style="color: red">*</span></label>
+                                    <div class="controls" style="margin-top: 0px;">
+                                       <input type="text" 
+                                          name="datetimes" style="width: 100%;height: 34px" 
+                                          required>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="col-md-5">
+                                 <div class="form-group">
+                                    <label  class="form-label">Select Account <span style="color: red">*</span></label>
+                                    <select class="form-control" id="username-select" name="username" required >
+                                       <option value="">Select Account</option>
+                                       @if(Auth::user()->status == "dealer")
+                                       {{-- <option value="all">All</option> --}}
+                                       <option value="own">{{Auth::user()->username}} (Contractor)</option>
+                                       @foreach($userCollection as $dealer)
+                                       <option value="{{$dealer->username}}">{{$dealer->username}} (Trader)</option>
+                                       @endforeach
+                                       @endif
+
+                                       @if(Auth::user()->status == "reseller")
+                                       <option value="{{Auth::user()->username}}">{{Auth::user()->username}} (Reseller)</option>
+                                       @foreach($userCollection as $dealer)
+                                       <option value="{{$dealer->username}}">{{$dealer->username}} (Contractor)</option>
+                                       @endforeach
+                                       @endif
+
+                                       @if(Auth::user()->status == "manager")
+                                       <option value="{{Auth::user()->username}}">{{Auth::user()->username}} (Manager)</option>
+                                       @foreach($userCollection as $dealer)
+                                       <option value="{{$dealer->username}}">{{$dealer->username}} (Reseller)</option>
+                                       @endforeach
+                                       @endif
+
+                                       @if(Auth::user()->status == "subdealer")
+                                       <option value="{{Auth::user()->username}}">{{Auth::user()->username}} (Trader)</option>
+                                       @foreach($userCollection as $dealer)
+                                       <option value="{{$dealer->username}}">{{$dealer->username}} (Sub Trader)</option>
+                                       @endforeach
+                                       @endif
+                                      
+                                    </select>
+                                 </div>
+                              </div>
+                              <div class="col-md-2">
+                                 <br>
+                                 <div class="form-group" style="margin-top: 5px;">
+                                    <button class="btn btn-flat btn-primary">Generate</button>
+                                 </div>
+                              </div>
+                           </form>
+                           @if($isSearched)
+                           <div class="col-md-12">
+                              <div style="overflow-x: auto;">
+                                 <table class="table table-bordered table-responsive" style="border: 2px #225094 solid">
+                                    <thead>
+                                       <tr>
+                                          <th colspan="5">Report Summary</th>
+                                       </tr>
+                                       <tr>
+                                          <th>Manager (ID)</th>
+                                          <th>Reseller (ID)</th>
+                                          <th>Contractor (ID)</th>
+                                          <th>Trader (ID)</th>
+                                          <th>Net Payable Amount (PKR)</th>
+                                       </tr>
+                                    </thead>
+                                    <tbody>
+                                       <tr>
+                                          <td>{{$selectedUser->manager_id}}</td>
+                                          <td>{{$selectedUser->resellerid}}</td>
+                                          <td>{{$selectedUser->dealerid}}</td>
+                                          <td>{{$selectedUser->sub_dealer_id}}</td>
+                                          <td>{{number_format($monthlyPayableAmount,2)}}</td>
+                                       </tr>
+                                    </tbody>
+                                 </table>
+                              </div>
+                           </div>
+                           <div class="col-s-12" style="">
+                              <div style="border: 2px #225094 solid;overflow-x: auto;">
+                                 <div style="">
+                                 <table class="table">
+                                 <thead>
+                                       <tr>
+                                          <th colspan="5">Monthly Billing Report</th>
+                                       </tr>
+</thead>
+</table>
+                                    <!-- <h3 style="color:white;background:#225094;height: 40px; margin-top: 0px;  padding-top: 7px;font-size: 18px;font-weight: bold; text-align: center;"> Monthly Billing Report</h3> -->
+                                 </div>
+                                 <div style="overflow-x: auto;">
+                                    <table id="example1" class="table display">
+                                       <thead>
+                                          <button class="btn btn-default" style="border: 1px solid black;float: right;margin-right: 15px;" onclick="exportTableToCSV('#example1','{{Auth::user()->username}}.csv')"><i class="fa fa-download"></i></button>
+                                          <tr>
+                                             <th>Serial# </th>
+                                             <th>Consumer ID </th>
+                                             <th>Contractor (ID) </th>
+                                             <th>Trader (ID) </th>
+                                             <th>Internet Profile </th>
+                                             <th>Service Activation Date </th>
+                                             <th>Service Billing (Start Date & Time)  </th>
+                                             <th>Service Billing (End Date) </th>
+                                             <th>Price (PKR)</th>
+                                          </tr>
+                                       </thead>
+                                       <tbody>
+                                          @php $sno = 1;
+                                          @endphp
+                                          @foreach($monthlyBillingEntries as $entry)
+                                          @php
+                                          $profile_rate='';
+                                          $rate='';
+                                          if($selectedUser->status == "reseller"){
+                                          $rate= $entry['rate'];
+                                          $rate1= $entry['r_acc_rate'];
+                                          }elseif($selectedUser->status == "dealer"){
+                                          $rate= $entry['dealerrate'];
+                                          $d_sst=$entry['sst'];
+                                          $d_adv=$entry['adv_tax'];
+                                          }elseif($selectedUser->status == "subdealer"){
+                                          $rate= $entry['subdealerrate'];
+                                          $rate1= $entry['s_acc_rate'];
+                                          }elseif($selectedUser->status == "manager"){
+                                          $rate= $entry['m_rate'];
+                                          $rate1= $entry['m_acc_rate'];
+                                          }
+                                          $receipt1 = '';
+                                          $receipt1 = App\model\Users\AmountBillingInvoice::where(['id' => $entry->id])->first();
+                                          if(empty($receipt1)){
+                                          $receipt = "none";
+                                          }else{
+                                          $receipt = $receipt1->receipt;
+                                          }
+                                          $card_expire = '';
+                                          $user_expire = App\model\Users\UserStatusInfo::where('username' , $entry->username)->first();
+                                          $card_expire = $user_expire['card_expire_on'];
+                                          @endphp
+                                          <tr>
+                                             <td>{{$sno++}}</td>
+                                             <td class="td__profileName">{{$entry->username}}</td>
+                                             <td>{{$entry->dealerid}}</td>
+                                             <td>{{$entry->sub_dealer_id}}</td>
+                                             <td>{{$entry['name']}}</td>
+                                             @if(!empty($entry->user_info->creationdate))
+                                             <td>{{$entry->user_info->creationdate}}</td>
+                                             @else
+                                             <td>N/A</td>
+                                             @endif
+                                             <td>{{$entry->charge_on}}</td>
+                                             @if(!empty($card_expire))
+                                             <td>{{$card_expire}}</td>
+                                             @else
+                                             <td>N/A</td>
+                                             @endif
+                                            
+                                             <td style="color: #30761b;font-weight: bold;font-size: 18px;">{{$rate}}</td>
+                                          </tr>
+                                          @endforeach
+                                       </tbody>
+                                       <tfoot>
+                                          <tr class="btn-default" style="background-color:#d8d8d8;">
+                                             <th colspan="8" style="text-align:right;font-weight:bold;font-size: 15px;">Grand Total <span style="color: #30761b">(PKR):</span></th>
+                                             <th style="text-align:center;font-weight:bold;font-size: 15px;"> </th>
+                                          </tr>
+                                       </tfoot>
+                                    </table>
+                                 </div>
+                              </div>
+                           </div>
+                           @endif
+                        </div>
+                     </div>
+                  </section>
+               </div>
+            </div>
+		   </div>
+		 @else
+		 <div class="col-lg-12">
+			<div class="header_view">
+				<h2>Billing Profile Detail </h2>
+			</div>
+		</div>
+		<div class="col-lg-12">
+			<section class="box ">
+				<header class="panel_header">
+					<!-- <h2 class="title pull-left">Billing profile Report</h2> -->
+					<div class="actions panel_actions pull-right">
+						<a class="box_toggle fa fa-chevron-down"></a>
+					</div>
+				</header>
+				<div class="content-body">
+					<div class="row">
+						<form action="{{route('users.BillingCardDetail')}}" method="POST">
+							@csrf
+							<div class="col-md-5">
+								<div class="form-group">
+									<label  class="form-label">Select Date Range</label>
+									<div class="controls" style="margin-top: 0px;">
+										<input type="text" 
+										name="datetimes" style="width: 100%;height: 34px" 
+										required>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-5">
+								<div class="form-group">
+									<label  class="form-label">Select Username</label>
+									<select class="form-control" id="username-select" name="username" required >
+										<option value="">select Username</option>
+										@if(Auth::user()->status == "dealer")
+										<option value="all">All</option>
+										<option value="own">own</option>
+										@endif
+										@if(Auth::user()->status == "manager")
+										<option value="{{Auth::user()->username}}">own</option>
+										@endif
+										@if(Auth::user()->status == "subdealer")
+										<option value="{{Auth::user()->username}}">{{Auth::user()->username}}</option>
+										@endif
+										@foreach($userCollection as $dealer)
+										<option value="{{$dealer->username}}">{{$dealer->username}}</option>
+										@endforeach
+									</select>
+								</div>
+							</div>
+							<div class="col-md-2">
+								<br>
+								<div class="form-group" style="margin-top: 5px;">
+									<button class="btn btn-flat btn-primary">Search</button>
+								</div>
+							</div>
+						</form>
+						<!-- Report Summary -->
+						@if($isSearched)
+						<div class="col-md-12">
+							<div style="overflow-x: auto;">
+								<table class="table table-bordered table-responsive" style="border: 2px #225094 solid">
+									<thead>
+										<tr>
+											<th colspan="5">Report Summary</th>
+										</tr>
+										<tr>
+											<th>Manager Name</th>
+											<th>Reseller Name</th>
+											<th>Dealer Name</th>
+											<th>Sub Dealer Name </th>
+											@if ($own == true)
+											<th>Net Payable Amount (PKR)</th>
+											@endif
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>{{$selectedUser->manager_id}}</td>
+											<td>{{$selectedUser->resellerid}}</td>
+											<td>{{$selectedUser->dealerid}}</td>
+											<td>{{$selectedUser->sub_dealer_id}}</td>
+											@if ($own == true)
+											<td>{{number_format($monthlyPayableAmount,2)}}</td>
+											@endif
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="col-s-12" style="">
+							<div style="border: 2px #225094 solid;overflow-x: auto;">
+								<div style="">
+                        <table class="table">
+                           <thead>
+										<tr>
+											<th>Monthly Billing Report</th>
+										</tr>
+                           </thead>
+                                       </table>
+									<!-- <h3 style="color:white;background:#225094;height: 40px; margin-top: 0px;  padding-top: 7px;font-size: 18px;font-weight: bold; text-align: center;"> Monthly Billing Report</h3> -->
+								</div>
+								<div style="overflow-x: auto;"> 
+								<table id="{{$own == true ? 'example1' : 'example-1'}}" class="table display">
+										<thead>
+											<button class="btn btn-default" style="border: 1px solid black;float: right;margin-right: 15px;" onclick="exportTableToCSV('{{$own == true ? '#example1' : '#example-1'}}','{{Auth::user()->username}}.csv')"><i class="fa fa-download"></i></button>
+											<tr>
+												<th>Serial# </th>
+												<th>Customer ID </th>
+												<th>Package </th>
+												<th>Service Activation Date </th>
+												<th>Service Billing Start Date  </th>
+												<th>Service Billing End Date </th>
+												<th>Dealer ID </th>
+												<th>Sub Dealer ID </th>
+												@if ($own == true)
+												<td>Rate</td>
+												@endif
+											
+											</tr>
+										</thead>
+										<tbody>
+											@php $sno = 1;
+											@endphp
+											@foreach($monthlyBillingEntries as $entry)
+											@php
+											$profile_rate='';
+											$rate='';
+											if($selectedUser->status == "reseller"){
+											$rate= $entry['rate'];
+											$rate1= $entry['r_acc_rate'];
+										}elseif($selectedUser->status == "dealer"){
+										
+										$rate= $entry['dealerrate'];
+										$d_sst=$entry['sst'];
+										$d_adv=$entry['adv_tax'];
+									}elseif($selectedUser->status == "subdealer"){
+									$rate= $entry['subdealerrate'];
+									$rate1= $entry['s_acc_rate'];
+								}elseif($selectedUser->status == "manager"){
+								$rate= $entry['m_rate'];
+								$rate1= $entry['m_acc_rate'];
+							}
+							$receipt1 = '';
+							$receipt1 = App\model\Users\AmountBillingInvoice::where(['id' => $entry->id])->first();
+							if(empty($receipt1)){
+							$receipt = "none";
+						}else{
+						$receipt = $receipt1->receipt;
+					}
+							
+							
+							$card_expire = '';
+									$user_expire = App\model\Users\UserStatusInfo::where('username' , $entry->username)->first();
+									$card_expire = $user_expire['card_expire_on'];
+							@endphp
+							<tr>
+								<td>{{$sno++}}</td>
+								<td>{{$entry->username}}</td>
+								<td>{{$entry['name']}}</td>
+								@if(!empty($entry->user_info->creationdate))
+								<td>{{$entry->user_info->creationdate}}</td>
+								@else
+								<td>N/A</td>
+								@endif
+								<td>{{$entry->charge_on}}</td>
+								@if(!empty($card_expire))
+								<td>{{$card_expire}}</td>
+								@else
+								<td>N/A</td>
+								@endif
+								<td>{{$entry->dealerid}}</td>
+								<td>{{$entry->sub_dealer_id}}</td>
+								@if ($own == true)
+								<td>{{$rate}}</td>
+								@endif
+							</tr>
+							@endforeach
+						</tbody>
+					</table>
+				</div>
+							</div>
+						</div>
+						
+						
+						@endif
+					</div>
+				</div>
+			</section>
+		</div>
+		 @endif
+         <div class="chart-container " style="display: none;">
+            <div class="" style="height:200px" id="platform_type_dates"></div>
+            <div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+            <div class="" style="height:200px" id="user_type"></div>
+            <div class="" style="height:200px" id="browser_type"></div>
+            <div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+            <div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+         </div>
+      </section>
+   </section>
+   <!-- END CONTENT -->
+   <!---Model Dialog --->
+</div>
+<!---Model Dialog --->
+@endsection
+@section('ownjs')
+<script type="">
+   $(document).ready(function() {
+   	$('#example1').DataTable( {
+   		"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+   		"footerCallback": function ( row, data, start, end, display ) {
+   			var api = this.api(), data;
+   
+              // Remove the formatting to get integer data for summation
+              var intVal = function ( i ) {
+              	return typeof i === 'string' ?
+              	i.replace(/[\$,]/g, '')*1 :
+              	typeof i === 'number' ?
+              	i : 0;
+              };
+   
+              // Total over all pages
+              total = api
+              .column( 8 )
+              .data()
+              .reduce( function (a, b) {
+              	return intVal(a) + intVal(b);
+              }, 0 );
+   
+              // Total over this page
+              pageTotal = api
+              .column( 8, { page: 'current'} )
+              .data()
+              .reduce( function (a, b) {
+              	return intVal(a) + intVal(b);
+              }, 0 );
+   
+              pageTotal = pageTotal.toFixed(2);
+              // Update footer
+              $( api.column( 8 ).footer() ).html(pageTotal);
+          }
+      } );
+   } );
+</script>
+<script type="text/javascript">
+   function formatMoney(n, c, d, t) {
+   		var c = isNaN(c = Math.abs(c)) ? 2 : c,
+   		d = d == undefined ? "." : d,
+   		t = t == undefined ? "," : t,
+   		s = n < 0 ? "-" : "",
+   		i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))),
+   		j = (j = i.length) > 3 ? j % 3 : 0;
+   		return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+   	}
+</script>
+<script>
+   $(function() {
+     $('input[name="datetimes"]').daterangepicker({
+       timePicker: true,
+       startDate: moment().startOf('hour'),
+       endDate: moment().startOf('hour'),
+       locale: {
+         format: 'M/DD/YYYY HH:mm'
+       }
+     });
+    
+   });
+</script>
+@endsection

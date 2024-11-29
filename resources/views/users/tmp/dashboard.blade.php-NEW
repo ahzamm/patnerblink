@@ -1,0 +1,646 @@
+@extends('users.layouts.app',[
+'profileCollection' => $profileCollection
+])
+@section('title') Dashboard @endsection
+@section('owncss')
+
+@endsection
+@section('content')
+
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<div class="page-container row-fluid container-fluid">
+
+   <!-- SIDEBAR - START -->
+   <section id="main-content" class="">
+      <section class="wrapper main-wrapper" style='margin:0; padding: 5px 0px 0px 0px;' id="dashboard-divparent">
+          <section class="wrapper main-wrapper" style='margin:0; padding:0;'>
+              <section class="home-section">
+                  <div class="bord"></div>
+                  <nav>
+                    <div class="container">
+                        <div class="nav-section">
+                            <div class="hello">
+                                <h4>Changing World with technology..!</h4>
+                                <h2>Hello,<b>  {{ucfirst($currentUser->username)}}</b></h2>
+                                <h5>{{$currentUser->email}} , {{$currentUser->permanent_address }} </h5>
+                            </div>
+                            <!-- <div class="parttwo">
+                                <div class="amount">
+                                    <div class="icon-box"><i class="fa-sharp fa-solid fa-wallet"></i> </div>
+                                    <h2>Wallet</h2>
+                                    <h6>147,390</h6>
+                                </div>
+                        </div>
+                    </div> -->
+                    <div class="parttwo" >
+                        <!-- <div class="icon-box"><i class="fa-sharp fa-solid fa-wallet"></i></div> -->
+                        <div class="icon-box"><i class="fa fa-credit-card"> Wallet</i>
+                        </div>
+                        <div class="amount">
+                            <!-- <h4>Wallet</h4> -->
+                            @if(count($wallet)>0)
+                            <h3>PKR  {{ $wallet[0]->amount }}</h3>
+                            @else 
+                            <h3>PKR 0 </h3>
+                            @endif
+                        </div>
+                    </div>
+                </nav>
+                <div class="bread-crumbs">
+               <!-- <ul>
+<li a href=""><i class="fa-solid fa-house-user"></i></a></li>
+<li a href=""><i class="fa-solid fa-house-user"></i></a></li>
+<li a href=""><i class="fa-solid fa-house-user"></i></a></li>
+<li a href=""><i class="fa-solid fa-house-user"></i></a></li>
+<li a href=""><i class="fa-solid fa-house-user"></i></a></li>
+</ul>
+</div> -->
+            <!-- <div class="container">
+                <ul class="breadcrumb">
+                    <li><a href="#">About us</a></li>
+                    <li><a href="#">Contact us</a></li>
+                </ul>
+            </div> -->
+
+        </section>
+
+        <!-- Talha work starts -->
+
+        <?php
+        $authStatus = Auth::user()->status;
+        $manager_id = (empty(Auth::user()->manager_id)) ? null : Auth::user()->manager_id;
+        $resellerid = (empty(Auth::user()->resellerid)) ? null : Auth::user()->resellerid;
+        $dealerid = (empty(Auth::user()->dealerid)) ? null : Auth::user()->dealerid;
+        $sub_dealer_id = (empty(Auth::user()->sub_dealer_id)) ? null : Auth::user()->sub_dealer_id;
+        $trader_id = (empty(Auth::user()->trader_id)) ? null : Auth::user()->trader_id;
+        //
+        //
+        $whereArray = array();
+        if($authStatus == 'manager'){
+            array_push($whereArray,array('manager_id' , $manager_id));
+        }else if($authStatus == 'reseller'){
+            array_push($whereArray,array('manager_id' , $manager_id));
+            array_push($whereArray,array('resellerid' , $resellerid));
+        }else if($authStatus == 'dealer'){
+            array_push($whereArray,array('manager_id' , $manager_id));
+            array_push($whereArray,array('resellerid' , $resellerid));
+            array_push($whereArray,array('dealerid' , $dealerid));
+        }else if($authStatus == 'subdealer'){
+            array_push($whereArray,array('manager_id' , $manager_id));
+            array_push($whereArray,array('resellerid' , $resellerid));
+            array_push($whereArray,array('dealerid' , $dealerid));
+            array_push($whereArray,array('sub_dealer_id' , $sub_dealer_id));
+        }else if($authStatus == 'trader'){
+            array_push($whereArray,array('manager_id' , $manager_id));
+            array_push($whereArray,array('resellerid' , $resellerid));
+            array_push($whereArray,array('dealerid' , $dealerid));
+            array_push($whereArray,array('sub_dealer_id' , $sub_dealer_id));
+            array_push($whereArray,array('sub_dealer_id' , $sub_dealer_id));
+        }
+        //
+        $totalSubs = DB::table('user_info')->where('status' , 'user')->where($whereArray)->count();
+        $totalReseller = DB::table('user_info')->where('status' , 'reseller')->where($whereArray)->count();
+        $totalDealer = DB::table('user_info')->where('status' , 'dealer')->where($whereArray)->count();
+        $totalSubDealer = DB::table('user_info')->where('status' , 'subdealer')->where($whereArray)->count();
+        $totalTrader = DB::table('user_info')->where('status' , 'trader')->where($whereArray)->count();
+        //
+        $onlineSubs = $onlineUser->count();
+        $onlinePercentage = ($totalSubs == 0) ? 0 : number_format(($onlineSubs/$totalSubs)*100);
+
+        
+        ?>
+        <!-- Card section -->
+        <div class="container">
+            <div class="card__wrapper">
+                <div class="row">
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                        <div class="card-content">
+                            <div class="icon__part">
+                                <i class="fa fa-users"></i>
+                            </div>
+                            <div class="text__part">
+                                <p>All Subscribers</p>
+                            </div>
+                            <div class="count__part">
+                                <p><?= $totalSubs;?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                        <div class="card-content">
+                            <div class="icon__part">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="text__part">
+                                <p>Active Subscribers</p>
+                            </div>
+                            <div class="count__part">
+                                <p><?= $activeUser->count();?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                        <div class="card-content">
+                            <div class="icon__part">
+                                <i class="fas fa-user-slash"></i>
+                            </div>
+                            <div class="text__part">
+                                <p>Disable Subscribers</p>
+                            </div>
+                            <div class="count__part">
+                                <p>0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                        <div class="card-content">
+                            <div class="icon__part">
+                                <i class="fas fa-user-minus"></i>
+                            </div>
+                            <div class="text__part">
+                                <p>Up Coming Expiry</p>
+                            </div>
+                            <div class="count__part">
+                                <p><?= $upcoming_expiry_users;?></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- new row -->
+
+                <div class="row">
+                    <?php if($authStatus == 'manager'){?>
+                        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                            <div class="card-content">
+                                <div class="icon__part">
+                                    <i class="fa fa-user"></i>
+                                </div>
+                                <div class="text__part">
+                                    <p>Reseller</p>
+                                </div>
+                                <div class="count__part">
+                                    <p><?= $totalReseller; ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php } if($authStatus == 'manager' || $authStatus == 'reseller'){?>
+                        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                            <div class="card-content">
+                                <div class="icon__part">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="text__part">
+                                    <p>Contractor</p>
+                                </div>
+                                <div class="count__part">
+                                    <p><?= $totalDealer; ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php } if($authStatus == 'manager' || $authStatus == 'reseller' || $authStatus == 'dealer'){?>
+                        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                            <div class="card-content">
+                                <div class="icon__part">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="text__part">
+                                    <p>Trader</p>
+                                </div>
+                                <div class="count__part">
+                                    <p><?= $totalSubDealer; ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php } if($authStatus == 'manager' || $authStatus == 'reseller' || $authStatus == 'dealer' || $authStatus == 'subdealer'){?>
+                        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                            <div class="card-content">
+                                <div class="icon__part">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="text__part">
+                                    <p>Sub Trader</p>
+                                </div>
+                                <div class="count__part">
+                                    <p><?= $totalTrader; ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php } ?>
+                    
+                </div>
+
+
+            </div>
+            <hr>
+
+
+            <div class="online__card--wrapper">
+                <!-- <h4 class="text-center fw-bold" style="font-weight: bold;">Online Subscribers</h4> -->
+                <div class="card-content">
+                    <div class="icon__part">
+                        <i class="fa fa-users"></i>
+                        <div class="online_status"></div>
+                    </div>
+                    <div class="progress_wrapper">
+                        <h4 class="text-center fw-bold" style="font-weight: bold;">Online Subscribers</h4>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" aria-valuenow="<?= $onlinePercentage;?>" aria-valuemin="0" aria-valuemax="100" style="width:<?= $onlinePercentage;?>%">
+                               <?= $onlinePercentage;?>%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subscriber-count">
+                        <div>
+                            <h4 id="sec-h43" class="online_user-count text-center"><?= $onlineSubs;?></h4>
+                            <!-- <label for="file" style="color:#225094  ;">Online Subscribers Ratio</label> -->
+                        </div>
+                    </div> 
+                </div> 
+            </div>
+
+            <hr>
+
+            <div class="chart__wrapper">
+                <!-- <h3 class="text-center" style="font-weight: bold;color: #000; margin-bottom: 20px;">Subscriber Wise Profiles</h3> -->
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="">
+                            <div id="chartContainer"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="table-responsive">
+                            <table class="table text-center table-hover" style="margin-top: 0 !important">
+                                <thead class="text-center">
+                                    <tr class="text-center">
+                                        <th class="text-center">Subscribers Name</th>
+                                        <th class="text-center">Login Time</th>
+                                        <th class="text-center">IP Address</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="liveUsers">
+                                    <!-- <tr><td>Husnain</td><td>1:00 am</td><td>192.168.100.56</td></tr> -->
+                                </tbody>
+                            </table>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+        </div>
+
+
+
+        <!-- Talha work ends -->
+
+
+
+
+        
+
+        @php
+        $totalUser=$userStatus;
+        $onlineUserr=$onlineUser->count();
+
+        $Online=round((@$onlineUserr/$totalUser)*100);
+
+        $user=array();
+        $dealercount=array();
+
+
+        foreach($fewonlineUser as $v){
+
+         $userdata=App\model\Users\UserInfo::where(['username'=>$v->username])->get();
+
+         foreach($userdata as $v){							
+           $dearlerdatacount=App\model\Users\UserInfo::where(['dealerid'=>$v->dealerid])->count();	
+           $user[]=$v->username;
+           $dealercount[]=$dearlerdatacount;
+       }
+
+   }
+
+   $dataPoints=array();
+
+   if(count($dealercount)>0 && count($user)>0 ){
+
+     $dataPoints = array(
+     array("y" => @$dealercount[0], "label" => @$user[0]),
+     array("y" => @$dealercount[1], "label" => @$user[1]),
+     array("y" => @$dealercount[2], "label" => @$user[2]),
+     array("y" => @$dealercount[3], "label" => @$user[3]),
+     array("y" => @$dealercount[4], "label" => @$user[4]),
+     array("y" => @$dealercount[5], "label" => @$user[5]),
+     array("y" => @$dealercount[6], "label" => @$user[6]),
+     array("y" => @$dealercount[7], "label" => @$user[7]),
+     array("y" => @$dealercount[8], "label" => @$user[8])
+     );
+
+ }
+
+ @endphp
+
+ <!-- <hr> -->
+ <!-- <section class="Chart-section">
+    <div class="container">
+        <h2>Subscriber Wise Profiles</h2>
+        <div class="bar-graph">
+            <div id="chartContainer" style="height: 400px; width: 75%; display: inline-block;">
+            </div>
+            <div class="table-section">
+                <div class="scroll">
+                 <table class="table text-center">
+                     <thead class="text-center">
+                        <tr class="text-center">
+                            <th class="text-center">Subscribers Name</th>
+                            <th class="text-center">Login Time</th>
+                            <th class="text-center">IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody class="liveUsers">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section> -->
+<!-- <hr> -->
+<section class="slider2">
+    <div class="container">
+      <div class="marquee-sec">
+
+          <p class="moving-texturdu">تمام  ڈیلرز اور سبڈیلر  کو مطلع کیا جاتا ہے کہ وہ اپنے تمام یوزرز کو تصدیق کریں بصورت دیگر آپ اپنے غیر تصدیق شدہ یوزرز کی پروفائل تبدیل نہیں کر سکتے 
+          </p>
+          <p class="moving-text">
+            It is to inform all dealers/sub-dealers to Verify your users, Otherwise you will not be able to change unverified user profile.
+        </p>
+    </p>
+</div>
+</div>
+</section>
+             <!-- <footer>
+                <div class="container">
+                    <div class="last-section">
+                        <div class="social-media">
+                            <div class="facebook">
+                               <a href="https://www.facebook.com/logon.com.pk"> <i class="fab fa-facebook" title="facebook"> </i></a>
+                            </div>
+                            <div class="twitter">
+                                <a href="https://twitter.com/logon_broadband"><i class="fab fa-twitter" title="twitter"></i> </a>   
+                            </div>
+                            <div class="google" style="display:none">
+                                <i class="fa-brands fa-google-plus-g" title="googleplus"></i> 
+                            </div>
+                            <div class="linked">
+								<a href="https://www.linkedin.com/company/logon-broadband-pvt-ltd/"><i class="fab fa-linkedin-in" title="linkedin"></i></a>
+                            </div>
+                        </div>
+                        <div class="copyright" style="font-size: 14px; color: #000">
+                            Copyright © 2020 Designed and Developed by <a href="https://www.squadcloud.co" target="_blank"><span style="color: blue">SquadCloud<span></a>
+                        </div>
+                    </div>
+                </div>
+            </footer> -->
+            <!-- card end  -->
+            <div class="chart-container " style="display: none;">
+                <div class="" style="height:200px" id="platform_type_dates"></div>
+                <div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+                <div class="" style="height:200px" id="user_type"></div>
+                <div class="" style="height:200px" id="browser_type"></div>
+                <div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+                <div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="clearfix"></div>
+        </section>
+    </section>
+    <!-- END CONTENT -->
+
+</div>
+@include('users.layouts.footer')
+
+<!-- <script> -->
+
+<!-- 
+// $(function() {
+//   $('.chart').easyPieChart({
+//     size: 160,
+//     barColor: "red",
+//     scaleLength: 0,
+//     lineWidth: 15,
+//     trackColor: "red",
+//     lineCap: "circle",
+//     animate: 2000,
+//   });
+// }); -->
+<script>
+    window.onload = function () {
+
+        var chart = new CanvasJS.Chart("chartContainer", {
+            animationEnabled: true,
+            
+            title:{
+                text:""
+            },
+            axisX:{
+                interval: 0
+            },
+            axisY2:{
+                interlacedColor: "rgba(2,44,101,.2)",
+                gridColor: "rgba(1,77,101,.1)",
+                title: "No. of Subscribers"
+            },
+            data: [{
+                type: "bar",
+                name: "companies",
+                axisYType: "secondary",
+                color: "#225094",
+                dataPoints: <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK); ?>
+            }]
+        });
+        chart.render();
+        
+    }
+</script>
+<!-- </script>  -->
+
+<script>
+   $(document).ready(function(){
+       $('#loading-image2').show();
+       $.ajax({
+         method: 'get',
+         url: "{{route('getErrorLog')}}",
+         dataType: 'json',
+         success: function(res){
+           $('#errorLog').text(res)
+       },
+       complete: function(){
+         $('#loading-image2').hide();
+     }   
+ })
+   })
+</script>
+
+<script>
+   $(document).ready(function(){
+
+       $('#loading-image1').show();
+       $.ajax({
+         method: 'get',
+         url: "{{route('getDisabledUser')}}",
+         dataType: 'json',
+         success: function(res){
+
+            $('#disableData').text(res)
+        },
+        complete: function(){
+         $('#loading-image1').hide();
+     } 
+ })
+   })
+</script>
+<script>
+    function timeSince(date) {
+
+      var seconds = Math.floor((new Date() - date) / 1000);
+
+      var interval = seconds / 31536000;
+
+      if (interval > 1) {
+        return Math.floor(interval) + " years";
+    }
+    interval = seconds / 2592000;
+    if (interval > 1) {
+        return Math.floor(interval) + " months";
+    }
+    interval = seconds / 86400;
+    if (interval > 1) {
+        return Math.floor(interval) + " days";
+    }
+    interval = seconds / 3600;
+    if (interval > 1) {
+        return Math.floor(interval) + " hours";
+    }
+    interval = seconds / 60;
+    if (interval > 1) {
+        return Math.floor(interval) + " minutes";
+    }
+    return Math.floor(seconds) + " seconds";
+}
+$(document).ready(function (){
+  showLiveUser();
+  function showLiveUser(){
+      $.ajax({
+         type: "POST",
+         url: "{{route('users.liveusers')}}",
+         dataType: "json",
+         headers: {
+          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function(data){
+			 //alert(data);
+        var markup ='';
+        $.each(data, function(index, value) {
+		   // mins ago
+
+			// var aDay = 24*60*60*1000;
+			// var aDay = value.acctstarttime;
+
+            //mins ago 		   
+
+           markup += "<tr><td class='text-primary'><b>"+value.username+"</b></td><td style='color: #e875b9;'>"+value.acctstarttime+"</td><td>"+value.framedipaddress+"</td></tr>";
+       });
+        $(".liveUsers").html(markup);
+    }
+});
+  }
+  setInterval(function(){showLiveUser();}, 10000);
+});
+</script>
+
+@endsection
+<!-- 
+   .bord{
+    border-bottom: 3px solid black;
+}
+.nav-section{
+    display: flex;
+    align-items: center;
+    height: 300px;
+}
+.hello{
+width: 70%;
+}
+.parttwo{
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+   
+}
+nav{
+    background-color: rgb(194, 205, 215 ,1);
+    color: black;
+    margin: 0;
+   
+    height: 300px;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+}
+nav h4{
+    font-size: 16px;
+    font-weight: 300;
+    margin: 0;
+}
+nav h5{
+    font-size: 16px;
+    font-weight: 300;
+}
+nav h2{
+    font-size: 50px;
+    margin: 0;
+    font-weight: 600;
+}
+nav h2 b{
+    color: rgb(0, 45, 109,1);
+}
+.head-section{
+    display: flex;
+    height: 60px;
+    justify-content: space-between;
+    align-items: center;
+}
+.partone{
+    display: inline-flex;
+   
+}
+
+.partone i{
+    color: white;
+    cursor: pointer;
+    padding: 0px 10px;
+}
+.parttwo .amount h6{
+    margin: 10px 0px;
+    font-size: 20px;
+}
+.parttwo .amount{
+     width: 150px;
+    height: 80px; 
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+    font-weight: 500;
+   color:rgb(194, 205, 215 ,1) ; 
+    background-color:  rgb(0, 45, 109,1);
+    border-radius: 20px;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+-->
+
+

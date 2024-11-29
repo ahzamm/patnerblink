@@ -1,0 +1,181 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
+use App\model\Users\UserInfo;
+use App\model\Users\AmountTransactions;
+use App\model\Users\PaymentsTransactions;
+use App\model\Users\LedgerReport;
+use App\model\Users\UserAmount;
+use App\model\Users\AmountBillingInvoice;
+
+class BillingDelete extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'billing:delete';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'This will delete records';
+
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    /**
+     * Execute the console command.
+     *
+     * @return int
+     */
+    public function handle()
+    {
+        $date=date('Y-m-d');
+        $today=date('d',strtotime(date($date)));
+        if($today >= 10 && $today < 25){
+            $start=date("Y-m-25", strtotime("-1 month", strtotime($date)));
+            $end=date('Y-m-10');
+        }else{
+            $start=date('Y-m-10');
+            $end=date('Y-m-25');
+        }
+        $userReseller = UserInfo::where('status','reseller')->first();
+        $userReseller1 = UserInfo::where('status','dealer')->first();
+        $status = $userReseller['status'];
+        $status1 = $userReseller1->status;
+        $this->generateCommision($status,$start,$end);
+        $this->generateCommisionsubdealer($status1,$start,$end);
+    }
+    public function generateCommision($status,$start,$end){
+
+        $data = UserInfo::where('status',$status)->get();
+        foreach ($data as  $value) {
+          $dealerid = $value['dealerid'];
+          $resellerid = $value['resellerid'];
+          $manager_id = $value['manager_id'];
+          if($status =="dealer"){
+              $dealersum = AmountBillingInvoice::where('charge_on','>',$start.' 12:00:00')->where('charge_on','<',$end.' 12:00:00')->where('dealerid',$dealerid)->where('resellerid',$resellerid)->sum('d_acc_rate');
+              $resellersum = AmountBillingInvoice::where('charge_on','>',$start.' 12:00:00')->where('charge_on','<',$end.' 12:00:00')->where('dealerid',$dealerid)->where('resellerid',$resellerid)->sum('r_acc_rate');
+         // $commisionsum = AmountBillingInvoice::where('charge_on','>',$start.' 12:00:00')->where('charge_on','<',$end.' 12:00:00')->where('dealerid',$dealerid)->sum('commision');
+          }else if($status =="reseller"){
+           $dealersum = AmountBillingInvoice::where('charge_on','>',$start.' 12:00:00')->where('charge_on','<',$end.' 12:00:00')->where('resellerid',$resellerid)->sum('d_acc_rate');
+           $resellersum = AmountBillingInvoice::where('charge_on','>',$start.' 12:00:00')->where('charge_on','<',$end.' 12:00:00')->where('resellerid',$resellerid)->sum('r_acc_rate');
+          //$commisionsum =0;
+       }
+       $userdealer1 = UserInfo::where('status','reseller')->where('resellerid',$resellerid)->first();
+       
+       
+       $profit = $dealersum - $resellersum;
+       
+            // $profit2 = $profit - $commisionsum;
+  // amount transaction
+       $transactionAmount = new AmountTransactions();
+       $transactionAmount->receiver = $userdealer1['username'];
+       
+            $transactionAmount->sender = "logon"; //username will be store
+            
+            $transactionAmount->amount = 0;
+            $transactionAmount->cash_amount = 0;
+            $transactionAmount->last_remaining_amount = 0;
+            $transactionAmount->date = Date('Y-m-d H:i:s');
+            
+            $transactionAmount->action_by_user = "System"; // here sender is admin      
+            $transactionAmount->action_ip = "192.168.10.10";
+            $transactionAmount->comments = "Billing for the period".$start."to".$end;
+            $transactionAmount->commision = 'yes';
+            $transactionAmount->com_amount = $profit;
+            $transactionAmount->save();
+            
+          ////
+            $userAmount = UserAmount::where('username',$userdealer1['username'])->first();
+            $amount = $userAmount->amount;
+            $balance = $amount + $profit;
+            
+            $userAmount->amount = $balance;
+            
+            $userAmount->save();
+        }
+    }
+    
+    
+    public function generateCommisionsubdealer($status,$start,$end){
+      
+        $data = UserInfo::where('status',$status)->get();
+        foreach ($data as  $value) {
+          //$subdealerid = $value['sub_dealer_id'];
+          $dealerid = $value['dealerid'];
+          $manager_id = $value['manager_id'];
+          $resellerid = $value['resellerid'];
+          if($status =="dealer"){
+              $dealersum = AmountBillingInvoice::where('charge_on','>',$start.' 12:00:00')->where('charge_on','<',$end.' 12:00:00')->where('dealerid',$dealerid)->where('sub_dealer_id','!=','')->sum('d_acc_rate');
+              $subdealersum = AmountBillingInvoice::where('charge_on','>',$start.' 12:00:00')->where('charge_on','<',$end.' 12:00:00')->where('dealerid',$dealerid)->where('sub_dealer_id','!=','')->sum('s_acc_rate');
+              
+          }else if($status =="reseller"){
+              $dealersum = AmountBillingInvoice::where('charge_on','>',$start.' 12:00:00')->where('charge_on','<',$end.' 12:00:00')->where('resellerid',$resellerid)->sum('r_acc_rate');
+              $resellersum = AmountBillingInvoice::where('charge_on','>',$start.' 12:00:00')->where('charge_on','<',$end.' 12:00:00')->where('resellerid',$resellerid)->sum('m_acc_rate');
+              $commisionsum =0;
+          }
+          
+          
+          
+          $profit = $subdealersum - $dealersum;
+          
+          $userdealer = UserInfo::where('status','dealer')->where('dealerid',$dealerid)->first();
+          
+             //$profit2 = $profit - $commisionsum;
+  // amount transaction
+          if($profit == 0){
+              
+          }else{
+             $transactionAmount = new AmountTransactions();
+             $transactionAmount->receiver = $userdealer->username;
+             
+             if($resellerid =="logonbroadband"){
+            $transactionAmount->sender = "logonbroadband"; //username will be store
+            
+        }else{
+            $transactionAmount->sender = "sarbaaz"; //username will be store
+            
+            
+        }
+        
+        $transactionAmount->amount = 0;
+        $transactionAmount->cash_amount = 0;
+        $transactionAmount->last_remaining_amount = 0;
+        $transactionAmount->date = Date('Y-m-d H:i:s');
+        
+            $transactionAmount->action_by_user = "System"; // here sender is admin      
+            $transactionAmount->action_ip = "192.168.10.10";
+            $transactionAmount->comments = "Billing for the period".$start."to".$end;
+            $transactionAmount->commision = 'yes';
+            $transactionAmount->com_amount = $profit;
+            $transactionAmount->save();
+        }
+        
+        
+             //$userdealer = UserInfo::where('status','dealer')->where('dealerid',$dealerid)->first();
+        
+          ////
+        $userAmount = UserAmount::where('username',$userdealer->username)->first();
+        $amount = $userAmount->amount;
+        $balance = $amount + $profit;
+        
+        $userAmount->amount = $balance;
+        
+        $userAmount->save();
+    }
+}
+}

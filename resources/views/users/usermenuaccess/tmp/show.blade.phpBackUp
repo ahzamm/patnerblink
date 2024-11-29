@@ -1,0 +1,49 @@
+<div style="overflow-wrap: auto">
+    <table class="table table-condensed" style="text-align: center;" id="allowAccessTable">
+        <thead>
+            <tr>
+                <th>Serial#</th>
+                <th style="text-align:left">Menu</th>
+                <th style="text-align:left">Sub Menu</th>
+                <th>Access</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php 
+            $num = 1;
+            @endphp
+            @foreach($userAccesses as $key => $userAccess)
+            @if(in_array($userAccess->sbID, $parentAllow))
+
+            <tr>
+                <td>
+                    {{$num}}
+                </td>
+
+                <td style="text-align: left !important; ">
+                    @php
+                    $menu =  App\model\Users\Menu::where('id',$userAccess->menu_id)->first();
+                    @endphp
+                    {{$menu->menu}}
+                </td>
+                <td style="text-align: left !important; ">
+                    {{$userAccess->submenu}}
+                </td>
+                <td>
+                    @if($userAccess->status == 1)
+                    <div style="float: left; width: 100%;">
+                        <p><input type="checkbox"  class="lcs_check" checked data-value="{{$userAccess->id}}" data-id="{{$userAccess->sbID}}"  autocomplete="off" /></p>
+                    </div>
+                    @else
+                    <div style="float: left; width: 100%;">
+                        <p><input type="checkbox"  class="lcs_check" data-id="{{$userAccess->sbID}}"  data-value="{{$userAccess->id}}" autocomplete="off" /></p>
+                    </div>
+                    @endif
+                </td>
+            </tr>
+            @php $num++; @endphp
+            @endif
+            @endforeach
+        </tbody>
+    </table>
+</div>

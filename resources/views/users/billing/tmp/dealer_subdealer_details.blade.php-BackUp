@@ -1,0 +1,452 @@
+@extends('users.layouts.app')
+@section('title') Dashboard @endsection
+@section('content')
+<div class="page-container row-fluid container-fluid">
+	<!-- SIDEBAR - START -->
+	<section id="main-content" class=" ">
+		<section class="wrapper main-wrapper row" style=''>
+			<div class="">
+				<div class="col-lg-12">
+					<div class="header_view">
+						@if(Auth::user()->status =='manager')
+							<h2>Reseller & Contractor Reports</h2>
+						@else
+							<h2>Contractor & Trader Reports</h2>
+						@endif
+					</div>
+						<!--  -->
+						@php
+						$dealerid = Auth::user()->dealerid;
+						$checkdealer=App\model\Users\DealerProfileRate::where(['dealerid' => $dealerid])->first();
+						$allowtrader='no';
+						if(!empty($checkdealer))
+						{
+									$allowtrader = $checkdealer['trader'];
+						}
+				
+						@endphp
+					
+						<div class="col-lg-12">
+							<section class="box ">
+								<header class="panel_header">
+										{{--<!-- @if(Auth::user()->status =='manager')
+											<h2 class="title pull-left">Reseller-Dealer Detail</h2>
+												@else
+											<h2 class="title pull-left">Dealer-Sub-Dealer Detail</h2>
+												@endif --> --}}
+									
+									<div class="actions panel_actions pull-right">
+										<a class="box_toggle fa fa-chevron-down"></a>
+									</div>
+								</header>
+								<div class="content-body">
+									<div class="row">
+										<form action="{{route('users.billing.report.dealerdetails')}}" method="POST">
+											@csrf
+											<div class="col-md-4">
+												<div class="form-group">
+													<label  class="form-label">Select Date Range <span style="color: red">*</span></label>
+													<span style="float: right;padding-right: 10px;color: darkgreen;font-weight: bold;">
+													<input class="radio2"  type="radio" name="gender" value="male"> Bill wise
+                            						<input class="radio2" type="radio" name="gender" value="female"> Date wise</span><br>
+													<div class="controls" style="margin-top: 0px;">
+														<input id="mytest" type="text" 
+														name="datetimes" style="width: 100%;height: 34px"  >
+														<select id="mytest2" class="form-control" name="date" style="display: none;" >
+														<option value="">Select MM/DD/YY</option>
+														@php
+														$from=date('2020-01-25');
+														$startTime = strtotime($from);
+														$now = time();
+														$datediff =($now-$startTime);
+														$range=floor(($datediff / (60 * 60 * 24))+1);
+														for($i=0;$i<$range;$i++){
+														$date = date('Y-m-d',strtotime($from ."+".$i." days"));
+														$newdate=explode("-",$date);
+														if($newdate[2] == 10 || $newdate[2] == 25){
+														@endphp
+														<option value="{{$date}}">{{date('M d,Y' ,strtotime($date))}}</option>
+														@php
+														}
+														
+														}
+														@endphp
+														
+													</select>
+													<!-- <input class="radio2"  type="radio" name="gender" value="male"> Bill wise
+                            <input class="radio2" type="radio" name="gender" value="female"> Date wise<br> -->
+													</div>
+												</div>
+											</div>
+											<!-- <div class="col-md-3"> -->
+												<div class="{{$allowtrader == 'yes'?('col-md-3'):'col-md-4'}}">
+														<div class="form-group">
+															@if(Auth::user()->status == "manager")
+															<label  class="form-label">Reseller Account <span style="color: red">*</span></label>
+																<select class="form-control" id="username-select" name="username" onchange="showdealer(this);" required >
+																<option value="">select Contractor</option>
+																@if(Auth::user()->status == "dealer")
+														
+																@foreach($userCollection as $data)
+																<option value="{{$data->username}}">{{$data->username}}</option>
+																@endforeach
+																@endif
+																@if(Auth::user()->status == "reseller" || Auth::user()->status == "inhouse")
+																@foreach($userCollection as $data)
+																<option value="{{$data->username}}">{{$data->username}}</option>
+																@endforeach
+																@endif
+																@if(Auth::user()->status == "manager")
+																@foreach($userCollection as $data)
+																<option value="{{$data->username}}">{{$data->username}}</option>
+																@endforeach
+																@endif
+															</select>
+
+															@else
+															<label  class="form-label">Contractor Account <span style="color: red">*</span></label>
+																<select class="form-control" id="username-select" name="username" onchange="showsubdealer(this);" required >
+																<option value="">Select Contractor</option>
+																@if(Auth::user()->status == "dealer")
+														
+																@foreach($userCollection as $data)
+																<option value="{{$data->username}}">{{$data->username}}</option>
+																@endforeach
+																@endif
+																@if(Auth::user()->status == "reseller" || Auth::user()->status == "inhouse")
+																@foreach($userCollection as $data)
+																<option value="{{$data->username}}">{{$data->username}}</option>
+																@endforeach
+																@endif
+																@if(Auth::user()->status == "manager")
+																@foreach($userCollection as $data)
+																<option value="{{$data->username}}">{{$data->username}}</option>
+																@endforeach
+																@endif
+															</select>
+															@endif
+														
+														</div>
+													</div>
+													@if(Auth::user()->status == "manager")
+											<div class="col-md-4">
+														<div class="form-group">
+															
+															<label  class="form-label">Contractor Name</label>
+															<select name="subname"   id="state" class="form-control" required>
+															</select>
+															
+															
+															
+															
+														</div>
+														
+														
+													</div>
+													@else
+													<div class="{{$allowtrader == 'yes'?('col-md-3'):'col-md-4'}}">
+														<div class="form-group">
+													<label  class="form-label">Trader Account <span style="color: red">*</span></label>
+															<select name="subname" onchange="showtrader(this)" id="state" class="form-control" required>
+															<option value="">Select Trader</option>
+															</select>
+															</div>
+														
+														
+													</div>
+													@endif
+													@if(Auth::user()->status != "manager")
+													@if($allowtrader =="yes")
+													<div class="col-md-3">
+														<div class="form-group">
+															<label  class="form-label">Trader Name</label>
+															<select name="trname" id="state1" class="form-control">
+															</select>
+														</div>
+													</div>
+													@endif
+													@endif
+													<div class="row">
+																<div class="col-md-12">
+												<br>
+												<div class="form-group pull-right" style="margin-left:  16px;">
+													<button class="btn btn-flat btn-primary">Search</button>
+												</div>
+											</div>
+													</div>
+									
+										</form>
+										<!-- Report Summary -->
+										
+										@if($isSearched)
+										<div class="col-md-12">
+											<!--  -->
+										</div>
+									</div>
+									<div class="col-s-12" style="">
+										<div style="border: 2px #225094 solid;overflow-x: auto;">
+											<div style="">
+												@if(Auth::user()->status =='manager')
+												<h3 class="theme-bg" style="color:white;height: 40px; margin-top: 0px;  padding-top: 7px;font-size: 18px;font-weight: bold; text-align: center;"> Reseller & Contractor Billing Detail</h3>
+												@else
+												<h3 class="theme-bg" style="height: 40px; margin-top: 0px;  padding-top: 7px;font-size: 18px;font-weight: bold; text-align: center;"> Contractor & Trader Billing Detail</h3>
+												@endif
+											</div>
+											<div style="overflow-x: auto;"> 
+											<table id="example1" class="table display">
+												<thead>
+													<button class="btn btn-default" style="border: 1px solid black;float: right;margin-right: 15px;" onclick="exportTableToCSV('#example1','{{Auth::user()->username . "(Contractor-Treader-Report-" . date('d-M-Y') ."[".date('h:i:A')."]". ".csv"}}')"><i class="fa fa-download"></i></button>
+													<tr>
+														<th>Serial#</th>
+														<th>Consumer (ID) </th>
+														@if(Auth::user()->status =="manager")
+														<th>Reseller (ID) </th>
+														<th>Contractor (ID) </th>
+														@else
+														<th>Trader (ID) </th>
+														<th>Sub Trader (ID) </th>
+														@endif
+														<th>Internt Profiles </th>
+														@if(Auth::user()->status =="manager")
+														<th>Contractor (Internet Profile Rates) (PKR) </th>
+														<th>Consumers (Internet Profile Rates) (PKR)  </th>
+														<th>Reseller (Internet Profile Rates) (PKR)  </th>
+														@else
+														<th>Contractor (Internet Profile Rates) (PKR) </th>
+														<th>Consumers (Internet Profile Rates) (PKR)  </th>
+														<th>Trader (Internet Profile Rates) (PKR)  </th>
+														@endif
+														
+														<!-- <th>Dealer ID </th>
+														<th>Sub Dealer ID </th>
+														<th>Rate</th>
+														<th>SST (19.5%)</th>
+														<th>Adv Tax (12.5%)</th> -->
+														<th>Profit (PKR)</th>
+													</tr>
+												</thead>
+												<tbody>
+													@php $sno = 1;
+													
+													
+													@endphp
+													@foreach($monthlyBillingEntries as $entry)
+													@php
+													$own =0;
+									
+									$s_acc_rate = $entry->s_acc_rate;
+
+									if($s_acc_rate == 0){
+									$s_acc_rate = $entry->dealerrate;
+									$own=$entry->dealerrate;
+								}else{
+								$s_acc_rate = $entry->subdealerrate;
+							}
+
+									if(Auth::user()->status =='manager'){
+										$profit = $entry->dealerrate - $entry->rate;
+										$s_acc_rate = $entry->rate;
+								}else{
+								$profit = $s_acc_rate - $entry->dealerrate;
+							}
+									
+
+												$profit2 = $profit - $entry->commision;
+								
+									@endphp
+									<tr>
+										<td>{{$sno++}}</td>
+										
+										
+										<td class="td__profileName">{{$entry->username}}</td>
+										@if(Auth::user()->status =="manager")
+										<td>{{$entry->resellerid}}</td>
+										<td>{{$entry->dealerid}}</td>
+										@else
+											<td>{{$entry->sub_dealer_id}}</td>
+										<td>{{$entry->trader_id}}</td>
+										@endif
+										<td>{{$entry->name}}</td>
+										<td>{{$entry->dealerrate}}</td>
+										<td>{{Auth::user()->status == 'manager'?0:$own}}</td>
+										<td>{{$s_acc_rate}}</td>
+										
+										<td>{{abs($profit)}}</td>
+									</tr>
+									@endforeach
+								</tbody>
+
+								<tfoot>
+									<tr class="btn-default" style="background-color:#d8d8d8;">
+										<th colspan="8" style="text-align:right;font-weight:bold;font-size: 15px;">Grand Total:</th>
+
+										<th style="text-align:center;font-weight:bold;font-size: 15px;"> </th>
+									</tr>
+								</tfoot>
+
+							</table>
+						</div>
+						
+					</div>
+
+					@endif
+				</div>
+			</div>
+		</section></div>
+	</div>
+</div>
+<div class="chart-container " style="display: none;">
+	<div class="" style="height:200px" id="platform_type_dates"></div>
+	<div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+	<div class="" style="height:200px" id="user_type"></div>
+	<div class="" style="height:200px" id="browser_type"></div>
+	<div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+	<div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+</div>
+</section>
+</section>
+<!-- END CONTENT -->
+<!---Model Dialog --->
+</div>
+<!---Model Dialog --->
+@endsection
+
+@section('ownjs')
+<script type="">
+	$(document).ready(function() {
+		$('#example1').DataTable( {
+			"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+			"footerCallback": function ( row, data, start, end, display ) {
+				var api = this.api(), data;
+
+            // Remove the formatting to get integer data for summation
+            var intVal = function ( i ) {
+            	return typeof i === 'string' ?
+            	i.replace(/[\$,]/g, '')*1 :
+            	typeof i === 'number' ?
+            	i : 0;
+            };
+
+            // Total over all pages
+            total = api
+            .column( 8 )
+            .data()
+            .reduce( function (a, b) {
+            	return intVal(a) + intVal(b);
+            }, 0 );
+
+            // Total over this page
+            pageTotal = api
+            .column( 8, { page: 'current'} )
+            .data()
+            .reduce( function (a, b) {
+            	return intVal(a) + intVal(b);
+            }, 0 );
+
+            // Update footer
+            $( api.column( 8 ).footer() ).html(pageTotal);
+
+
+     
+        }
+    } );
+	} );
+</script>
+
+<script type="text/javascript">
+	function formatMoney(n, c, d, t) {
+			var c = isNaN(c = Math.abs(c)) ? 2 : c,
+			d = d == undefined ? "." : d,
+			t = t == undefined ? "," : t,
+			s = n < 0 ? "-" : "",
+			i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))),
+			j = (j = i.length) > 3 ? j % 3 : 0;
+			return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+		}
+</script>
+<script>
+$(function() {
+  $('input[name="datetimes"]').daterangepicker({
+    timePicker: true,
+    startDate: moment().startOf('hour'),
+    endDate: moment().startOf('hour'),
+    locale: {
+      format: 'M/DD/YYYY HH:mm'
+    }
+  });
+ 
+});
+</script>
+<script>
+    function showdealer($username){
+        
+      $.ajax({
+      type : 'get',
+      url : "{{route('users.report.loadDealer')}}",
+      data:'username='+$username.value,
+	 
+      success:function(res){
+		$("#state").empty();
+		$("#state").append('<option>Select</option><option>OWN</option>');
+		 $.each(res,function(key,value){
+			$("#state").append('<option value="'+value.dealerid+'">'+value.dealerid+'</option>');
+		 })
+	
+	  }
+      });
+    }
+    </script>
+<script>
+    function showsubdealer($username){
+        
+      $.ajax({
+      type : 'get',
+      url : "{{route('users.report.loadSubDealer')}}",
+      data:'username='+$username.value,
+	 
+      success:function(res){
+		$("#state").empty();
+		$("#state").append('<option value="Select">All</option><option>OWN</option>');
+		 $.each(res,function(key,value){
+			$("#state").append('<option value="'+value.sub_dealer_id+'">'+value.sub_dealer_id+'</option>');
+		 })
+	
+	  }
+      });
+    }
+    </script>
+    <script>
+    function showtrader($username){
+        
+      $.ajax({
+      type : 'get',
+      url : "{{route('users.report.loadTrader')}}",
+      data:'username='+$username.value,
+	 
+      success:function(res){
+		$("#state1").empty();
+		$("#state1").append('<option>Trader</option><option>OWN</option>');
+		 $.each(res,function(key,value){
+			$("#state1").append('<option value="'+value.trader_id+'">'+value.trader_id+'</option>');
+		 })
+	
+	  }
+      });
+    }
+    </script>
+    <script type="text/javascript">
+
+
+$('.radio2').click(function(e){
+	var test = $(this).val();
+	if(test == "male"){
+		$('#mytest').hide();
+		$('#mytest2').show();
+	}else{
+		$('#mytest').show();
+		$('#mytest2').hide();
+	}
+});
+
+</script>
+@endsection

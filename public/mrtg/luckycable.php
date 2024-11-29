@@ -1,0 +1,1 @@
+FATAL: You must be logged in to access this area of Cacti.

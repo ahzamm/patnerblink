@@ -1,0 +1,650 @@
+<div class='page-topbar' id="">
+    <div class='logo-area'>
+    </div>
+    <div class='quick-area'>
+        <div class='pull-left'>
+            <ul class="info-menu left-links list-inline list-unstyled">
+                <li class="sidebar-toggle-wrap">
+                    <a href="#" data-toggle="sidebar" class="sidebar_toggle" id="shifts">
+                        <i class="fa fa-bars"></i>
+                    </a>
+                </li>
+                <li class="notify-toggle-wrapper showopacity">
+                    <a href="#" data-toggle="dropdown" class="toggle">
+                        <i class="fa fa-search"></i>
+                        <!-- <span class="badge badge-accent">3</span> -->
+                    </a>
+                    <ul class="dropdown-menu notifications animated fadeIn">
+                        <li class="total">
+                            <span class="small">
+                                <input type="text" class="form-control animated fadeIn"
+                                placeholder="Type username here" autofocus=""
+                                onkeyup="search()" autocomplete="off" required="" id="searchbar">
+                            </span>
+                        </li>
+                        <li class="list">
+                            <ul class="dropdown-menu-list list-unstyled ps-scrollbar" >
+                                <span id="output">
+                                </span>
+                                <li class="unread available" id="loading">
+                                    <center>
+                                        <img src="{{asset('img/loading.gif')}}" class="img-responsive" width="50px;">
+                                    </center>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                @php
+        $isNotify =  App\model\Users\NotificationAllow::where('username',Auth::user()->username)->first();
+        @endphp
+          {{-- Notifocation --}}
+          <li class="notify-toggle-wrapper  showapprove">
+            @if(!empty($isNotify))
+            @if($isNotify->allow == 1)
+            <a href="#" data-toggle="dropdown" class="toggle">
+              <i class="fa fa-bell" id="notiIcon" ></i>
+               <span class="badge badge-accent" id="numUserCount"></span>
+            </a>
+            @endif
+          @endif
+          <ul class="dropdown-menu notifications animated fadeIn">
+            <li class="total">
+              <span class="small">
+                <h4>User Approve Notification</h4>
+              </span>
+            </li>
+            <li class="list" style="padding: 10px !important;">
+              <ul class="dropdown-menu-list list-unstyled ps-scrollbar" >
+                <span id="newnotification">
+                 
+                </span>
+              </ul>
+            </li>
+          </ul>
+        </li>
+            </ul>
+        </div>
+        <div class='pull-right'>
+            <ul class="info-menu right-links list-inline list-unstyled">
+                <li class="profile showopacity">
+                    <a href="#" data-toggle="dropdown" class="toggle">
+                        <img src="{{asset('img/profile.jpg')}}" alt="user-image" class="img-circle img-inline">
+                        <span>{{Auth::user()->firstname}} &nbsp;&nbsp;<i class="fa fa-angle-down"></i></span>
+                    </a>
+                    <ul class="dropdown-menu profile animated fadeIn">
+                        <li>
+                            <a href="{{asset('#settings')}}">
+                                <i class="fa fa-wrench"></i>
+                                Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{asset('#profile')}}">
+                                <i class="fa fa-user"></i>
+                                Profile
+                            </a>
+                        </li>
+                        @if(Auth::user()->status != "support" && Auth::user()->status != "admin" )
+                        <li>
+                            <a class="" href="{{('#edit_password')}}" data-toggle="modal"><i
+                                class="fa fa-eye"> </i>Edit Password</a>
+                            </li>
+                            @endif
+                            <li  class="last">
+                                <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display: none;">
+                                    @csrf
+                                </form>
+                                <a href="#" class="dropdown-item"
+                                onclick="event.preventDefault();
+                                document.getElementById('logout-form').submit();">
+                                <i class="fa fa-power-off"> </i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<!-- search action -->
+<script type="text/javascript">
+    function search() {
+        var val=$('#searchbar').val();
+        if(val.length > 0){
+            $('#loading').show();
+            $.ajax({
+                type: "POST",
+                url: "{{route('admin.search.ajax.post')}}",
+                data:'user='+val,
+                success: function(data){
+// for get return data
+$('#output').html(data);
+$('#loading').hide();
+}
+});
+        }else{
+            $('#output').html('');
+        }
+    }
+//
+//
+$('#searchIcon').click(function(){
+    $('#searchbar').val('');
+    $('#output').html('');
+});
+</script>
+
+<!-- END TOPBAR -->
+<div class="page-sidebar fixedscroll expandit">
+    <!-- MAIN MENU - START -->
+    <div class="page-sidebar-wrapper" id="main-menu-wrapper">
+        <!-- USER INFO - START -->
+        @php
+        $check ='';
+        $pModule = array();
+        $cModule = array();
+        $state = array();
+        $userId = 'user'.Auth::user()->id;
+        if(Auth::user()->status ){
+        $loadData = App\model\admin\Access::select($userId,'parentModule','childModule')->get();
+        if(!empty($loadData)){
+            foreach ($loadData as  $value) {
+                $state[] = $value[$userId];
+                $pModule[] = $value['parentModule'];
+                $cModule[] = $value['childModule'];
+            }
+            
+        }
+    }
+      
+        @endphp
+         @if( $state[0] == 0)
+        <div class="profile-info row">
+            <div class="profile-image col-xs-4">
+                    <a href="#">
+                        <img alt="" src="{{asset('img/profile.jpg')}}" class="img-responsive img-circle">
+                    </a>
+                </div>
+         
+            <div class="profile-details col-xs-8">
+                <h3>
+                    <a href="#">{{Auth::user()->username}}</a>
+                    <!-- Available statuses: online, idle, busy, away and offline -->
+                    <span class="profile-status online"></span>
+                </h3>
+                <p class="profile-title">{{Auth::user()->status}}</p>
+            </div>
+        </div>
+        @else
+        <div class="profile-info row">
+                <div class="profile-image col-xs-4">
+                        <a href="{{('dashboard')}}">
+                            <img alt="" src="{{asset('img/profile.jpg')}}" class="img-responsive img-circle">
+                        </a>
+                    </div>
+             
+                <div class="profile-details col-xs-8">
+                    <h3>
+                        <a href="{{('dashboard')}}">{{Auth::user()->username}}</a>
+                        <!-- Available statuses: online, idle, busy, away and offline -->
+                        <span class="profile-status online"></span>
+                    </h3>
+                    <p class="profile-title">{{Auth::user()->status}}</p>
+                </div>
+            </div>
+        @endif
+        <!-- USER INFO - END -->
+               @if(Auth::user()->username == 'administrator')
+               <ul class='wraplist'>
+                <li class="menustats"></li>
+               
+               <li @if(stripos(url()->current(),'dashboard') !== false) class = "open" @endif >
+                <a href="{{route('admin.dashboard')}}">
+                    <i class="fa fa-dashboard"></i>
+                    <span class="title">Dashboard</span>
+                </a>
+            </li>
+            <li @if(stripos(url()->current(),'users/dealer') !== false) class = "open" @endif>
+                <a href="{{route('admin.user.index',['status' => 'dealer'])}}">
+                    <i class="fa fa-users"></i>
+                    <span class="title">Dealer</span>
+                </a>
+            </li>
+            <li @if(stripos(url()->current(),'users/dealer') !== false) class = "open" @endif>
+                <a href="{{route('admin.user.index',['status' => 'subdealer'])}}">
+                    <i class="fa fa-users"></i>
+                    <span class="title">Sub Dealer</span>
+                </a>
+            </li>
+            <li class="">
+                <a href="javascript:;">
+                    <i class="fa fa-credit-card"></i>
+                    <span class="title">Customers</span>
+                    <span class="arrow "></span>
+                </a>
+                <ul class="sub-menu">
+                    <li >
+                        <a class="" href="{{route('admin.customer.index',['status' => 'view'])}}"><i class="fa fa-eye"> </i>View Customers</a>
+                    </li>
+                </ul>
+                    </li>
+            <!-- Reports -->
+            <li class="">
+                <a href="javascript:;">
+                    <i class="fa fa-credit-card"></i>
+                    <span class="title">Reports</span>
+                    <span class="arrow "></span>
+                </a>
+                <ul class="sub-menu">
+                    <li >
+                        <a class="" href="{{route('admin.report.index',['status' => 'summary'])}}"><i class="fa fa-eye"> </i>Billing Detail</a>
+                    </li>
+                        <li>
+                        <a class="" href="{{route('admin.report.index',['status' => 'billingwithtax'])}}" ><i
+                            class="fa fa-eye"> </i>Billing with Tax</a>
+                        </li>
+                        </ul>
+                    </li>
+               </ul>
+               @else
+        <ul class='wraplist'>
+            <li class="menustats"></li>
+            @if($state[0] == 1 && $cModule[0] == 'Dashboard')
+           <li @if(stripos(url()->current(),'dashboard') !== false) class = "open" @endif >
+            <a href="{{route('admin.dashboard')}}">
+                <i class="fa fa-dashboard"></i>
+                <span class="title">Dashboard</span>
+            </a>
+        </li>
+        @endif
+            
+            @if($state[1] == 1 && $cModule[1] == 'Manager')
+            <!-- Manager -->
+            <li @if(stripos(url()->current(),'manager') !== false) class = "open" @endif>
+                <a href="{{route('admin.user.index',['status' => 'manager'])}}">
+                    <i class="fa fa-user"></i>
+                    <span class="title">Manager</span>
+                </a>
+            </li>
+            <!-- end manager -->
+            @endif
+            @if($state[2] == 1 && $cModule[2] == 'Reseller')
+            <!-- Reseller -->
+            <li @if(stripos(url()->current(),'reseller') !== false) class = "open" @endif>
+                <a href="{{route('admin.user.index',['status' => 'reseller'])}}">
+                    <i class="fa fa-user"></i>
+                    <span class="title">Reseller</span>
+                    
+                </a>
+                
+            </li>
+            @endif
+            <!-- end Reseler -->
+            @if($state[3] == 1 && $cModule[3] == 'Dealer')
+            <!-- Dealer  -->
+            <li @if(stripos(url()->current(),'users/dealer') !== false) class = "open" @endif>
+                <a href="{{route('admin.user.index',['status' => 'dealer'])}}">
+                    <i class="fa fa-users"></i>
+                    <span class="title">Dealer</span>
+                </a>
+            </li>
+            <!-- end dealer -->
+            @endif
+            <!-- support -->
+            
+            @if($state[4] == 1 && $cModule[4] == 'Support')
+            <li>
+                <a href="{{route('admin.management.support.index',['status'=>'support'])}}">
+                    <i class="fa fa-eye"></i>
+                    <span class="title">Support</span>
+                </a>
+            </li>
+            <!-- end -->
+            @endif
+            @if($state[5] == 1 || $state[6] == 1)
+            <li>
+                <a href="#">
+                    <i class="fa fa-tasks"></i>
+                    <span class="title">Management</span>
+                    <span class="arrow "></span>
+                </a>
+                <ul class="sub-menu">
+                        @if($state[5] == 1 && $cModule[5] == 'View User')
+                    <li>
+                        <a class="open" href="{{route('admin.AccessManagement.viewUsers')}}"><i class="fa fa-eye"> </i>View Users</a>
+                    </li>
+                    @endif
+                    @if($state[6] == 1 && $cModule[6] == 'Access Alloewd')
+                    <li>
+                        <a class="" href="{{route('admin.AccessManagement.allowAccess')}}" ><i
+                            class="fa fa-check-circle-o"> </i>Manage Access</a>
+                        </li> 
+                      @endif
+                      @if($state[25] == 1 && $cModule[25] == 'Make Ticker')
+                      <!--  -->
+                        @endif
+                        </ul>
+            </li>
+            @endif
+            <!-- approve -->
+            @if($state[7] == 1 || $state[8] == 1 || $state[9] == 1)
+            <li @if(stripos(url()->current(),'approve') !== false) class = "open" @endif>
+                <a href="javascript:;">
+                    <i class="fa fa-check-square-o"></i>
+                    <span class="title">Approve</span>
+                    <span class="arrow "></span>
+                </a>
+                <ul class="sub-menu">
+                        @if($state[7] == 1 && $cModule[7] == 'Approve Dealer')
+                    <li>
+                        <a class="open" href="{{route('admin.approve.index',['status' => 'dealer'])}}"><i class="fa fa-eye"> </i>Dealer</a>
+                    </li>
+                    @endif
+                    @if($state[8] == 1 && $cModule[8] == 'Sub_dealer')
+                    <li>
+                        <a class="" href="{{route('admin.approve.index',['status' => 'subdealer'])}}" ><i
+                            class="fa fa-eye"> </i>Sub-Dealer</a>
+                        </li> 
+                        @endif
+                        @if($state[9] == 1 && $cModule[9] == 'Static_IP')
+                        <li>
+                            <a class="" href="{{route('admin.approve.index',['status' => 'staticip'])}}" ><i
+                                class="fa fa-eye"> </i>Static IP</a>
+                            </li>
+                            @endif
+                              @if($state[26] == 1 && $cModule[26] == 'verification')
+                    <li>
+                        <a class="" href="{{route('admin.approve.index',['status' => 'verification'])}}" ><i
+                            class="fa fa-eye"> </i>NIC Verification SB</a>
+                        </li> 
+                        @endif
+                        </ul>
+                    </li>
+                  
+                    @endif
+                    <!-- end approve -->
+                    <!-- User -->
+                   
+                    @if($state[10] == 1 || $state[11] == 1)
+                    <li class="">
+                        <a href="javascript:;">
+                            <i class="fa fa-users"></i>
+                            <span class="title">Customer</span>
+                            <span class="arrow "></span>
+                        </a>
+                        <ul class="sub-menu">
+                                @if($state[10] == 1 && $cModule[10] == 'All Customers')
+                            <li>
+                                <a class="" href="{{route('admin.customer.index',['status' => 'view'])}}"><i class="fa fa-users"> </i>All Customers</a>
+                            </li>
+                            @endif
+                            @if($state[11] == 1 && $cModule[11] == 'Online_Customer')
+                            <li>
+                                <a href="{{route('admin.customer.index',['status' => 'online'])}}" ><i
+                                    class="fa fa-plus"> </i>Online Customers</a>
+                                </li>
+                                {{-- <li>
+                                    <a href="{{route('admin.offlineUserView')}}" ><i
+                                        class="fa fa-ban"> </i>Offline Customers</a>
+                                    </li> --}}
+                                @endif
+                            </ul>
+                        </li>
+                        @endif
+                        <!-- end  user-->
+                       
+                        @if($state[12] == 1 && $cModule[12] == 'Packages')
+                        <!-- Profile  -->
+                        <li class="">
+                            <a href="{{route('admin.profile.index')}}">
+                                <i class="fa fa-th-list"></i>
+                                <span class="title">Package</span>
+                            </a>
+                        </li>
+                        @endif
+                        <!-- end profile -->
+                      
+                        <!--start billing  -->
+                        
+                        @if($state[13] == 1 || $state[14] == 1)
+                        <li class="">
+                            <a href="javascript:;">
+                                <i class="fa fa-credit-card"></i>
+                                <span class="title">Transaction</span>
+                                <span class="arrow "></span>
+                            </a>
+                            <ul class="sub-menu">
+                    <!-- <li>
+                        <a class="" href="{{route('admin.billing.index',['status' => 'payments'])}}"><i class="fa fa-eye"> </i>View Payment</a>
+                    </li> -->
+                    <!--  <li>
+                        <a class="" href="{{route('admin.billing.index',['status' => 'transactions'])}}" ><i
+                        class="fa fa-eye"> </i>View Transaction</a>
+                    </li> -->
+                    @if($state[13] == 1 && $cModule[13] == 'Transfer Amount')
+                    <li>
+                        <a class="" href="{{route('admin.billing.index',['status' => 'transfer'])}}" ><i
+                            class="fa fa-credit-card"> </i>Transfer Amount</a>
+                        </li>
+                        @endif
+                        @if($state[14] == 1 && $cModule[14] == 'Cash Receipt')
+                        <li>
+                            <a class="" href="{{route('admin.billing.index',['status' => 'recieve'])}}" ><i
+                                class="fa fa-credit-card"> </i>Cash Receipt</a>
+                            </li>
+                            @endif
+                  
+                </ul>
+            </li>
+            @endif
+            
+            @if($state[15] == 1 || $state[16] == 1 || $state[17] == 1)
+            <li class="">
+                <a href="javascript:;">
+                    <i class="fa fa-credit-card"></i>
+                    <span class="title">View History</span>
+                    <span class="arrow "></span>
+                </a>
+                <ul class="sub-menu">
+                        @if($state[15] == 1 && $cModule[15] == 'View Cash Receipt')
+                    <li>
+                        <a class="" href="{{route('admin.billing.index',['status' => 'payments'])}}"><i class="fa fa-eye"> </i>View Cash Receipt</a>
+                    </li>
+                    @endif
+                    @if($state[16] == 1 && $cModule[16] == 'Transfer')
+                    <li>
+                        <a class="" href="{{route('admin.billing.index',['status' => 'viewtransfer'])}}"><i class="fa fa-eye"> </i>View Transfer</a>
+                    </li>
+                    @endif
+                    <!--  <li>
+                        <a class="" href="{{route('admin.billing.index',['status' => 'transactions'])}}"><i class="fa fa-eye"> </i>View Transaction</a>
+                    </li> -->
+                    @if($state[17] == 1 && $cModule[17] == 'Amount')
+                    <li>
+                        <a class="" href="{{route('admin.report.index',['status' => 'viewaccount'])}}" ><i
+                            class="fa fa-eye"> </i>View Account</a>
+                        </li>
+                        @endif
+                      
+                   
+                </ul>
+            </li>
+            @endif
+            <!-- report-->
+            
+            @if($state[18] == 1 || $state[19] == 1 || $state[20] == 1)
+            <li class="">
+                <a href="javascript:;">
+                    <i class="fa fa-credit-card"></i>
+                    <span class="title">Reports</span>
+                    <span class="arrow "></span>
+                </a>
+                <ul class="sub-menu">
+                        @if($state[18] == 1 && $cModule[18] == 'Billing Details')
+                    <li >
+                        <a class="" href="{{route('admin.report.index',['status' => 'summary'])}}"><i class="fa fa-eye"> </i>Billing Detail</a>
+                    </li>
+                    <li >
+                        <a class="" href="{{route('admin.report.index',['status' => 'advance'])}}"><i class="fa fa-eye"> </i>Advance Detail</a>
+                    </li>
+                     <li >
+                        <a class="" href="{{route('admin.report.index',['status' => 'invoice'])}}"><i class="fa fa-eye"> </i>Sales Tax Detail</a>
+                    </li>
+                    @endif
+                   
+                    @if($state[19] == 1 && $cModule[19] == 'Current Balance')
+                    <li>
+                        <a class="" href="{{route('admin.report.index',['status' => 'history'])}}"  ><i
+                            class="fa fa-eye"> </i>Current Balance</a>
+                        </li>
+                        @endif
+                        @if($state[20] == 1 && $cModule[20] == 'ReportSummary')
+                        <li>
+                            <a class="" href="{{route('admin.report.index',['status' => 'reportsummary'])}}"  ><i
+                                class="fa fa-eye"> </i>Report Summary</a>
+                            </li>
+                        
+                            @endif
+                              <li>
+                        <a class="" href="{{route('admin.report.index',['status' => 'billingwithtax'])}}" ><i
+                            class="fa fa-eye"> </i>Billing with Tax</a>
+                        </li>
+                        </ul>
+                    </li>
+                    <!-- end -->
+                    @endif
+                    <!-- end  -->
+                    <!-- configuration -->
+                   
+                    @if($state[21] == 1 || $state[22] == 1 || $state[23])
+                    <li class="">
+                        <a href="javascript:;">
+                            <i class="fa fa-ioxhost"></i>
+                            <span class="title">Tools</span>
+                            <span class="arrow "></span>
+                        </a>
+                        <ul class="sub-menu">
+                                @if($state[21] == 1 && $cModule[21] == 'Max Data Usage')
+                            <li>
+                                <a class="" href="{{('max_data_usage')}}" ><i class="fa fa-eye"> </i>Max Data Usage
+                                </a>
+                            </li> 
+                            @endif
+                            @if($state[22] == 1 && $cModule[22] == 'DBO Users')
+                            <li>
+                                <a class="" href="{{route('admin.users.DBO_user')}}" ><i class="fa fa-eye"> </i>DBO Users
+                                </a>
+                            </li> 
+                           @endif
+                           
+                           @if(Auth::user()->status =="super")
+                             <li>
+                                <a class="" href="{{route('admin.logindetails')}}" ><i class="fa fa-eye"> </i>Login Details
+                                </a>
+                            </li> 
+                            <li>
+                                <a class="" href="{{route('maintenance.index')}}" ><i class="fa fa-eye"> </i>Maintenance
+                                </a>
+                            </li> 
+                            @endif
+                              @if(Auth::user()->status =="super")
+                          <li class="">
+                            <a href="{{route('admin.router.index')}}">
+                                <i class="fa fa-th-list"></i>
+                                <span class="title">Nas</span>
+                            </a>
+                        </li>
+                        @endif
+                           
+                            @if($state[23] == 1 && $cModule[23] == 'View Static IP')
+                            <li>
+                                <a class="" href="{{route('admin.users.view_static_ip')}}" ><i class="fa fa-eye"> </i>View St IP</a>
+                            </li>
+                            @endif
+                            @if($state[24] == 1 && $cModule[24] == 'RemoveData')
+                            <li>
+                                <a class="" href="{{route('admin.user.index',['status' => 'remove'])}}" ><i class="fa fa-close"> </i>Remove Data</a>
+                            </li>
+                            @endif
+                            @if(Auth::user()->status == 'super')
+                             <li>
+                                <a class="" href="{{route('admin.ExceecData')}}" ><i
+                                  class="fa fa-list"> </i><span class="title">Exceed Data</span> </a>
+                                    <a href="{{route('admin.adddhcpView')}}">
+                                        <i class="fa fa-list"> </i><span class="title">Add DHCP</span>
+                                        </a>
+                                </li>
+                                <li>
+                                    <a class="" href="{{route('admin.showcgnView')}}" ><i
+                                      class="fa fa-list"> </i><span class="title">Add cgn</span> </a>
+                                    </li>
+                            
+                                @endif
+                    <!-- <li>
+                        <a class="" href="dealer_add.php" target='_blank'><i
+                        class="fa fa-mail-forward"> </i>Migration</a>
+                    </li>
+                    <li>
+                        <a class="" href="dealer_add.php" target='_blank'><i class="fa fa-sitemap"> </i>Import Users</a>
+                    </li>
+                    <li>
+                        <a class="" href="dealer_add.php" target='_blank'><i class="fa fa-repeat"> </i>Update User
+                        Expiry</a>
+                    </li> -->
+                </ul>
+            </li>
+            @endif
+            @if (Auth::user()->username == 'aamiriqbal' || Auth::user()->username == 'logonadmin')
+            <li @if(stripos(url()->current(),'cacti') !== false) class = "open" @endif >
+             <a href="{{route('admin.dhcpAssign')}}">
+                 <i class="fa fa-list"></i>
+                 <span class="title">DHCP / MRTG_Graph</span>
+             </a>
+         </li>
+             @endif
+            @if(Auth::user()->status == "support" && Auth::user()->username == "aamiriqbal")
+            <li>
+                <a  href="{{route('admin.kickUser')}}" ><i class="fa fa-retweet"> </i><span class="title">Kick User</span></a>
+            </li>
+            @endif
+            <!-- end config -->
+            <!-- support -->
+            <!-- <li class="">
+                <a href="javascript:;">
+                    <i class="fa fa-yelp"></i>
+                    <span class="title">Support</span>
+                    <span class="arrow "></span>
+                </a>
+                <ul class="sub-menu">
+                    <li>
+                        <a class="" href="dealer_add.php" target='_blank'><i class="fa fa-plus"> </i>Add User</a>
+                    </li>
+                    <li>
+                        <a class="" href="complete-admin/v6-1/preview/freelancing.html" target='_blank'><i
+                        class="fa fa-eye"> </i>View User</a>
+                    </li>
+                </ul>
+            </li> -->
+            <!-- end suport -->
+        </ul>
+        @endif
+    </div>
+    <!-- MAIN MENU - END -->
+    <!-- <div class="menustats">
+        <h5>Project Progress</h5>
+        <div class="progress">
+            <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="50"
+                aria-valuemin="0"
+                aria-valuemax="100" style="width: 50%;">
+            </div>
+        </div>
+        <h5>Target Achieved</h5>
+        <div class="progress">
+            <div class="progress-bar progress-bar-accent" role="progressbar" aria-valuenow="70"
+                aria-valuemin="0"
+                aria-valuemax="100" style="width: 70%;">
+            </div>
+        </div>
+    </div> -->
+</div>

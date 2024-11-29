@@ -1,0 +1,155 @@
+@extends('users.layouts.app')
+@section('title') Dashboard @endsection
+@section('owncss')
+<!-- //head is not necssary  -->
+<style type="text/css">
+
+#Sno select,
+#Status select,
+#username select,
+#Full-Name select,
+#Expiry select,
+#Actions select,
+#address select,
+#verification select
+{
+display: none;
+}
+</style>
+@endsection
+@section('content')
+<div class="page-container row-fluid container-fluid">
+  <!-- SIDEBAR - START -->
+  <section id="main-content">
+    <section class="wrapper main-wrapper row">
+      <div class="">
+        <div class="col-lg-12">
+          <a href="{{('#add_user')}}" data-toggle="modal">  <button class="btn btn-primary mb1 btn-md"><i class="fa fa-user"></i> Add Consumer </button></a>
+         <div class="header_view">
+          <h2>Consumers</h2>
+        </div>
+        <div class="table-responsive">
+         
+          
+          <table class="table table-bordered data-table" id="resultTable">
+            <thead>
+              <tr>
+                <th>Serial#</th>
+                <th>Consumer (ID)</th>
+                <th>Consumer Name</th>
+                <th>Trader</th>
+                {{-- <th>Trader (ID)</th> --}}
+                <th>Address </th>
+                <th>Internet Profile</th>
+                <th>Expiry Date</th>
+                <th style="width: 13%">Actions</th>
+                <th style="width: 13%">Verification</th>
+              </tr>
+              <tr style="background:white !important;">
+                <td id="Sno"></td>
+                <td id="username"></td>
+                <td id="Sub-Dealer-ID"></td>
+                <td id="Full-Name"></td>
+                <td id="address"></td>
+                <td id="profile"></td>
+                <td id="Expiry"></td>
+                <td id="Actions"></td>
+                <td id="verification"></td>
+              </tr>
+            </thead>
+            <tbody>
+              </tbody>
+            </table>
+            <!--  modal start -->
+            <!--  modal ends -->
+          </div>
+        </div>
+      </div>
+      <div class="chart-container " style="display: none;">
+        <div class="" style="height:200px" id="platform_type_dates"></div>
+        <div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+        <div class="" style="height:200px" id="user_type"></div>
+        <div class="" style="height:200px" id="browser_type"></div>
+        <div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+        <div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+      </div>
+    </section>
+  </section>
+  <!-- END CONTENT -->
+</div>
+@endsection
+@section('ownjs')
+<script >
+ 
+</script>
+<script>
+$(document).ready(function(){
+  setTimeout(function(){
+$('.alert').fadeOut(); }, 3000);
+});
+</script>
+
+<script type="text/javascript">
+function charge_alert(data){
+$('#chargeConfirm').val(data);
+$('#confromMsg').modal('show');
+}
+function chargeit(data) {
+var value = data.split("^");
+var username = value[0];
+var profile = value[1];
+$.ajax({
+type: "POST",
+url: "{{route('users.charge.single.post')}}",
+data:'username='+username+'&profileGroupname='+profile,
+success: function(data){
+// for get return data
+location.reload();
+}
+});
+}
+</script>
+<script type="text/javascript">
+  $(function () {
+    var table = $('.data-table').DataTable({
+        processing: true,
+        serverSide: true,
+        "lengthMenu": [[10, 25, 50, 100,-1], [10, 25, 50, 100,'All']],
+        ajax: "{{ route('users.viewCustomerServerSideUser') }}",
+        columns: [
+            {data: 'DT_RowIndex', name: 'DT_RowIndex'},
+            {data: 'usernames', name: 'usernames'},
+            {data: 'fullname', name: 'fullname'},
+            {data: 'subdealerid', name: 'subdealerid'},
+            // {data: 'trader_id', name: 'trader_id'},
+            {data: 'address', name: 'address'},
+            {data: 'name', name: 'name'},
+            {data: 'card_expire_on', name: 'card_expire_on'},
+            {data: 'action', name: 'action'},
+            {data: 'action_delete', name: 'action_delete'},
+        ],
+       
+    });
+  });
+</script>
+<script>
+  /*
+  We can use [body] or the element class/id that wraps the elements with tooltip/popover.
+  Include the data-[] attribute in each element that needs it.
+*/
+
+$(document).ready(function () {
+ 
+  $("body").tooltip({   
+    selector: "[data-toggle='tooltip']",
+    container: "body"
+  })
+    //Popover, activated by clicking
+    .popover({
+    selector: "[data-toggle='popover']",
+    container: "body",
+    html: true
+  });
+});
+</script>
+@endsection

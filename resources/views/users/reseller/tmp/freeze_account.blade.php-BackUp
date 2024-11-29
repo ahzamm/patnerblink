@@ -1,0 +1,249 @@
+@extends('users.layouts.app')
+@section('title') Dashboard @endsection
+@section('owncss')
+<!-- //head is not necssary  -->
+<style type="text/css">
+
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 11px !important;
+    width: 13px !important;
+    left: 3px !important;
+    /*bottom: 3px !important;*/
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+    #ip select,
+    #sno select,
+    #username select,
+    #nic select,
+    #res select,
+    #app select,
+    #mob select
+    {
+      display: none;
+    }
+    </style>
+@endsection
+
+@section('content')
+
+<div class="page-container row-fluid container-fluid">
+
+  <!-- SIDEBAR - START -->
+  <section id="main-content">
+    <section class="wrapper main-wrapper row">
+    	<div class="">
+            <div class="col-lg-12">
+              <div class="header_view">
+                <h2>Freeze & Unfreeze <small>(Contractors)</small>
+                <span class="info-mark" onmouseenter="popup_function(this, 'freez_unfreez_user_side');" onmouseleave="popover_dismiss();"><i class="las la-info-circle"></i></span>
+                </h2>
+              </div>
+              <div class="col-lg-12">
+                <section class="box">
+                  <!-- <header class="panel_header">
+                    <center><h3></h3> </center>
+                  </header> -->
+                  <div class="content-body" style="padding-top:20px">
+                      <div id="msg" style="display: none;" class="alert alert-success alert-dismissible">
+                          Successfully changed..
+                          <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        </div>
+                    <div class="row">
+                      <div class="col-xs-12">
+                        <div class="table-responsive">
+                          <table id="example-1" class="table table-striped  display">
+                            <thead>
+                              <tr>
+                                <th>Serial#</th>
+                                <th>Manager (ID)</th>
+                                <th>Reseller (ID)</th>
+                                <th>Contractor (ID)</th>
+                                <th>Contractor (Login ID)</th>
+                                <th>Total Number of Consumers</th>
+                                <th>Action <span style="color: red">*</span></th>
+                              </tr>
+                              <tr style="background:white !important;">
+                                <td id="sno"></td>
+                                <td id="username"></td>
+                                <td id="Managerid"></td>
+                                <td id="Resellerid"></td>
+                                <td id="Dealerid"></td>
+                                <td id="Users"></td>
+                                <td id="app"></td>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @php
+                              $num=1;
+                              @endphp
+                              @foreach($dealerCollection as $data)
+                              <tr>
+                                <td>{{$num++}}</td>
+                                
+                                
+                                <td>{{$data->manager_id}}</td>
+                                
+                                <td>{{$data->resellerid}}</td>
+                                <td class="td__profileName">{{$data->dealerid}}</td>
+                                <td>{{$data->username}}</td>
+                                <td><strong>{{ DB::table('user_info')
+                                  ->join('user_status_info', 'user_status_info.username', '=', 'user_info.username')
+                                 //  ->where('user_status_info.card_expire_on', '>', today())
+                                 ->where('user_status_info.expire_datetime', '>', DATE('Y-m-d H:i:s'))
+                                  ->where(['status' => 'user','resellerid' => $data->resellerid,'dealerid' => $data->dealerid])->count() }}</strong></td>
+                                
+
+                                <td>
+                                  @php
+                                   $check ='';
+                                $radreply = App\model\Users\FreezeAccount::where(['username' => $data->username])->first();
+                                if(!empty($radreply)){
+                                  $check = $radreply['freeze'];
+                                }
+                                $isCheck = $check;     
+                                  @endphp
+                                    @if($isCheck == 'no')
+                                  {{-- <label class="switch" style="width: 46px;height: 19px;">
+                                    <input type="checkbox" name="chk" onchange="statChange(this, '{{$data->username}}')">
+                                    <span class="slider square" ></span>
+                                  </label> --}}
+                                  <div style="float: left; width: 100%;">
+                                    <p><input type="checkbox"  class="lcs_check"  data-value="{{$data->username}}" autocomplete="off" /></p>
+                                </div>
+                                <!-- <label class="switch" style="width: 46px;height: 19px;">
+    <input type="checkbox" >
+    <span class="slider square" ></span>
+  </label> -->
+                                  @elseif($isCheck == 'yes')
+                                  {{-- <label class="switch" style="width: 46px;height: 19px;">
+                                      <input type="checkbox" checked name="chk" onchange="statChange(this, '{{$data->username}}')">
+                                      <span class="slider square" ></span>
+                                    </label> --}}
+                                    <div style="float: left; width: 100%;">
+                                      <p><input type="checkbox" checked class="lcs_check"  data-value="{{$data->username}}" autocomplete="off" /></p>
+                                  </div>
+                                    @else 
+                                    {{-- <label class="switch" style="width: 46px;height: 19px;">
+                                        <input type="checkbox" name="chk" onchange="statChange(this, '{{$data->username}}')">
+                                        <span class="slider square" ></span>
+                                      </label> --}}
+                                      <div style="float: left; width: 100%;">
+                                        <p><input type="checkbox"  class="lcs_check"  data-value="{{$data->username}}" autocomplete="off" /></p>
+                                    </div>
+                                    
+                                  @endif
+                                </td>
+                              </tr>
+                              @endforeach
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+      
+    <div class="chart-container " style="display: none;">
+      <div class="" style="height:200px" id="platform_type_dates"></div>
+      <div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+      <div class="" style="height:200px" id="user_type"></div>
+      <div class="" style="height:200px" id="browser_type"></div>
+      <div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+      <div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+    </div>
+  </section>
+</section>
+
+<!-- END CONTENT -->
+<!---Model Dialog --->
+
+
+</div>
+<!---Model Dialog --->
+
+
+@endsection
+
+@section('ownjs')
+ <script type="text/javascript">
+        $(document).ready(function() {
+          var table = $('#example1').DataTable();
+          $("#example1 thead td").each( function ( i ) {
+            var select = $('<select class="form-control"><option value="">Show All</option></select>')
+            .appendTo( $(this).empty() )
+            .on( 'change', function () {
+              table.column( i )
+              .search( $(this).val() )
+              .draw();
+            } );
+            table.column( i ).data().unique().sort().each( function ( d, j ) {
+              select.append( '<option value="'+d+'">'+d+'</option>' )
+            } );
+          } );
+        } );
+      </script>
+     
+<script>
+// function statChange(checkbox, username)
+//     {
+      
+//       let isCheck = checkbox.checked;
+//         $.ajax({
+//             url:"{{route('users.freeze.post')}}",
+//             method:"POST",
+//             data:{isChecked:isCheck, username:username},
+//             success:function(data){
+//             $('#msg').show();
+//             // location.reload();
+//             setTimeout(function(){ 
+//             $('#msg').fadeOut(); }, 3000);
+//             }
+//         });
+//     }
+    $('.lcs_check').lc_switch();
+    $(document).on('lcs-statuschange','.lcs_check',function(){
+      status =0;
+      isCheck = $(this).is(':checked') ? true : false;
+      username = $(this).attr('data-value');
+      // alert(submenuid);
+      if($(this).prop("checked") == true){
+            status = 1;
+            console.log(username);
+      }
+      else if($(this).prop("checked") == false){
+         status = 0;
+         console.log(username);
+      }
+      $.ajax({
+         type: 'POST',
+         url: "{{route('users.freeze.post')}}",
+         data:{
+          isChecked:isCheck, username:username
+         },
+         dataType:'json',
+         beforeSend:function(){
+
+         },
+         success:function(res){
+            if(res.status)
+            {
+              $('#msg').show();
+            setTimeout(function(){ 
+            $('#msg').fadeOut(); }, 3000);
+            }
+         },
+         error:function(jhxr,status,err){
+            console.log(jhxr);
+         },
+         complete:function(){
+
+         }
+      })
+    })
+</script>
+@endsection

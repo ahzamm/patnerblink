@@ -1,0 +1,63 @@
+<?php
+
+namespace App\Http\Controllers\admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\model\Users\MaintenanceMode;
+use App\model\Users\MaintenanceLog;
+use Illuminate\Support\Facades\DB;
+use Auth;
+
+use Artisan;
+
+class MaintenanceController extends Controller
+{
+    public function __construct()
+    {
+        // $this->middleware('checkuseraccess', ['only' => ['index']]);
+    }
+    public function index()
+    {
+        $mode = MaintenanceMode::first();
+        $logs = DB::table('maintenance_logs')->orderBy('created_at','DESC')->get();
+        return view('admin.maintenance.index', compact('mode','logs'));
+    }
+    public function store(Request $request)
+    {
+        $status = $request->status;
+        if (empty($status)) {
+            $status = 'disable';
+        }
+        $add_ips = $request->allowed_ip;
+        MaintenanceMode::whereNotNull('id')->where('status', 'enable')->update(['status' => 'disable']);
+        $mode = MaintenanceMode::whereNotNull('id')->where('status', 'disable')->first();
+
+        if (!empty($mode)) {
+            MaintenanceMode::whereNotNull('id')->where('status', 'disable')->update(['status' => $status, 'allowed_ips' => $add_ips]);
+          
+
+        } else {
+            $mode = new  MaintenanceMode;
+            $mode->allowed_ips = $request->allowed_ip;
+            $mode->status = $status;
+            $mode->save();
+        }
+        $log = new MaintenanceLog;
+        $log->status = $status;
+        $log->allowed_ips = $request->allowed_ip;
+        $log->save();
+        //
+        if ($status == 'enable') {
+            Artisan::call('down');
+        }
+        //
+        return redirect()->route('maintenance.index');
+    }
+    public function deactivate()
+    {
+                MaintenanceMode::whereNotNull('id')->update(['status' => 'disable']);
+                Artisan::call('up'); 
+        return redirect()->route('maintenance.index');
+    }
+}

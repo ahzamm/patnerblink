@@ -1,0 +1,168 @@
+@extends('admin.layouts.app')
+@section('title') Dashboard @endsection
+@section('content')
+<div class="page-container row-fluid container-fluid">
+  <section id="main-content" class=" ">
+    <section class="wrapper main-wrapper row" style=''>
+      <div class="">
+        <div class="">
+        <a href="{{route('admin.users.getuseragreements')}}" class="fa fa-handshake" style="float: right;
+    margin-top: 15px;">Agreement List</a>
+
+          <div class="header_view">
+            <h2>Contractor Agreement Form
+            <span class="info-mark" onmouseenter="popup_function(this, 'contractor_agreement_form_admin_side');" onmouseleave="popover_dismiss();"><i class="las la-info-circle"></i></span>
+            </h2>
+          </div>
+          <section class="" style="padding: 15px;">
+            <div>
+              @if(session('error'))
+            <div class="alert alert-error alert-dismissible">
+              {{session('error')}}
+            </div>
+            @endif
+            @if(session('success'))
+            <div class="alert alert-success alert-dismissible">
+              {{session('success')}}
+            </div>
+            @endif
+            </div>
+          <form target="_blank" action="{{route('admin.postuserform')}}" method="POST">
+            @csrf
+          <div class="row">
+            <div class="col-md-4" >
+			
+            <section class="box" >
+            <div class="form-group">
+                  <h3 class="text-center">Contractor Detail</h3>
+                </div>
+                <div class="form-group">
+                <label for="company_date">Select Company</label>
+                
+                <select class="form-control form-select" name="company_logo" >
+                  <option value="logonbroadband"  selected>Logon Broadband</option>
+                  <option value="spark">Spark</option>
+                  <option value="blackoptic">Black Optic</option>
+                </select>
+                </div>
+				
+			        <div class="form-group">
+                 <label for="company_date">Contract Date</label>
+                 <input type="date" required class="form-control" name="company_date" id="company_date">
+                </div>
+			
+			        <div class="form-group">
+                 <label for="username">	Contractor Name</label>
+                 <input type="text" required class="form-control" name="company_name" id="company_name">
+                </div>
+				
+				      <div class="form-group">
+                 <label for="phone_no">Contractor CNIC Number</label>
+                 <input type="text" required class="form-control" name="cnic" id="cnic">
+                </div>
+                
+                <div class="form-group">
+                 <label for="email">Contractor Address</label>
+                 <input type="text"  required class="form-control" name="dealer_name" id="dealer_name">
+                </div>
+				
+				
+			        <div class="form-group">
+                 <label for="email">Contractor Asign Area</label>
+                 <input type="text"  required class="form-control" name="dealer_area" id="dealer_area">
+                </div>
+				
+				
+              
+</section>
+</div>
+            <!-- <div class="border-right"></div> -->
+			<div class="col-md-4" >
+			  <section class="box" >
+			    <div class="form-group">
+                  <h3 class="text-center">On behalf of Logon Broadband Pvt. Ltd.</h3>
+                </div>
+				
+				  <div class="form-group">
+                 <label for="behalf_name">Name</label>
+                 <input type="text" required class="form-control" name="behalf_name" id="behalf_name">
+                </div>
+                
+                <div class="form-group">
+                 <label for="behalf_designation">Designation</label>
+                 <input type="text"  required class="form-control" name="behalf_designation" id="behalf_designation">
+                </div>
+
+                 
+</section>
+</div>
+            <!-- <div class="border-right"></div> -->
+			
+            <div class="col-md-4" >
+            <section class="box">
+			          <div class="form-group">
+                  <h3 class="text-center">On behalf of Contractor</h3>
+                </div>
+				
+				        <div class="form-group">
+                 <label for="phone_no">Name</label>
+                 <input type="text" required class="form-control" name="contractor_name" id="contractor_name">
+                </div>
+                
+                <div class="form-group">
+                 <label for="contractor_cnic">CNIC Number</label>
+                 <input type="text"  required class="form-control" name="contractor_cnic" id="contractor_cnic">
+                </div>
+				
+				
+			          <div class="form-group">
+                 <label for="contractor_mobile">Mobile Number</label>
+                 <input type="text" required class="form-control" name="contractor_mobile" id="contractor_mobile">
+                </div>
+				
+				
+                  <div class="row">
+                    <div class="col-md-12">
+                     
+                    </div>
+                    <div class="col-md-12" style="padding-top: 15px">
+                      <button type="submit" class="btn btn-success pull-right">Submit</button>
+                    </div>
+                  </div>
+</section>
+</div>
+          </div>
+        
+          </form>
+        </section>
+      </div>
+    </div>
+    <div class="chart-container " style="display: none;">
+      <div class="" style="height:200px" id="platform_type_dates"></div>
+      <div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+      <div class="" style="height:200px" id="user_type"></div>
+      <div class="" style="height:200px" id="browser_type"></div>
+      <div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+      <div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+    </div>
+  </section>
+</section>
+<!-- END CONTENT -->
+<!---Model Dialog --->
+
+
+</div>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/3.3.4/jquery.inputmask.bundle.min.js"></script> -->
+
+
+@endsection
+@section('ownjs')
+<script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"></script>
+<script>
+  $(document).ready( function() { 
+    $("#contractor_cnic").inputmask({"mask": "99999-9999999-9"});   
+    $("#cnic").inputmask({"mask": "99999-9999999-9"});   
+    $("#contractor_mobile").inputmask({"mask": "9999-9999999"});   
+});
+</script>
+@endsection

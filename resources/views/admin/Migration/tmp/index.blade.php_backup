@@ -1,0 +1,215 @@
+@extends('admin.layouts.app')
+@section('title') Dashboard @endsection
+@section('content')
+<div class="page-container row-fluid container-fluid">
+  <section id="main-content">
+    <section class="wrapper main-wrapper row">
+      <div class="">
+        <div class="col-lg-12" >
+
+          <div class="header_view">
+            <h2>Migration</h2>
+          </div>
+          <!-- </div> -->
+        </div>
+        <div class="col-md-12">
+
+
+          <section class="box">
+            <div class="content-body">
+
+              <form id="ip-migration" method="POST">
+                @csrf
+                <div class="row register-form">
+                  <h3>IP Migration</h3>
+                  <hr>
+                  <div class="col-md-4">
+                    <div class="form-group">
+
+                      <label for="reseller" class="form-label pull-left">Reseller-Id <span style="color: red">*</span></label>
+                      <select name="reseller" class="form-control reseller" id="reseller"  required>
+                        @foreach($resellers as $reseller)
+                        <option value="{{$reseller->resellerid}}">{{$reseller->resellerid}}</option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+
+                      <label for="dealer" class="form-label pull-left">Dealer-Id <span style="color: red">*</span></label>
+                      <select name="dealer" class="form-control" id="dealer" >
+
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+
+                      <label for="nas" class="form-label pull-left">Nas <span style="color: red">*</span></label>
+                      <select name="nas" class="form-control" id="nas">
+
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="form-group pull-right">
+                      <input type="submit" class="btn btn-primary btn-submit"  value="Migrate"/>
+                    </div>
+                  </div>
+
+                </div> 
+                
+              </form>
+
+              <span id="response"></span>
+
+            </div>
+          </section>
+
+
+
+           <section class="box">
+            <div class="content-body">
+
+              <form id="pro-group-migration" method="POST">
+                @csrf
+                <div class="row register-form">
+                  <h3>Profile Groupname Migration</h3>
+                  <hr>
+                  <div class="col-md-4">
+                    <div class="form-group">
+
+                      <label for="reseller" class="form-label pull-left">Reseller-Id <span style="color: red">*</span></label>
+                      <select name="reseller" class="form-control reseller" id="reseller"  required>
+                        @foreach($resellers as $reseller)
+                        <option value="{{$reseller->resellerid}}">{{$reseller->resellerid}}</option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+
+                      <label for="dealer" class="form-label pull-left">Dealer-Id <span style="color: red">*</span></label>
+                      <select name="dealer" class="form-control" id="dealer" >
+
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+
+                      <label for="nas" class="form-label pull-left">Nas <span style="color: red">*</span></label>
+                      <select name="nas" class="form-control" id="nas">
+
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="form-group pull-right">
+                      <input type="submit" class="btn btn-primary btn-submit"  value="Migrate"/>
+                    </div>
+                  </div>
+
+                </div> 
+                
+              </form>
+
+              <span id="response"></span>
+
+            </div>
+          </section>
+
+
+
+        </section>
+      </section>
+
+      <!-- END CONTENT -->
+    </div>
+    @endsection
+
+    @section('ownjs')
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $("#ip-migration").submit(function() {
+
+          if(confirm("Are you sure you want to migrate NAS IP?")){
+
+            $.ajax({
+              type: "POST",
+              url: "{{route('admin.migration.store')}}",
+              data:$("#ip-migration").serialize(),
+              success: function (data) {
+                $('#response').html(data);
+              },
+              error: function(jqXHR, text, error){
+// Displaying if there are any errors
+                $('#output').html(error);
+              }
+            });
+
+          }
+          return false;
+
+        });
+      });
+    </script>
+
+    <script>
+      $(document).ready(function () {
+
+
+            /*------------------------------------------
+            --------------------------------------------
+            Reseller Dropdown Change Event
+            --------------------------------------------
+            --------------------------------------------*/
+        $('.reseller').on('change', function () {
+          var reseller_id = this.value;
+          $("#dealer").html('');
+          $.ajax({
+            url: "{{route('admin.dealer')}}",
+            type: "POST",
+            data: {
+              reseller_id: reseller_id,
+              _token: '{{csrf_token()}}'
+            },
+            dataType: 'json',
+            success: function (result) {
+              $('#dealer').html('<option value="">-- Select Dealer --</option>');
+              $.each(result.dealer, function (key, value) {
+                $("#dealer").append('<option value="' + value
+                  .dealerid + '">' + value.dealerid + '</option>');
+              });
+
+            }
+          });
+        });
+
+        $('.reseller').on('change', function () {
+          var reseller_nas = this.value;
+          $("#nas").html('');
+          $.ajax({
+            url: "{{route('admin.migration.nas')}}",
+            type: "GET",
+            data: {
+              reseller_nas: reseller_nas,
+              _token: '{{csrf_token()}}'
+            },
+            dataType: 'json',
+            success: function (result) {
+              $('#nas').html('<option value="">-- Select Nas --</option>');
+              $.each(result.nas, function (key, value) {
+                $("#nas").append('<option value="' + value
+                  .nas + '">' + value.nas + '</option>');
+              });
+
+            }
+          });
+        });
+      });
+    </script>
+
+    @endsection

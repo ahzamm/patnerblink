@@ -1,0 +1,196 @@
+<?php
+
+namespace App\Http\Controllers\Users\Auth;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Support\Facades\Auth;
+use App\model\Users\LoginAudit;
+use Illuminate\Http\Request;
+use App\model\Users\Domain;
+use App\model\Users\UserInfo;
+
+
+
+
+class LoginController extends Controller
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Login Controller
+    |--------------------------------------------------------------------------
+    |
+    | This controller handles authenticating users for the application and
+    | redirecting them to your home screen. The controller uses a trait
+    | to conveniently provide its functionality to your applications.
+    |
+    */
+
+    use AuthenticatesUsers;
+
+    /**
+     * Where to redirect users after login.
+     *
+     * @var string
+     */
+    protected $redirectTo = '/users/dashboard';
+
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('guest')->except('logout');
+    }
+
+    /**
+     * Show the application's login form.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function showLoginForm()
+    {
+
+        $url = url()->current();
+        $parse = parse_url($url);
+
+
+       // echo "host". $parse['host'];
+
+
+        // $parse['host']; // Domain name only like fundady.com
+        
+        $domain = Domain::where('domainname',$parse['host'])->first();
+        if(!empty($domain->manager_id) && $domain->manager_id == 'logonmanager'){
+            $user = UserInfo::where('domainID',$domain->id)->where('manager_id','logonmanager')->first();
+
+            if(!empty($domain) && $domain->manager_id == $user->manager_id)
+            return view('users.auth.login',compact('domain'));
+        }else{
+            $user = UserInfo::where('domainID',$domain->id)->where('resellerid','!=',NULL)->first();
+            if(!empty($domain) && $domain->resellerid == $user->resellerid)
+
+
+            return view('users.auth.login',compact('domain'));
+        }
+    }
+
+    // protected function attemptLogin(Request $request)
+    // {
+    //     return $this->guard("user")->attempt(
+    //         $this->credentials($request), $request->filled('remember')
+    //     );
+    // }
+     public function username()
+    {
+        return 'username';
+    }
+
+         public function login(Request $request)
+    {
+        $user = UserInfo::where('username',$request->username)->first();
+
+        if(empty($user)){
+            return $this->sendFailedLoginResponse($request);
+        }
+        $domain = Domain::where('resellerid',$user->resellerid)->first();
+        
+        $url = url()->current();
+        $parse = parse_url($url);
+
+        // $url = url()->previous();
+        // if(substr($parse['host'], -1) == '/') {
+        //     $url = substr($parse['host'], 0, -1);
+        // }
+        if($user->status != 'manager' && $user->status != 'inhouse'){
+
+       if(isset($domain->domainname))  { 
+        if($domain->domainname != $parse['host']){
+            return $this->sendFailedLoginResponse($request);
+        }
+      }
+    }
+          $this->validateLogin($request);
+            $update_loginAudit = LoginAudit::where('username',$request->username);
+            $update_loginAudit->update([
+                'status' => 'OUT',
+            ]);
+       
+                session()->put('test',session()->getId());
+                $session = session()->get('test');
+
+        $loginAudit = new LoginAudit();
+        $loginAudit->username = $request->username;
+        $loginAudit->login_time = Now();
+        $loginAudit->ip = $request->ip();
+        $loginAudit->sessionid = $session;
+        $loginAudit->save();
+
+        // If the class is using the ThrottlesLogins trait, we can automatically throttle
+        // the login attempts for this application. We'll key this by the username and
+        // the IP address of the client making these requests into this application.
+        if ($this->hasTooManyLoginAttempts($request)) {
+            $this->fireLockoutEvent($request);
+
+            return $this->sendLockoutResponse($request);
+        }
+
+        if ($this->attemptLogin($request)) {
+
+            if($parse['host']!="partner.logon.com.pk"){
+                if($domain->domainname == $parse['host']){
+                 return $this->sendLoginResponse($request);
+               } else {
+                 $this->incrementLoginAttempts($request);
+                 return $this->sendFailedLoginResponse($request);
+               }
+            } else {
+                return $this->sendLoginResponse($request); 
+            }
+        }
+
+        // If the login attempt was unsuccessful we will increment the number of attempts
+        // to login and redirect the user back to the login form. Of course, when this
+        // user surpasses their maximum number of attempts they will get locked out.
+        $this->incrementLoginAttempts($request);
+
+        return $this->sendFailedLoginResponse($request);
+    }
+
+
+     public function logout(Request $request)
+    {
+        $this->guard()->logout();
+
+        if(Auth::guard('admin')->check()){
+        	$request->session()->invalidate();
+	        $request->session()->flush();
+	        $request->session()->regenerate();
+	        return redirect()->route('users.home');
+        }else{
+        	$request->session()->invalidate();
+	        $request->session()->flush();
+	        $request->session()->regenerate();
+	        return redirect()->route('users.home');
+        }
+         //return view('users.auth.login');
+    }
+
+    // protected function authenticated(Request $request, $user)
+    // {
+    //     Auth::logoutOtherDevices('password');
+    // }
+
+
+    protected function guard()
+    {
+        return Auth::guard("user");
+    }
+
+
+    }
+    
+    
+

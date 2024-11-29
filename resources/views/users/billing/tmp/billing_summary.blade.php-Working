@@ -1,0 +1,845 @@
+@extends('users.layouts.app')
+@section('title') Dashboard @endsection
+@section('owncss')
+<!-- //head is not necssary  -->
+<style type="text/css">
+
+   .modal {
+      display: none; /* Hidden by default */
+      position: fixed; /* Stay in place */
+      z-index: 1; /* Sit on top */
+      padding-top: 100px; /* Location of the box */
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgb(0,0,0); /* Fallback color */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+   }
+   /* Modal Content */
+   .modal-content {
+      background-color: #fefefe;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+   }
+   /* The Close Button */
+   .close {
+      color: #aaaaaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+   }
+   .close:hover,
+   .close:focus {
+      color: #000;
+      text-decoration: none;
+      cursor: pointer;
+   }
+   /* Tooltip */
+   #tooltip{
+      width: auto;
+      background: white;
+      color: white;
+      padding: 4px 8px;
+      font-size: 13px;
+      border-radius: 5px;
+      z-index: 999;
+      border:1px solid #000;
+      /* transform: translate3d(340px, 175px, 0px)  !important; */
+   }
+   #tooltip p{font-weight: normal;padding: 5px;text-align: justify;margin-bottom: 0;color:#000}
+   #tooltip p:first-child{font-weight: bold;color:#000;font-size: 18px;padding: 5px;border-bottom: 1px solid #9a201c;}
+   #tooltip .content{margin: 10px 5px;color:#000}
+   #tooltip label{padding: 0 15px;color:#000}
+/* End */
+</style>
+@endsection
+@section('content')
+@php
+
+$checkCardType = 'billing_detail';
+if(Auth::user()->status == 'dealer'){
+	$checkBillingType = App\model\Users\DealerProfileRate::where('dealerid',Auth::user()->dealerid)->first()->billing_type;
+	$checkCardType = $checkBillingType == 'amount' ? 'billing_detail' : ($checkBillingType == 'card'  ? 'billing_detail_card' : NULL);
+	// dd($checkCardType);
+}
+if(Auth::user()->status == 'subdealer'){
+	$checkBillingType = App\model\Users\DealerProfileRate::where('dealerid',Auth::user()->dealerid)->first()->billing_type;
+	$checkCardType = $checkBillingType == 'amount' ? 'billing_detail' : ($checkBillingType == 'card'  ? 'billing_detail_card' : NULL);
+	// dd($checkCardType);
+}
+@endphp
+<!-- Popover start -->
+<div id="tooltip" role="tooltip">
+   <p class="title">Wallet Deduction Amount Detail</p>
+   <p class="description">Following are the detail of deduction.</p>
+   <div class="content">
+      Rate : <span class="profile-rate"></span><label>|</label>
+      SST-Tax : <span class="sst-tax"></span><label>|</label>
+      Ait-Tax : <span class="adv-tax"></span><label>|</label>
+      Static-Ip : <span class="static-ip"></span><label>|</label>
+      Filer-Tax : <span class="filer-tax"></span>
+   </div>
+   <div id="arrow" data-popper-arrow></div>
+</div>
+<!-- Popover end -->
+<div class="page-container row-fluid container-fluid">
+	
+   <!-- SIDEBAR - START -->
+   <section id="main-content" class=" ">
+      <section class="wrapper main-wrapper row" style=''>
+        @if($checkCardType == 'billing_detail')
+        <div class="">
+         <div class="col-lg-12">
+            <div class="header_view">
+               <h2>Billing Report</h2>
+            </div>
+            <!--  -->
+            <div class="col-lg-12">
+               <section class="box ">
+                  <header class="panel_header">
+                     <!-- <h2 class="title pull-left">Billing Report</h2> -->
+                     <div class="actions panel_actions pull-right">
+                        <a class="box_toggle fa fa-chevron-down"></a>
+                     </div>
+                  </header>
+                  <div class="content-body">
+                     <div class="row">
+                        <form action="{{route('users.billing.summary.generate')}}" method="POST">
+                           @csrf
+                           <div class="col-md-3">
+                              <div class="form-group">
+                                 <label  class="form-label">Select Date & Time Range <span style="color: red">*</span></label>
+                                 <div class="controls" style="margin-top: 0px;">
+                                    <input type="text" 
+                                    name="datetimes" style="width: 100%;height: 34px" 
+                                    required>
+                                 </div>
+                              </div>
+                           </div>
+
+                           <div class="form-group col-lg-3 col-md-3">
+                              <label>Own <span style="color: red">*</span></label>
+                              <input type="checkbox" class="form-control" name="own">
+                           </div>
+
+                           <?php
+                           if(Auth::user()->status == 'manager'){
+                           $selectedReseller = App\model\Users\UserInfo::where('status','reseller')->where('manager_id',Auth::user()->manager_id)->get();
+
+                           ?>
+
+                           <div class="form-group col-lg-3 col-md-3">
+                              <label>Select Reseller <span style="color: red">*</span></label>
+                              <select id="reseller-dropdown" class="form-control" name="reseller_data">
+                                 <option value="">-- Select reseller --</option>
+                                 @foreach($selectedReseller  as $reseller)
+                                 <option value="{{$reseller->username}}">{{$reseller->username}}</option>
+                                 @endforeach
+                              </select>
+                           </div>
+
+                         <?php } if((Auth::user()->status == 'manager') || (Auth::user()->status == 'reseller')){ ?>
+
+                           <div class="form-group col-lg-3 col-md-3">
+                              <label>Select Contractor <span style="color: red">*</span></label>
+                              <select id="dealer-dropdown" class="form-control" name="dealer_data">
+                              <option value="">-- Select contractor --</option> 
+                                 <?php
+                                 if(Auth::user()->status == 'reseller'){
+                                  $selectedDealer = App\model\Users\UserInfo::where('status','dealer')->where('resellerid',Auth::user()->resellerid)->get(); 
+                                  foreach ($selectedDealer as $dealer) { ?>
+                                    <option value="{{$dealer->username}}">{{$dealer->username}}</option>
+                                   <?php   
+                                   } 
+                                 }
+                                 ?>
+                              </select>
+                           </div>
+
+                        <?php } if((Auth::user()->status == 'manager') || (Auth::user()->status == 'reseller') || (Auth::user()->status == 'dealer') ){ ?>
+
+                           <div class="form-group col-lg-3 col-md-3">
+                              <label>Select Trader</label>
+                              <select id="trader-dropdown" class="form-control" name="trader_data">
+                                 <option value="">-- Select trader --</option>
+                                 <?php
+                                 if(Auth::user()->status == 'dealer'){
+                                  $selectedDealer = App\model\Users\UserInfo::where('status','subdealer')->where('dealerid',Auth::user()->dealerid)->get(); 
+                                  foreach ($selectedDealer as $subdealer) { ?>
+                                    <option value="{{$subdealer->username}}">{{$subdealer->username}}</option>
+                                   <?php   
+                                   } 
+                                 }
+                                 ?>
+                              </select>
+                           </div>
+
+                        <?php } ?>
+
+                           
+
+
+
+                           <div class="col-md-12">
+                              <br>
+                              <div class="form-group" style="margin-top: 5px;">
+                                 <button class="btn btn-flat btn-primary">Generate</button>
+                                 <button class="btn btn-flat btn-success" value="download" name="download"><i class="fa fa-download"></i> Download</button>
+
+                              </div>
+                           </div>
+                        </form>
+                        @if($isSearched)
+                        <div class="col-md-12">
+                           <div style="overflow-x: auto;">
+                              <table class="table table-bordered table-responsive" style="border: 2px #225094 solid">
+                                 <thead>
+                                    
+                                    <tr> 
+                                       <th>Net Payable Amount (PKR)</th>
+                                       <th>{{number_format($monthlyPayableAmount,2)}}</th>
+                                    </tr>
+                                 </thead>
+                                 
+                              </table>
+                           </div>
+                        </div>
+                        <div class="col-sm-12" style="">
+                           <div style="border: 2px #225094 solid;overflow-x: auto;">
+                              <div style="">
+                                 <table class="table">
+                                    <thead>
+                                       <tr>
+                                          <th colspan="5">Monthly Billing Report</th>
+                                       </tr>
+                                    </thead>
+                                 </table>
+                                 <!-- <h3 style="color:white;background:#225094;height: 40px; margin-top: 0px;  padding-top: 7px;font-size: 18px;font-weight: bold; text-align: center;"> Monthly Billing Report</h3> -->
+                              </div>
+                              <div style="overflow-x: auto;">
+                                 <table id="example1" class="table display">
+                                    <thead>
+
+                                       <!-- <button class="btn btn-default" style="border: 1px solid black;float: right;margin-right: 15px;" onclick="exportTableToCSV('#example1','{{Auth::user()->username}}-Billing-Detail-{{date('d-M-y h-i-A')}}.csv')"><i class="fa fa-download"></i></button> -->
+                                       <tr>
+                                          <th>Serial# </th>
+                                          <th>Consumer ID </th>
+                                          <th>Contractor (ID) </th>
+                                          
+                                          <th>Trader (ID) </th>
+
+                                          <th>Internet Profile </th>
+                                          <th>Service Activation Date </th>
+                                          <th>Service Billing (Start Date & Time)  </th>
+                                          <th>Service Billing (End Date) </th>
+
+
+
+
+
+                                          <th>Wallet Deduction Amount (PKR)</th>
+                                          <th>Invoice</th>
+                                       </tr>
+                                    </thead>
+                                    <tbody>
+                                       @php $sno = 1;
+
+                                       @endphp
+                                       @foreach($monthlyBillingEntries as $entry) 
+
+                                       @php 
+
+                                       $profile_rate=0;
+                                       $wallet=0;
+                                       $rate=0;
+                                       $margin_dealer = ( strVal((float)$entry->user_info['profile_amount']) - (float)$entry['rate'] ) *$entry['filer_tax'];
+
+                                       $filer_tax_rate = $entry['filer_tax'];
+                                       if($selectedUser->status == "reseller"){
+
+                                          $rate1= $entry['r_acc_rate'];
+                                       }elseif($selectedUser->status == "dealer"){
+                                          $profile_rate= $entry['rate'];
+                                          $d_sst=$entry['sst'];
+                                          $d_adv=$entry['adv_tax'];
+                                       }elseif($selectedUser->status == "subdealer"){
+                                          $profile_rate= $entry['rate'];
+                                          $rate1= $entry['s_acc_rate'];
+                                       }elseif($selectedUser->status == "manager"){
+                                          $profile_rate= $entry['m_rate'];
+                                          $rate1= $entry['m_acc_rate'];
+                                       }
+                                       $receipt1 = 0;
+                                       $receipt1 = App\model\Users\AmountBillingInvoice::where(['id' => $entry->id])->first();
+                                       $get_user_amount = App\model\Users\UserInfo::where('username',$entry->username)->first();
+                                       if(!empty($get_user_amount)){
+                                        $profile_amount_user = $get_user_amount->profile_amount;
+                                     }
+                                     $card_expire = 0;
+                                     $user_expire = App\model\Users\UserStatusInfo::where('username' , $entry->username)->first();
+                                     $card_expire = $user_expire['card_expire_on'];
+
+                                     if(empty($receipt1)){
+                                       $receipt = "none";
+                                    }else{
+                                       $receipt = $receipt1->receipt;
+                                    }
+
+
+                                    $wallet= $entry['sst'] + $entry['adv_tax'] + $entry['static_ip_amount'] + strval($margin_dealer) + strVal($entry['rate']);
+
+
+                                    if($entry['company_rate'] == 'yes'){
+
+                                       if($selectedUser->status == 'manager'){
+                                          $wallet = $entry['m_rate'];
+                                       }else if($selectedUser->status == 'reseller'){
+                                          $wallet = $entry['r_rate'];
+                                       }else if($selectedUser->status == 'dealer'){
+                                          $wallet = $entry['dealerrate'];
+                                       }else if($selectedUser->status == 'subdealer'){
+                                          $wallet = $entry['subdealerrate'];
+                                       }
+                                       
+                                    }else{
+
+                                       if($selectedUser->status == 'manager'){
+                                          $wallet = $entry['m_acc_rate'];
+                                       }else if($selectedUser->status == 'reseller'){
+                                          $wallet = $entry['r_acc_rate'];
+                                       }else if($selectedUser->status == 'dealer'){
+                                          $wallet = ($entry['d_acc_rate'] + $entry['sst'] + $entry['adv_tax']) / 2;
+                                       }else if($selectedUser->status == 'subdealer'){
+                                        $wallet = ($entry['s_acc_rate'] + $entry['sst'] + $entry['adv_tax']) / 2; 
+                                     }
+
+                                  }
+
+
+                                  @endphp
+
+                                  <tr>
+                                    <td>{{$sno++}}</td>
+                                    <td class="td__profileName data-wallet" aria-describedby="tooltip" onmouseover="popup_function(this);"  onmouseleave="popover_dismiss();" data-id="{{$entry->username}}" data-sst="{{$entry['sst']}}" data-adv="{{$entry['adv_tax']}}" data-ip="{{$entry['static_ip_amount']}}" data-filer="{{strval($margin_dealer)}}" data-rate="{{strVal($entry['rate'])}}" >{{$entry->username}}
+
+
+
+                                    </td>
+                                    <td>{{$entry->dealerid}}</td>
+
+                                    <td>{{$entry->sub_dealer_id}}</td>
+
+                                    <td>{{$entry['name']}}</td>
+
+                                    @if(!empty($entry->user_info->creationdate))
+                                    <td>{{date("Y-M-d", strtotime($entry->user_info->creationdate))}}</td>
+                                    @else
+                                    <td>N/A</td>
+                                    @endif
+                                    <td>{{date("Y-M-d H:i:s", strtotime($entry->charge_on))}}</td>
+                                    @if(!empty($card_expire))
+                                    <td>{{date("Y-M-d", strtotime($card_expire))}}</td>
+                                    @else
+                                    <td>N/A</td>
+                                    @endif
+
+                                    <td style="color: #30761b;font-weight: bold;font-size: 18px;">{{$wallet}}</td>
+                                    <td><a href="{{url('users/bill/view/'.$entry->username.'/'.$entry->date)}}" class="btn btn-default btn-xs" target="_blank" style="color: red;border:none"><i class="fa fa-file-pdf-o"></i> Invoice</a></td>
+
+
+
+                                 </tr>
+                                 @endforeach
+                              </tbody>
+                              <tfoot>
+                                 <tr class="btn-default" style="background-color:#d8d8d8;">
+                                    <th colspan="8" style="text-align:right;font-weight:bold;font-size: 16px;">Grand Total <span style="color: #30761b">(PKR):</span></th>
+                                    <th  style="text-align:center;font-weight:bold;font-size: 18px;"></th>
+                                    <th  style="text-align:center;font-weight:bold;font-size: 15px;"></th>
+                                 </tr>
+                              </tfoot>
+                           </table>
+                        </div>
+                     </div>
+                  </div>
+                  @endif
+               </div>
+            </div>
+         </section>
+      </div>
+   </div>
+</div>
+@else
+<div class="col-lg-12">
+   <div class="header_view">
+    <h2>Billing Profile Detail </h2>
+ </div>
+</div>
+<div class="col-lg-12">
+   <section class="box ">
+    <header class="panel_header">
+     <!-- <h2 class="title pull-left">Billing profile Report</h2> -->
+     <div class="actions panel_actions pull-right">
+      <a class="box_toggle fa fa-chevron-down"></a>
+   </div>
+</header>
+<div class="content-body">
+  <div class="row">
+   <form action="{{route('users.BillingCardDetail')}}" method="POST">
+    @csrf
+    <div class="col-md-5">
+     <div class="form-group">
+      <label  class="form-label">Select Date Range</label>
+      <div class="controls" style="margin-top: 0px;">
+       <input type="text" 
+       name="datetimes" style="width: 100%;height: 34px" 
+       required>
+    </div>
+ </div>
+</div>
+<div class="col-md-5">
+  <div class="form-group">
+   <label  class="form-label">Select Username</label>
+   <select class="form-control" id="username-select" name="username" required >
+    <option value="">select Username</option>
+    @if(Auth::user()->status == "dealer")
+    <option value="all">All</option>
+    <option value="own">own</option>
+    @endif
+    @if(Auth::user()->status == "manager")
+    <option value="{{Auth::user()->username}}">own</option>
+    @endif
+    @if(Auth::user()->status == "subdealer")
+    <option value="{{Auth::user()->username}}">{{Auth::user()->username}}</option>
+    @endif
+    @foreach($userCollection as $dealer)
+    <option value="{{$dealer->username}}">{{$dealer->username}}</option>
+    @endforeach
+ </select>
+</div>
+</div>
+<div class="col-md-2">
+  <br>
+  <div class="form-group" style="margin-top: 5px;">
+   <button class="btn btn-flat btn-primary">Search</button>
+</div>
+</div>
+</form>
+<!-- Report Summary -->
+@if($isSearched)
+<div class="col-md-12">
+ <div style="overflow-x: auto;">
+  <table class="table table-bordered table-responsive" style="border: 2px #225094 solid">
+   <thead>
+    <tr>
+     <th colspan="5">Report Summary</th>
+  </tr>
+  <tr>
+     <th>Manager Name</th>
+     <th>Reseller Name</th>
+     <th>Dealer Name</th>
+     <th>Sub Dealer Name </th>
+     @if ($own == true)
+     <th>Net Payable Amount (PKR)</th>
+     @endif
+  </tr>
+</thead>
+<tbody>
+ <tr>
+  <td>{{$selectedUser->manager_id}}</td>
+  <td>{{$selectedUser->resellerid}}</td>
+  <td>{{$selectedUser->dealerid}}</td>
+  <td>{{$selectedUser->sub_dealer_id}}</td>
+  @if ($own == true)
+  <td>{{number_format($monthlyPayableAmount,2)}}</td>
+  @endif
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="col-sm-12" style="">
+ <div style="border: 2px #225094 solid;overflow-x: auto;">
+  <div style="">
+   <table class="table">
+      <thead>
+       <tr>
+        <th>Monthly Billing Report</th>
+     </tr>
+  </thead>
+</table>
+<!-- <h3 style="color:white;background:#225094;height: 40px; margin-top: 0px;  padding-top: 7px;font-size: 18px;font-weight: bold; text-align: center;"> Monthly Billing Report</h3> -->
+</div>
+<div style="overflow-x: auto;"> 
+  <table id="{{$own == true ? 'example1' : 'example-1'}}" class="table display">
+    <thead>
+     <button class="btn btn-default" style="border: 1px solid black;float: right;margin-right: 15px;" onclick="exportTableToCSV('{{$own == true ? '#example1' : '#example-1'}}','{{Auth::user()->username}}-Billing-Detail-{{date('d-M-y h-i-A')}}.csv')"><i class="fa fa-download"></i></button>
+     <tr>
+      <th>Serial# </th>
+      <th>Customer ID </th>
+      <th>Dealer ID </th>
+      <th>Sub Dealer ID </th>
+      <th>Package </th>
+      <th>Service Activation Date </th>
+      <th>Service Billing Start Date  </th>
+      <th>Service Billing End Date </th>
+
+      @if ($own == true)
+      <th>Rate</th>
+      @endif
+
+   </tr>
+</thead>
+<tbody>
+
+   @php $sno = 1;
+
+   @endphp
+   @foreach($monthlyBillingEntries as $entry) 
+
+   @php 
+
+   $profile_rate=0;
+   $wallet=0;
+   $rate=0;
+   $margin_dealer = (strVal($entry->user_info['profile_amount']) - $entry['rate']) *$entry['filer_tax'];
+
+   $filer_tax_rate = $entry['filer_tax'];
+   if($selectedUser->status == "reseller"){
+
+      $rate1= $entry['r_acc_rate'];
+   }elseif($selectedUser->status == "dealer"){
+      $profile_rate= $entry['rate'];
+      $d_sst=$entry['sst'];
+      $d_adv=$entry['adv_tax'];
+   }elseif($selectedUser->status == "subdealer"){
+      $profile_rate= $entry['rate'];
+      $rate1= $entry['s_acc_rate'];
+   }elseif($selectedUser->status == "manager"){
+      $profile_rate= $entry['m_rate'];
+      $rate1= $entry['m_acc_rate'];
+   }
+   $receipt1 = 0;
+   $receipt1 = App\model\Users\AmountBillingInvoice::where(['id' => $entry->id])->first();
+   $get_user_amount = App\model\Users\UserInfo::where('username',$entry->username)->first();
+   if(!empty($get_user_amount)){
+    $profile_amount_user = $get_user_amount->profile_amount;
+ }
+ $card_expire = 0;
+ $user_expire = App\model\Users\UserStatusInfo::where('username' , $entry->username)->first();
+ $card_expire = $user_expire['card_expire_on'];
+
+ if(empty($receipt1)){
+   $receipt = "none";
+}else{
+   $receipt = $receipt1->receipt;
+}
+
+
+$wallet= $entry['sst'] + $entry['adv_tax'] + $entry['static_ip_amount'] + strval($margin_dealer) + strVal($entry['rate']);
+
+@endphp
+<tr>
+  <td>{{$sno++}}</td>
+  <td>{{$entry->username}}</td>
+  <td>{{$entry['name']}}</td>
+  @if(!empty($entry->user_info->creationdate))
+  <td>{{$entry->user_info->creationdate}}</td>
+  @else
+  <td>N/A</td>
+  @endif
+  <td>{{$entry->charge_on}}</td>
+  @if(!empty($card_expire))
+  <td>{{$card_expire}}</td>
+  @else
+  <td>N/A</td>
+  @endif
+  <td>{{$entry->dealerid}}</td>
+  <td>{{$entry->sub_dealer_id}}</td>
+  @if ($own == true)
+  <td>{{$rate}}</td>
+  @endif
+</tr>
+
+
+<tr>
+   <td>{{$sno++}}</td>
+   <td class="td__profileName data-wallet" aria-describedby="tooltip" onmouseover="popup_function(this);"  onmouseleave="popover_dismiss();" data-id="{{$entry->username}}" data-sst="{{$entry['sst']}}" data-adv="{{$entry['adv_tax']}}" data-ip="{{$entry['static_ip_amount']}}" data-filer="{{strval($margin_dealer)}}" data-rate="{{strVal($entry['rate'])}}" >{{$entry->username}}
+
+
+   </td>
+   <td>{{$entry->dealerid}}</td>
+
+   <td>{{$entry->sub_dealer_id}}</td>
+
+   <td>{{$entry['name']}}</td>
+
+   @if(!empty($entry->user_info->creationdate))
+   <td>{{date("Y-M-d", strtotime($entry->user_info->creationdate))}}</td>
+   @else
+   <td>N/A</td>
+   @endif
+   <td>{{date("Y-M-d H:i:s", strtotime($entry->charge_on))}}</td>
+   @if(!empty($card_expire))
+   <td>{{date("Y-M-d", strtotime($card_expire))}}</td>
+   @else
+   <td>N/A</td>
+   @endif
+   @if ($own == true)
+   <td style="color: #30761b;font-weight: bold;font-size: 18px;">{{$wallet}}</td>
+   @endif
+   <td><a href="{{url('users/bill/view/'.$entry->username.'/'.$entry->date)}}" class="btn btn-default" target="_blank">Invoice</a></td>
+
+
+
+</tr>
+@endforeach
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+@endif
+</div>
+</div>
+</section>
+</div>
+@endif
+<div class="chart-container " style="display: none;">
+   <div class="" style="height:200px" id="platform_type_dates"></div>
+   <div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+   <div class="" style="height:200px" id="user_type"></div>
+   <div class="" style="height:200px" id="browser_type"></div>
+   <div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+   <div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+</div>
+</section>
+</section>
+<!-- END CONTENT -->
+<!---Model Dialog --->
+</div>
+<!---Model Dialog --->
+@endsection
+@section('ownjs')
+<script>
+         // var $this = $(this).find('.collapsible');
+         // var ref = $(".collapsible");        
+   var popup = $('#tooltip');
+   popup.hide();
+
+
+   // var rate =$('.data-wallet').attr('data-rate');
+   // $('.profile-rate').text(rate);
+   // var sst_tax =$('.data-wallet').attr('data-sst');
+   // $('.sst-tax').text(sst_tax);
+   // var adv_tax =$('.data-wallet').attr('data-adv');
+   // $('.adv-tax').text(adv_tax);
+   // var ip =$('.data-wallet').attr('data-ip');
+   // $('.static-ip').text(ip);
+   // var filer =$('.data-wallet').attr('data-filer');
+   // $('.filer-tax').text(filer);
+   // var id =$('.td__profileName').attr('data-id');
+
+   // $('.id-username').text(id);
+
+
+
+   $(document).on('mouseover','.data-wallet',function(){
+      // alert('wokring');
+      var rate =$(this).attr('data-rate');
+      $('.profile-rate').text(rate);
+      var sst_tax =$(this).attr('data-sst');
+      $('.sst-tax').text(sst_tax);
+      var adv_tax =$(this).attr('data-adv');
+      $('.adv-tax').text(adv_tax);
+      var ip =$(this).attr('data-ip');
+      $('.static-ip').text(ip);
+      var filer =$(this).attr('data-filer');
+      $('.filer-tax').text(filer);
+      var id =$(this).attr('data-id');
+   });
+
+         // ref.click(function(){
+   function popup_function(id){
+      popup.show(); 
+      var popper = new Popper(id,popup,{
+         placement: 'right',
+         onCreate: function(data){
+            console.log(data);
+         },
+         modifiers: {
+            flip: {
+               behavior: ['left', 'right', 'top','bottom']
+            },
+            offset: { 
+               enabled: true,
+               offset: '0,0'
+            }
+         }
+      });
+   };
+   function popover_dismiss(){
+      popup.hide();
+   }
+         // window.addEventListener("click", () => {
+         //    popup.hide();
+         // });
+</script>
+<script type="">
+   $(document).ready(function() {
+      $('.right-tip').tooltip();
+      $('#example1').DataTable( {
+       "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+       "footerCallback": function ( row, data, start, end, display ) {
+         var api = this.api(), data;
+
+              // Remove the formatting to get integer data for summation
+         var intVal = function ( i ) {
+            return typeof i === 'string' ?
+            i.replace(/[\$,]/g, '')*1 :
+            typeof i === 'number' ?
+            i : 0;
+         };
+
+              // Total over all pages
+         total = api
+         .column( 8 )
+         .data()
+         .reduce( function (a, b) {
+            return intVal(a) + intVal(b);
+         }, 0 );
+
+              // Total over this page
+         pageTotal = api
+         .column( 8, { page: 'current'} )
+         .data()
+         .reduce( function (a, b) {
+            return intVal(a) + intVal(b);
+         }, 0 );
+
+         pageTotal = pageTotal.toFixed(2);
+              // Update footer
+         $( api.column( 8 ).footer() ).html(pageTotal);
+      // $('#example1').DataTable( {
+      //  "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+      //  "footerCallback": function ( row, data, start, end, display ) {
+      //    var api = this.api(), data;
+
+      //         // Remove the formatting to get integer data for summation
+      //    var intVal = function ( i ) {
+      //       return typeof i === 'string' ?
+      //       i.replace(/[\$,]/g, '')*1 :
+      //       typeof i === 'number' ?
+      //       i : 0;
+      //    };
+
+      //         // Total over all pages
+      //    total = api
+      //    .column( 8 )
+      //    .data()
+      //    .reduce( function (a, b) {
+      //       return intVal(a) + intVal(b);
+      //    }, 0 );
+
+      //         // Total over this page
+      //    pageTotal = api
+      //    .column( 8, { page: 'current'} )
+      //    .data()
+      //    .reduce( function (a, b) {
+      //       return intVal(a) + intVal(b);
+      //    }, 0 );
+
+      //    pageTotal = pageTotal.toFixed(2);
+      //         // Update footer
+
+      //    $( api.column( 8 ).footer() ).html(pageTotal);
+      }
+
+   } );
+   } );
+</script>
+<script type="text/javascript">
+   function formatMoney(n, c, d, t) {
+     var c = isNaN(c = Math.abs(c)) ? 2 : c,
+     d = d == undefined ? "." : d,
+     t = t == undefined ? "," : t,
+     s = n < 0 ? "-" : "",
+     i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))),
+     j = (j = i.length) > 3 ? j % 3 : 0;
+     return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+  }
+</script>
+<script>
+   $(function() {
+     $('input[name="datetimes"]').daterangepicker({
+       timePicker: true,
+       startDate: moment().startOf('hour'),
+       endDate: moment().startOf('hour'),
+       locale: {
+         format: 'M/DD/YYYY HH:mm'
+      }
+   });
+
+  });
+</script>
+
+<script>
+        $(document).ready(function () {
+  
+            $('#reseller-dropdown').on('change', function () {
+                var reseller_id = this.value;
+                $("#dealer-dropdown").html('');
+                $.ajax({
+                    url: "{{route('get.dealer')}}",
+                    type: "POST",
+                    data: {
+                        reseller_id: reseller_id,
+                        _token: '{{csrf_token()}}'
+                    },
+                    dataType: 'json',
+                    success: function (result) {
+                        $('#dealer-dropdown').html('<option value="">-- Select contractor --</option>');
+                        $.each(result.dealer, function (key, value) {
+                            $("#dealer-dropdown").append('<option value="' + value
+                                .username + '">' + value.username + '</option>');
+                        });
+                         $('#trader-dropdown').html('<option value="">-- Select Trader --</option>');
+                    }
+                });
+            });
+
+             /*------------------------------------------
+            --------------------------------------------
+            Trader Dropdown Change Event
+            --------------------------------------------
+            --------------------------------------------*/
+              $('#dealer-dropdown').on('change', function () {
+                var dealer_id = this.value;
+                $("#trader-dropdown").html('');
+                $.ajax({
+                    url: "{{route('get.trader')}}",
+                    type: "POST",
+                    data: {
+                        dealer_id: dealer_id,
+                        _token: '{{csrf_token()}}'
+                    },
+                    dataType: 'json',
+                    success: function (result) {
+                        $('#trader-dropdown').html('<option value="">-- Select Trader --</option>');
+                        $.each(result.subdealer, function (key, value) {
+                            $("#trader-dropdown").append('<option value="' + value
+                                .username + '">' + value.username + '</option>');
+                        });
+                    }
+                });
+            });
+  
+        });
+    </script>
+@endsection

@@ -1,0 +1,670 @@
+@extends('users.layouts.app')
+@section('title') Dashboard @endsection
+@section('owncss')
+<style type="text/css">
+	.input-group-addon.primary {
+		color: rgb(255, 255, 255);
+		background-color: rgb(50, 118, 177);
+		border-color: rgb(40, 94, 142);
+	}
+	.input-group-addon.success {
+		color: rgb(255, 255, 255);
+		background-color: rgb(92, 184, 92);
+		border-color: rgb(76, 174, 76);
+	}
+	.input-group-addon.info {
+		color: rgb(255, 255, 255);
+		background-color: rgb(57, 179, 215);
+		border-color: rgb(38, 154, 188);
+	}
+	.input-group-addon.warning {
+		color: rgb(255, 255, 255);
+		background-color: rgb(240, 173, 78);
+		border-color: rgb(238, 162, 54);
+	}
+	.input-group-addon.danger {
+		color: rgb(255, 255, 255);
+		background-color: rgb(217, 83, 79);
+		border-color: rgb(212, 63, 58);
+	}
+	.btn.btn-secondary.assign.active{
+		background-color: green
+	}
+	.btn.btn-secondary.removed.active{
+		background-color: red
+	}
+	.btn.btn-secondary.assign:hover{
+		background-color:green;
+	}
+	.btn.btn-secondary.removed:hover{
+		background-color:red;
+	}
+	#cons_base_price{
+		display:none;
+	}
+	a:hover, a:focus {
+		color: #ddd;
+	}
+</style>
+@endsection
+@section('content')
+<div class="page-container row-fluid container-fluid">
+	<section id="main-content">
+		<section class="wrapper main-wrapper row">
+			<div class="header_view">
+				<h2>Update Consumer
+                <span class="info-mark" onmouseenter="popup_function(this, 'update_consumer_form');" onmouseleave="popover_dismiss();"><i class="las la-info-circle"></i></span>
+				</h2>
+			</div>
+			<div class="">
+				<section class="box ">
+					<header class="panel_header">
+						@include('users.layouts.session')
+					</header>
+					<div class="content-body">
+						<form id="general_validate"	action="{{route('users.user.update',['status' => 'user','id' => $id])}}" method="POST" >
+							@csrf
+							<input type="hidden" name="url" value="{{$url}}">
+							<div class="row">
+								<div class="col-lg-3 col-md-4">
+									<!-- <div class="form-group">
+										<label  class="form-label">Manager (ID)</label> -->
+										<input type="hidden" value="{{$user->manager_id}}" class="form-control" placeholder="Manager (ID)" readonly >
+									<!-- </div>
+									<div class="form-group">
+										<label  class="form-label">Reseller (ID)</label> -->
+										<input type="hidden" value="{{$user->resellerid}}" class="form-control" placeholder="Reseller (ID)" readonly >
+										<!-- </div> -->
+									<!-- <div class="form-group">
+										<label  class="form-label">Contractor (ID) <span style="color: red">*</span></label> -->
+										<input type="hidden" value="{{$user->dealerid}}" class="form-control" placeholder="Contractor (ID)" readonly >
+									<!-- </div>
+									<div class="form-group">
+										<label  class="form-label">Trader (ID) <span style="color: red">*</span></label> -->
+										<input type="hidden" value="{{$user->sub_dealer_id}}" class="form-control" placeholder="Trader (ID)" readonly  >
+										<!-- </div> -->
+										<div class="form-group position-relative">
+											<label  class="form-label">Username <span style="color: red">*</span></label>
+											<span class="helping-mark" onmouseenter="popup_function(this, 'pppoe_consumer_id');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+											<input type="text" value="{{$user->username}}" class="form-control"  placeholder="username" readonly>
+										</div>
+										<div class="form-group position-relative">
+											<label  class="form-label">First Name <span style="color: red">*</span></label>
+											<span class="helping-mark" onmouseenter="popup_function(this, 'first_name');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+											<input type="text" name="fname" value="{{$user->firstname}}" class="form-control"  placeholder="First Name" readonly>
+										</div>
+
+										@php
+										$mob = '';
+										$nic = '';
+										$ntn = '';
+										$passport = '';
+										$overseas = '';
+										$verified = '';
+										$isverify = App\model\Users\UserVerification::where('username',$user->username)->select('mobile_status','cnic','ntn','overseas','intern_passport')->get();
+										foreach ($isverify as $value) {
+											$mob = $value['mobile_status'];
+											$nic = $value['cnic'];
+											$ntn = $value['ntn'];
+											$passport = $value['intern_passport'];
+											$overseas = $value['overseas'];
+										}
+										if($nic != ''){
+											$verified = $nic;
+										}elseif($ntn != ''){
+											$verified = $ntn;
+										}elseif($overseas != ''){
+											$verified = $overseas;
+										}elseif($passport != ''){
+											$verified = $passport;
+										}
+
+										@endphp
+
+										<div class="form-group position-relative">
+											<label  class="form-label">Last Name <span style="color: red">*</span></label>
+											<span class="helping-mark" onmouseenter="popup_function(this, 'last_name');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+											<input type="text" name="lname" value="{{$user->lastname}}" class="form-control"  placeholder="Last Name" readonly>
+										</div>
+									<!-- {{-- <div class="form-group">
+											<label  class="form-label">CNIC</label>
+											<input type="text" name="nic" value="{{$user->nic}}" class="form-control"  data-mask="99999-9999999-9" required>
+									</div> --}} -->
+									<div class="form-group position-relative">
+										<label for="validate-nic">CNIC Number <span style="color: red">*</span></label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'cnic');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<div class="input-group" data-validate="nic">
+											<input type="hidden" name="" id="nicvariCode" value="{{$verified}}">
+											<input type="text" class="form-control" name="nic" value="{{$user->nic}}"  required readonly>
+											<span class="input-group-addon @if(empty($verified)) danger @else success @endif">
+												<!-- <a href="#" data-toggle="modal" style="color: white"> -->
+												@if(empty($verified))
+												Unverified
+
+												<!-- <span class="glyphicon glyphicon-remove"></span> -->
+												@else
+												Verified
+												<!-- <span class="glyphicon glyphicon-check"></span> -->
+												@endif
+												<!-- </a> -->
+											</span>
+										</div>
+									</div>
+									<div class="form-group position-relative">
+										<label  class="form-label">Email Address <span style="color: red">*</span></label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'email_address');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<input type="email" name="mail" value="{{$user->email}}" class="form-control"  placeholder="lbi@gmail.com" required>
+									</div>
+								</div>
+								<div class="col-lg-3 col-md-4">
+									<div class="form-group position-relative">
+										<label  class="form-label">Residential Address <span style="color: red">*</span></label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'address');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<input type="text" name="address" value="{{$user->address}}" class="form-control"  placeholder="Address" required>
+									</div>
+									<div class="form-group position-relative">
+										<label for="validate-phone">Mobile Number <span style="color: red">*</span></label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'mobile_number');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<div class="input-group" data-validate="phone">
+											<input type="hidden" name="" id="variCode" value="{{$mob}}">
+											<input type="text" class="form-control" name="mobile_number" id="validate-phone"  data-mask="9999 9999999" value="{{$user->mobilephone}}" required readonly>
+											<span class="input-group-addon @if(empty($mob)) danger @else success @endif">
+												<!-- <a href="#" data-toggle="modal" style="color: white"> -->
+													@if(empty($mob))
+													Unverified
+
+													<!-- <span class="glyphicon glyphicon-remove"></span> -->
+													@else
+													Verified
+													<!-- <span class="glyphicon glyphicon-check"></span> -->
+													@endif
+													<!-- </a> -->
+											</span>
+										</div>
+									</div>
+									<div class="form-group position-relative">
+										<label  class="form-label">Landline# | Mobile#2 <span style="color: red">*</span></label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'land_line_number');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<input type="text" name="land_number" value="{{$user->homephone}}" class="form-control">
+									</div>
+									<div class="form-group position-relative">
+										<label  class="form-label">Passport Number</label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'passport_number');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<input type="text" class="form-control"  placeholder="AB1234567"readonly>
+									</div>
+									<div class="form-group position-relative">
+										<label  class="form-label">Mac Address</label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'mac_address_view');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<input type="text" class="form-control" value="<?= $userRadCheck->value;?>"   readonly>
+									</div>
+								</div>
+								<div class="col-lg-3 col-md-4">
+									@if(Auth::user()->status != "trader")
+										<!-- // billing work -->
+									<div class="form-group position-relative"> 
+										<label  class="form-label" >Select Internet Profile <span style="color: red">*</span></label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'select_internet_profile');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<select class="form-control profile_amount" name="profile" id="profile">
+											<option value="">Select Internet Profile</option>
+											@php
+											$status = Auth::user()->status;
+											if(Auth::user()->status == "dealer"){
+												$profileList = App\model\Users\DealerProfileRate::where(['dealerid' => Auth::user()->dealerid])->orderby('groupname')->get();
+												if(!empty($user->name)){
+													$get_dealer_rate = App\model\Users\DealerProfileRate::where(['dealerid' => Auth::user()->dealerid, 'name' => $user->name ])->first();
+												}
+											}
+											else{
+												$profileList = App\model\Users\SubdealerProfileRate::where(['sub_dealer_id' => Auth::user()->sub_dealer_id])->orderby('groupname')->get();
+												if(!empty($user->name)){
+													$get_dealer_rate = App\model\Users\SubdealerProfileRate::where(['name' => $user->name, 'dealerid' => Auth::user()->dealerid, 'sub_dealer_id' => Auth::user()->sub_dealer_id])->first();
+												}
+											}
+
+											@endphp
+											@foreach($profileList as $data)
+											@php $name=$data->name;
+											
+											@endphp
+
+											<option value="{{$data->name}}" data-status="{{$status}}" @if($user->name === $name ) selected @endif>{{ucfirst($name)}}</option>
+											@endforeach
+											
+										</select>
+									</div>
+
+									<?php
+									$companyDiv = 'block';		
+									$consumerDiv = 'none';	
+									$consumer_price = 0;
+											//
+									if($get_dealer_rate){
+										if($user->profile_amount > $get_dealer_rate->rate){
+											$companyDiv = 'none';		
+											$consumerDiv = 'block';
+											$consumer_price = $user->profile_amount;	
+										}
+									}
+										// if($user->profile_amount > $get_dealer_rate->rate){
+										// 	$companyDiv = 'none';		
+										// 	$consumerDiv = 'block';
+										// 	$consumer_price = $user->profile_amount;	
+										// }else{
+										// 	$companyDiv = 'block';		
+										// 	$consumerDiv = 'none';	
+										// 	$consumer_price = 0;
+										// }
+									?>	
+									<div class="form-group position-relative" id="cons_base_price" style="display:<?= $consumerDiv;?>">
+										<label  class="form-label">Consumer Base Price (PKR)<span style="color: red">*</span></label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'internet_profile_base_price_update_page');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<div class="input-group">
+											<input type="number" class="form-control" name="base_price" id="base_price"  step="0.01" value="<?= $consumer_price;?>">
+											<!-- <input type="text" class="form-control" name="mobile_number" id="validate-phone"  data-mask="9999 9999999" value="{{$user->mobilephone}}" required readonly> -->
+											<span class="input-group-addon primary"><a href="#tax-calculator" data-toggle="modal" style="color: white"><i class="fa fa-calculator"></i> Tax Calculator </a></span>
+												@error('base_price')
+											<span class="text text-danger">{{ $message }}</span>
+												@enderror
+										</div>
+									</div>
+										<!-- end -->
+									@endif
+									<div class="form-group" id="input_comp_rate" style="display:<?= $companyDiv;?>">
+										<div class="input-group">
+											<input type="text" class="form-control" id="" value="Company Rate" name="company_rate" readonly >
+											<span class="input-group-addon primary"><a href="javascript:void(0);" onclick="showFunction();"> Click to Change </a></span>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-3 col-md-4">
+									<div class="form-group position-relative">
+										<label >Static IP</label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'static_ip_assign_conusmer_update');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<div class="btn-group btn-group-toggle" style="width:100%" data-toggle="buttons" id="ipassign">
+											<?php if(!$staticIp){ ?>
+												<label class="btn btn-secondary assign" style="width:100%">
+													<input type="radio" name="ipassign" value="assign"  autocomplete="off"> Process 
+												</label>
+											<?php }else{ ?>
+
+												<label class="btn btn-secondary removed" style="width:100%" id="ipremove">
+													<input type="radio" name="ipassign" value="remove"  autocomplete="off"> Remove IP: 
+													<?php if($staticIp){?>
+														<label style="margin-bottom:0px;"> {{$staticIp->ipaddress}}</label>
+														<?php } ?>
+												</label>
+											<?php } ?>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-3 col-md-4">
+									@if(Auth::user()->status != "subdealer" && Auth::user()->status != "trader")
+									<div class="form-group" id="ip_wrapper" style="display:none">
+										<label  class="form-label">Select Static (IP)</label>
+										<select class="form-control" name="static_ip" id="select_static_ip">
+											<option value="">None</option>
+											<?php if($staticIp){?>
+												<option value="{{$staticIp->ipaddress}}" selected>{{$staticIp->ipaddress}} [{{$staticIp->type}}]</option>	
+											<?php }else{?>
+												@foreach($serverip as $data)
+												<option value="{{$data->ipaddress}}">{{$data->ipaddress}} [{{$data->type}}]</option>
+												@endforeach 
+											<?php } ?>
+										</select>
+									</div>
+									@endif
+
+									<?php
+									if(!empty($user->static_ip_amount)){
+										$staticIPMinRate = $user->static_ip_amount;
+									}else{
+										$staticIPMinRate = @$staticIpRate->rates;
+									}
+										
+									?>
+									<div class="form-group" id="ip_rate_wrapper" style="display:none">
+										<label  class="form-label">Assign Static IP Rates (PKR) <span style="color: red">*</span></label>
+										<!-- <input type="hidden" name="static_ip_amount" value="{{$user->static_ip_amount}}"> -->
+										<!-- <input type="number" class="form-control" id="static-ip" value="{{$staticIPMinRate}}" name="static_ip_amount" min="0" required> -->
+										<div class="input-group">
+											<input type="number" class="form-control" id="input_ip_rates" value="Company Rate" name="static_ip_amount" readonly placeholder="Company Rate" >
+											<span class="input-group-addon primary"><a href="javascript:void(0);" onclick="changeFunction();"> Click to Change </a></span>
+										</div>
+									</div>
+										@php
+										$time=strtotime(date('Y-m-d'));
+										$month=date("m",$time);
+										$year=date("Y",$time);
+										$toMonth = $year.'-'.$month;
+										$date = '';
+										$expire = App\model\Users\UserStatusInfo::where(['username' => $user->username])->first();
+										$allow = App\model\Users\DealerProfileRate::where(['dealerid' => Auth::user()->dealerid])->first();
+										$allowprofile = $allow['changeprofile'];
+										$date = $expire['expire_datetime'];
+										if($user->never_expire == 'yes'){
+											$condition='checked';
+										}else{
+											$condition='';
+										}
+										if($user->taxprofile == 'yes')
+										{
+											$condition1='checked';
+										}else{
+											$condition1='';
+										}
+
+										// Allow never Expire Check
+										$isSetNeverExpre = App\model\Users\UserInfo::where('dealerid',Auth::user()->dealerid)->where('status','dealer')->select('never_expire')->first();
+										@endphp
+									<div class="col-sm-6" style="display: {{$isSetNeverExpre['never_expire'] == 'yes' ? 'block' : 'none'}}">
+										<div class="form-group" style="width: 15% !important;display: inline-table;margin: 5px;">
+											<label  class="form-label">NeverExpire</label>
+											<input style="margin-left: 10px;" type="checkbox" <?php echo $condition; ?> name="neverexpire" value="yes" id="neverexpire"> 
+											<input type="month" id="nextexpire" name="nextexpire" min="{{$toMonth}}" style="display: none">
+										</div>
+									</div>
+									<div class="col-sm-6">
+										@if($allowprofile == 'yes' && $date < date('Y-m-d 12:00:00'))
+										<label  class="form-label">ChangeProfile</label>
+										<div class="form-check" align="center">
+											<input type="checkbox" <?php echo $condition1; ?> name="taxprofile" value="yes" style="width: 20px;height: 20px;" > 
+										</div>
+										@endif
+									</div>
+									<div class="col-md-12">
+										@php
+										$updateProfile = App\model\Users\RaduserGroup::where('username',$user->username)->first();
+										$newProfile = $updateProfile->groupname;
+										$packages = ['ghaznavi','shaheen','hatf','ghauri'];
+										@endphp
+										@if(in_array($user->name,$packages))
+										<label  class="form-label">Pure-{{$user->name}}</label>
+										<div class="form-check">
+											<input type="checkbox" data-name="{{$user->name}}" data-username="{{$user->username}}" {{$newProfile == $user->profile.'-p' ? 'checked' : ''}}  name="cirprofile" id="cirprofile" value="{{$user->profile}}" style="width: 15px;height: 20px;">
+										</div>
+										@endif
+									</div>
+
+								</div>
+								<div class="col-xs-12">
+									<div class="pull-right ">
+										<button type="submit" class="btn btn-primary">Update</button>
+									</div>
+								</div>
+							</div>
+						</form>
+					</div>
+					</section></div>
+					<div class="chart-container " style="display: none;">
+						<div class="" style="height:200px" id="platform_type_dates"></div>
+						<div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+						<div class="" style="height:200px" id="user_type"></div>
+						<div class="" style="height:200px" id="browser_type"></div>
+						<div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+						<div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+					</div>
+				</section>
+			</section>
+			<!-- END CONTENT -->
+		</div>
+
+		<script>
+			function changeFunction() {
+				$('#input_ip_rates').prop('readonly', false)
+				$('#input_ip_rates').val('');
+			}
+			function showFunction() {
+				$('#cons_base_price').css('display', 'block');
+				$('#input_comp_rate').css('display', 'none');
+			}
+			$(function(){
+				$('input[name=ipassign]').on('change', function(){
+					var value = $(this).val();
+					if(value === 'assign'){
+						$('#ip_wrapper').css('display', 'block');
+						// $('#ip_rate_wrapper').css('display', 'block');
+					}
+					// alert(value);
+				})
+			})
+			$(function() {
+				$('#select_static_ip').on('change', function() {
+					var value = $("#select_static_ip option:selected").val();
+					if(value){
+						$('#ip_rate_wrapper').css('display', 'block');
+						$('#input_ip_rates').prop('readonly', true);
+						$('#input_ip_rates').val('');
+					}else{
+						$('#input_ip_rates').prop('readonly', true);
+						$('#input_ip_rates').val('');
+						$('#ip_rate_wrapper').css('display', 'none');
+					}
+				})
+			})
+	// $(window).load(function(){
+	// 	var selectedProfile = $(".profile_amount option:selected").val();
+	// 	var status =  $(".profile_amount option:selected").attr('data-status');
+	// 		console.log(status);
+	// 		if(selectedProfile == 0)
+	// 			{
+	// 				$('#base_price').val(0);
+	// 			}
+	// 			else{
+	// 			$.ajax({
+	// 				type: "POST",
+	// 				url: "{{route('users.user.amount')}}",
+	// 				data:'profileName='+selectedProfile+'&status='+status,
+	// 				success: function (data) {
+	// 				console.log(data);
+	// 					$('#base_price').val(data);
+
+	// 				},
+	// 				error: function(jqXHR, text, error){
+	// 					console.log(error);
+	// 				}
+	// 			});
+	// 		}
+	// })
+
+			// $(window).load(function(){
+
+			// 	var selectedProfile = $(".profile_amount option:selected").val();
+
+			// 	var status =  $(".profile_amount option:selected").attr('data-status');	
+			// 	var profile_amount =  $("#base_price").attr('data-id');
+			// 	document.getElementById("base_price").value = "";
+
+			// 	console.log(status);
+
+			// 	if(selectedProfile == 0)
+
+			// 	{
+
+			// 		// $('#base_price').val(0);
+
+			// 	}
+
+			// 	else{
+
+			// 		$.ajax({
+
+			// 			type: "POST",
+
+			// 			url: "{{route('users.user.amount')}}",
+
+			// 			data:'profileName='+selectedProfile+'&status='+status,
+
+			// 			success: function (data) {
+
+			// 				console.log(data);
+
+			// 				if(profile_amount == 0)
+			// 				{
+
+			// 					$('#base_price').val(data);
+			// 				}
+			// 				else{
+			// 					document.getElementById("base_price").value = "";
+			// 					$('#base_price').val(profile_amount);
+			// 				}
+
+			// 			},
+			// 			error: function(jqXHR, text, error){
+			// 				console.log(error);
+			// 			}
+
+			// 		});
+
+			// 	}
+			// });
+
+
+
+			// $(document).on('change','#select_static_ip', function(){
+			// 	if($('#select_static_ip').val() === ''){
+			// 		$('#static-ip').attr('disabled', true);
+			// 		$('#static-ip').attr('required', false);
+			// 	}
+			// 	else{
+			// 		$('#static-ip').attr('disabled', false);
+			// 		$('#static-ip').attr('required', true);
+			// 	}
+			// })
+// $(document).on('change','#profile', function(){
+// 	if($('#profile').val() === ''){
+// 		$('#base_price').attr('disabled', true);
+// 		$('#base_price').attr('required', false);
+// 	}
+// 	else{
+// 		$('#base_price').attr('disabled', false);
+// 		$('#base_price').attr('required', true);
+// 	}
+// })
+
+		// $(document).ready(function() {
+			// var calc=$('#tax-calc').attr('data-id').val();
+			// $(document).on('.profile_amount','change',function(){
+
+			$('.profile_amount').on('change', function() {
+
+				$('#cons_base_price').css('display', 'none');
+				$('#input_comp_rate').css('display', 'block');
+				$('#base_price').val(0);
+				
+				// var selectedProfile = $(this).children("option:selected").val();
+				// var status =  $(this).children("option:selected").attr('data-status');
+				// // console.log(status);
+				// if(selectedProfile == 0)
+				// {
+				// 	$('#base_price').val(0);
+				// }
+				// else{
+
+				// 	$.ajax({
+				// 		type: "POST",
+				// 		url: "{{route('users.user.amount')}}",
+				// 		data:'profileName='+selectedProfile+'&status='+status,
+				// 		success: function (data) {
+				// 	// console.log(data);
+				// 			$('#base_price').val(data);
+							
+				// 		},
+				// 		error: function(jqXHR, text, error){
+				// 			console.log(error);
+				// 		}
+				// 	});
+				// }
+
+
+
+			});
+		// });
+		</script>
+
+
+		@endsection
+		@include('users.tax-calculator.tax-calculator-modal')
+		@section('ownjs')
+
+
+
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$(".add-more").click(function(){
+					var html = $(".copy").html();
+					$(".after-add-more").after(html);
+				});
+				$("body").on("click",".remove",function(){
+					$(this).parents(".control-group").remove();
+				});
+			});
+
+		</script>
+		<script>
+			$(document).ready(function() {
+				$('.input-group input[required], .input-group textarea[required], .input-group select[required]').on('keyup change', function() {
+					var $form = $(this).closest('form'),
+					$group = $(this).closest('.input-group'),
+					$addon = $group.find('.input-group-addon'),
+					$icon = $addon.find('span'),
+					state = false;
+
+			//$mobNum = document.getElementById('validate-phone').value;
+					$code = document.getElementById('variCode').value;
+					$codenic = document.getElementById('nicvariCode').value;
+
+					if($group.data('validate') == 'phone' && $code != 0) {
+						state = true;
+					}
+
+					if($group.data('validate') == 'nic' && $codenic != '') {
+						state = true;
+					}
+					if (state) {
+						$addon.removeClass('danger');
+						$addon.addClass('success');
+						$addon.html('Varified <span class="glyphicon glyphicon-ok"></span>');
+
+					}
+				});
+				$('.input-group input[required], .input-group textarea[required], .input-group select[required]').trigger('change');
+
+
+			});
+		</script>
+		<script>
+			$("#neverexpire").on('click', function () {
+				var checkbox_value = "";
+				var ischecked = $(this).is(":checked");
+				if (ischecked) {
+					$('#nextexpire').show();
+					$('#nextexpire').attr('required', true);
+				}else{
+					$('#nextexpire').hide();
+					$('#nextexpire').attr('required', false);
+
+				}
+			});
+		</script>
+		<script>
+			$("#cirprofile").on('click', function () {
+				var ischecked = $(this).is(":checked");
+				var profile = $(this).val();
+				var username = $(this).attr('data-username');
+				var name = $(this).attr('data-name');
+				$.ajax({
+					url: "{{route('users.cirProfile')}}",
+					method:"post",
+					data:{check:ischecked,profile:profile,username:username,name:name},
+					success: function(data){
+
+					}
+				});
+
+			});
+		</script>
+
+
+
+
+		@endsection

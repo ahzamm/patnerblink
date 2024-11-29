@@ -1,0 +1,182 @@
+<?php
+namespace App\Http\Controllers\Users;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use App\model\Users\UserInfo;
+use App\model\Users\Profile;
+use App\model\Users\RaduserGroup;
+use App\model\Users\AssignNasType;
+use App\model\Users\ScratchCards;
+use App\model\Users\StaticIPServer;
+use App\model\Users\Radreply;
+use App\model\Users\UserIPStatus;
+use App\model\Users\UserUsualIP;
+use App\model\Users\FreezeAccount;
+
+class ApproveController extends Controller
+{
+/**
+* Create a new controller instance.
+*
+* @return void
+*/
+public function __construct()
+{}
+public function index($status){
+	$check = '';
+	switch($status){
+		case "freeze" : {
+			$dealerCollection = UserInfo::select('username','manager_id','resellerid','dealerid')->where(['status' => 'dealer','resellerid'=> Auth::user()->resellerid])->get();
+		
+			return view('users.reseller.freeze_account',[
+				'dealerCollection' => $dealerCollection
+			]);
+		}break;
+		default :{
+			return redirect()->route('Users.dashboard');
+		}
+	}
+}
+public function freezeDealers(Request $request){
+	$isChecked = $request->get('isChecked');
+	$username = $request->get('username');
+	$updateDate = date('Y-m-d');
+	$userInfo = UserInfo::where(['username' => $username])->first();
+	
+	if($isChecked == 'false'){
+		$radreply = FreezeAccount::where(['username' => $userInfo->username])->first();
+		if(empty($radreply)){
+			$test = new FreezeAccount();
+			$test->dealerid = $userInfo['dealerid'];
+			$test->username = $username;
+			$test->status = $userInfo['status'];
+			$test->freeze = 'no';//no
+			$test->freezeDate = $updateDate;
+			$test->save();
+		}else{
+			$freeze = FreezeAccount::where('dealerid',$radreply->dealerid);
+			$freeze->update([
+				'freeze' => 'no',
+				'freezeDate' => $updateDate,
+			]);
+				$oldfreeze = FreezeAccount::where('old_freeze','!=','')->where('dealerid',$radreply->dealerid)
+				->select('username','old_freeze')->get();
+				foreach ($oldfreeze as  $value) {
+				$freeze = FreezeAccount::where('dealerid',$radreply->dealerid)->where('username',$value->username);
+				$freeze->update([
+				'freeze' => $value->old_freeze,
+			]);
+		}
+	}
+		return ['status' => 'success', 'msg' => 'success fully changed'];
+	}elseif($isChecked == 'true'){
+		 $radreply = FreezeAccount::where(['username' => $userInfo->username])->first();
+		if(empty($radreply)){
+			$test = new FreezeAccount();
+			$test->dealerid = $userInfo['dealerid'];
+			$test->username = $username;
+			$test->status = $userInfo['status'];
+			$test->freeze = 'yes';
+			$test->freezeDate = $updateDate;
+			$test->save();
+		}else{
+			$freeze = FreezeAccount::where('dealerid',$radreply->dealerid);
+			$freeze->update([
+				'freeze' => 'yes',
+				'freezeDate' => $updateDate,
+			]);
+		}
+		return ['status' => 'success', 'msg' => 'success fully changed'];
+	}
+	return ['status' => 'erorr', 'msg' => 'Opps! Something went wrong.'];
+}
+
+public function showSubDealer(Request $request){
+	$parentFreez = FreezeAccount::where('status','dealer')->where('dealerid',Auth::user()->dealerid)->select('freeze')->first();
+
+	if($parentFreez['freeze'] == 'yes'){
+		return 'parentFreezed';
+	}
+	$id = $request->get('id');
+	$subdealerid = '';
+	$subdealerName = UserInfo::where('id',$id)->first();
+	$username = $subdealerName['username'];
+	$checkFreeze = FreezeAccount::where('username',$username)->first();
+	$check =  @$checkFreeze['freeze'];
+	if($check == 'yes'){
+		return $checkFreeze;
+	}elseif($check == 'no'){
+		return $checkFreeze;
+	}
+	return $subdealerName;
+}
+
+
+public function freezeSubDealers(Request $request){
+	// return session()->getId();
+	$username = $request->get('username');
+	
+	$isChecked = $request->get('check');
+	$dealerid = '';
+	$subdealerid = '';
+	$status = '';
+	$updateDate = date('Y-m-d');
+
+	$userInfo = UserInfo::where(['username' => $username])->first();
+	$dealerid = $userInfo['dealerid'];
+	$subdealerid = $userInfo['sub_dealer_id'];
+	$status = $userInfo['status'];
+
+	if($isChecked == 'false'){
+		$radreply = FreezeAccount::where(['username' => $username])->first();
+		if(empty($radreply)){
+			
+			$freeze = new FreezeAccount();
+			$freeze->username = $username;
+			$freeze->dealerid = $dealerid;
+			$freeze->subdealerid = $subdealerid;
+			$freeze->status = $status;
+			$freeze->freeze = 'no';
+			$freeze->freezeDate = $updateDate;
+			$freeze->old_freeze = 'no';
+			$freeze->save();
+		}else{
+			$freeze = FreezeAccount::where('username',$radreply['username']);
+			$freeze->update([
+				'freeze' => 'no',
+				'freezeDate' => $updateDate,
+				'old_freeze' => 'no'
+			]);
+			// DB::update('update freeze_account set freeze = ?, freezeDate = ? where username = ?',['no',$radreply->username,$updateDate]);
+		}
+		return redirect()->route('users.user.index1',['status' => $status]);
+	}elseif($isChecked == 'true'){
+		
+		$radreply = FreezeAccount::where(['username' => $username])->first();
+		if(empty($radreply)){
+			$freeze = new FreezeAccount();
+			$freeze->username = $username;
+			$freeze->dealerid = $dealerid;
+			$freeze->subdealerid = $subdealerid;
+			$freeze->status = $status;
+			$freeze->freeze = 'yes';
+			$freeze->freezeDate = $updateDate;
+			$freeze->old_freeze = 'yes';
+			$freeze->save();
+		}else{
+			$freeze = FreezeAccount::where('username',$radreply['username']);
+			$freeze->update([
+				'freeze' => 'yes',
+				'freezeDate' => $updateDate,
+				'old_freeze' => 'yes'
+			]);
+			// DB::update('update freeze_account set freeze = ?, freezeDate = ? where username = ?',['yes',$radreply->username,$updateDate]);
+		}
+		return redirect()->route('users.user.index1',['status' => $status]);
+	}
+	return ['status' => 'erorr', 'msg' => 'Opps! Something went wrong.'];
+}
+}

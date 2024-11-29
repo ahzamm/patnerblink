@@ -1,0 +1,387 @@
+<?php
+namespace App\Http\Controllers\admin;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\model\Users\UserInfo;
+use App\model\Users\Profile;
+use App\model\Users\RaduserGroup;
+use App\model\Users\AssignNasType;
+use App\model\Users\ScratchCards;
+use App\model\Users\StaticIPServer;
+use App\model\Users\Radreply;
+use App\model\Users\UserIPStatus;
+use App\model\Users\Menu;
+use App\model\Users\SubMenu;
+use App\model\Users\UserMenuAccess;
+use App\model\admin\Admin;
+use App\model\admin\Access;
+use App\model\admin\Ticker;
+use Illuminate\Support\Facades\DB;
+
+use Session;
+use Validator;
+
+class ManagementController extends Controller
+{
+/**
+* Create a new controller instance.
+*
+* @return void
+*/
+public function __construct()
+{
+}
+public function index(){
+	$status =  Auth::user()->status;
+	if($status != 'super'){
+		return redirect()->route('admin.dashboard');
+	}else{
+		// where('status','account')->orWhere('status','support')->orWhere('status','admin')
+		$allData = Admin::where('status','!=','super')->get();
+		return view('admin.AccessManagement.viewUsers',[
+			'allData' => $allData
+		]);
+	}
+}
+public function store(Request $request){
+	$admin = new Admin();
+
+	$admin->username = $request->get('username');
+	$admin->password = Hash::make($request->get('password'));
+	$admin->firstname = $request->get('fname');
+	$admin->lastname = $request->get('lname');
+	$admin->nic = $request->get('nic');
+	$admin->email = $request->get('mail');
+	$admin->address = $request->get('address');
+	$admin->mobilephone = $request->get('mobile_number');
+	$admin->status = $request->get('status');
+	$admin->homephone = $request->get('land_number');
+	$admin->save();
+
+	DB::update('ALTER TABLE Access ADD COLUMN user'.$admin->id.' INT NOT NULL DEFAULT 0 ;');
+	return redirect()->route('admin.AccessManagement.viewUsers');
+}
+
+public function edit(Request $request){
+	$id = $request->id;
+	$admin = Admin::find($id);
+
+	?>
+	<form action="userUpdate/<?php echo $admin->id?>" method="get" autocomplete="off">
+
+		<div class="row">
+			<div class="col-md-4">
+				<div class="form-group">
+					<label  class="form-label">First Name <span style="color: red">*</span></label>
+					<input type="text" value="<?php echo $admin->firstname?>" name="fname" class="form-control"  placeholder="firstname" required readonly>
+				</div>
+				<div class="form-group">
+					<label  class="form-label">Last Name <span style="color: red">*</span></label>
+					<input type="text" value="<?php echo $admin->lastname?>" name="lname" class="form-control"  placeholder="lastname" required readonly>
+				</div>
+				<div class="form-group">
+					<label  class="form-label">CNIC Number<span style="color: red">*</span></label>
+					<input type="tel" value="<?php echo $admin->nic?>" name="nic" class="form-control"  data-mask="99999-9999999-9" placeholder="99999-9999999-9" required>
+				</div>
+				<div class="form-group">
+					<label  class="form-label">Email Address<span style="color: red">*</span></label>
+					<input type="email" value="<?php echo $admin->email?>" name="mail" class="form-control"  placeholder="info@lbi.net.pk" required>
+				</div>
+			</div>
+			<div class="col-md-4">
+
+				<div class="form-group">
+					<label  class="form-label">Business Address <span style="color: red">*</span></label>
+					<input type="text" value="<?php echo $admin->address?>" name="address" class="form-control"  placeholder="Address" required>
+				</div>
+				<div class="form-group">
+					<label  class="form-label">Mobile Number <span style="color: red">*</span></label>
+					<input type="text" name="mobile_number" value="<?php echo $admin->mobilephone?>" class="form-control" placeholder="9999 9999999"  data-mask="9999 9999999" required>
+				</div>
+				<div class="form-group">
+					<label  class="form-label">Landline Number</label>
+					<input type="text" value="<?php echo $admin->homephone?>" name="land_number" class="form-control" placeholder="(999)9999999" data-mask="(999)9999999">
+				</div>
+				<div class="form-group">
+					<label  class="form-label">Assign Department <span style="color: red">*</span></label>
+					<select name="status" id="" class="form-control" required>
+						<option value="">Assign Department</option>
+						<?php 
+						if($admin->status == "account"){?>
+							<option value="admin">Adminstrator</option>
+							<option value="noc">NOC Department</option>
+							<option value="account">Account Department</option>
+							<option value="support">Support Department</option>
+							<option value="engineering">Engineering Department</option>
+							<option value="IT">IT Department</option>
+							<?php
+						}else{
+							?>
+							<option value="admin">Adminstrator</option>
+							<option value="noc">Noc Department</option>
+							<option value="account">Account Department</option>
+							<option value="support">Support Department</option>
+							<option value="engineering">Engineering Department</option>
+							<option value="IT">IT Department</option>
+							<?php
+						}
+						?>
+					</select>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="form-group">
+					<label  class="form-label">Username <span style="color: red">*</span></label>
+					<input type="text" value="<?php echo $admin->username?>" class="form-control"  placeholder="User Name" name="username" readonly>
+				</div>
+				<div class="form-group" style="position: relative">
+					<label  class="form-label">Update Password <span style="color: red">*</span></label>
+					<input type="Password" id="mgmt_upass" name="password" value="" class="form-control"  placeholder="Password must be 8 characters long" required>
+					<i class="fa fa-eye-slash mgmt_upass" style="position: absolute;bottom: 9px;right: 12px;" onclick="togglePassword('mgmt_upass');"> </i>
+				</div>
+
+
+
+
+			</div>
+							<!-- <div class="col-md-3">
+								<div class="form-group">
+									<label  class="form-label">Username <span style="color: red">*</span></label>
+									<input type="text" value="<?php echo $admin->username?>" class="form-control"  placeholder="User Name" name="username" readonly>
+								</div>
+							</div> -->
+
+							<!--  -->
+							<div class="col-md-12">
+								<div class="form-group pull-right">
+									<button type="submit" class="btn btn-primary">Update</button>
+									<button data-dismiss="modal" class="btn btn-danger">Cancel</button>
+								</div>
+							</div>		
+						</div>
+					</form>
+					
+					<?php
+
+				}
+// public function update($id){
+				public function update($id,Request $request){
+	// return "Working".$id;
+					$admin = Admin::find($id);
+
+					$admin->username = $request->get('username');
+					$admin->password = Hash::make($request->get('password'));
+					$admin->firstname = $request->get('fname');
+					$admin->lastname = $request->get('lname');
+					$admin->nic = $request->get('nic');
+					$admin->email = $request->get('mail');
+					$admin->address = $request->get('address');
+					$admin->mobilephone = $request->get('mobile_number');
+					$admin->status = $request->get('status');
+					$admin->homephone = $request->get('land_number');
+
+					$admin->save();
+					return redirect()->route('admin.AccessManagement.viewUsers');
+				}
+				public function delete($id)
+				{
+					Admin::find($id)->delete();
+					return redirect()->route('admin.AccessManagement.viewUsers');
+				}
+
+				public function allow_Access()
+				{
+					$status =  Auth::user()->status;
+					if($status != 'super'){
+						return redirect()->route('admin.dashboard');
+					}else{
+						// $allData = Admin::where('status','account')->orWhere('status','support')->orWhere('status','admin')->select('id','username','status')->get();
+						$allData = Admin::where('status','!=','super')->select('id','username','status')->get();
+						$access = Access::all();
+						return view('admin.AccessManagement.allowAccess',[
+							'allData' => $allData,
+							'access'  => $access
+						]);
+					}
+				}
+				public function userAccess(Request $request){
+					$id = $request->get('id');
+					$userColumn = 'user'.$id;
+					$check = $request->get('isChecked');
+					$child = $request->get('child');
+					if($check == 'true'){
+						DB::update('update Access set '.$userColumn.' = ? where childModule = ?',[1,$child]);
+					}else{
+						DB::update('update Access set '.$userColumn.' = ? where childModule = ?',[0,$child]);
+					}
+					return $check;
+				}
+				public function ticker(){
+					return view('admin.AccessManagement.viewTicker');
+				}
+
+				public function tickerToDb(Request $request){
+
+					$ticker = Ticker::find(1);
+					$ticker->eng = $request->get('eng');
+					$ticker->urdu = $request->get('urdu');
+
+					$ticker->save();
+					return redirect()->route('admin.AccessManagement.viewTicker');
+				}
+	//
+				public function sub_menu_list(Request $request)
+				{
+					$menu_management = Menu::join('sub_menus','menus.id','=','sub_menus.menu_id')->get(['menus.menu','sub_menus.submenu','sub_menus.menu_id','sub_menus.manager','sub_menus.reseller','sub_menus.dealer','sub_menus.subdealer','sub_menus.trader','sub_menus.inhouse','sub_menus.id']);
+
+					return view('admin.menu-management.index',compact('menu_management'));
+				}
+	//
+				public function sub_menu_update(Request $request){
+					$submenuid = $request->get('id');
+					$column = $request->get('col');
+					$status = $request->get('status');
+		//
+					SubMenu::where('id',$submenuid)->update([$column => $status]);
+		//
+				}
+	//////////////////
+				public function menu(Request $request)
+				{
+					$menu_management = Menu::all();
+					$sub_menu_management = SubMenu::with('menu')->get();
+
+					return view('admin.menu-management.menu',compact('menu_management','sub_menu_management'));
+				}
+
+				public function store_menu(Request $request){
+					$validator = Validator::make($request->all(), [
+						'menu' => 'required|unique:menus',
+
+						'icon' => 'required',
+					]);
+					if ($validator->fails()) {
+						return back()
+						->withErrors($validator)
+						->withInput();
+					}
+					$has_menu=0;
+					if($request->has('has_submenu'))
+					{
+						$has_menu = 1 ;
+					}
+
+					$admin = new Menu();
+					$admin->menu = $request->get('menu');
+					$admin->has_submenu = $has_menu;
+					$admin->icon = $request->get('icon');
+		// $admin->priority = $request->get('order');
+					$admin->save();
+					return redirect()->route('admin.Management.menu')->with('success','Successfully Add');
+				}
+
+				public function store_submenu(Request $request){
+					$validator = Validator::make($request->all(), [
+						'submenu' => 'required|unique:sub_menus',
+						'menu_id'=>'required',
+						'route' => 'required',
+					]);
+					if ($validator->fails()) {
+						return back()
+						->withErrors($validator)
+						->withInput();
+					}
+					//
+					$sub_menu = new SubMenu();
+					$sub_menu->submenu = $request->get('submenu');
+					$sub_menu->menu_id = $request->get('menu_id');
+					$sub_menu->route_name = $request->get('route');
+					$sub_menu->save();
+					//
+					$id = $sub_menu->id;
+					//
+					$users =  DB::table('user_info')->select('id')->where('status','!=','user')->get();
+					//
+					foreach($users as $value){
+						$user_menu_access = new UserMenuAccess();
+						$user_menu_access->user_id = $value->id;
+						$user_menu_access->sub_menu_id = $id;
+						if($value->id == 1){
+							$user_menu_access->status = 1;	
+						}
+						$user_menu_access->save();
+					}
+					//
+					return redirect()->route('admin.Management.menu')->with('success','Successfully Add');
+				}
+
+
+				public function edit_menu(Request $request){
+					$get_id = $request->get('get_id');
+					$get_menu_data = Menu::find($get_id);
+					return $get_menu_data;
+				}
+
+				public function edit_submenu(Request $request){
+					$get_sub_id = $request->get('get_id');
+					$get_sub_menu_data = SubMenu::find($get_sub_id);
+			// dd($get_sub_menu_data);
+					return $get_sub_menu_data;
+				}
+
+				public function update_menu(Request $request){
+		// dd($request->has('has_submenu'));
+					$validator = Validator::make($request->all(), [
+						'menu' => 'required|sometimes',
+						'priority'=>'required|sometimes',
+						'icon' => 'required|sometimes',
+					]);
+					if ($validator->fails()) {
+						return response()->json([
+							'error' => $validator->errors()->all()
+						]);
+					}
+					$has_menu=0;
+					if($request->has('has_submenu') == 'true')
+					{
+						$has_menu = 1 ;
+					}
+
+
+					$menu_update=['menu'=>$request->get('menu'),'has_submenu'=>$has_menu,'icon'=>$request->get('icon'),'priority'=>$request->get('priority')];
+					$update_menu = Menu::where('id',$request->get('menu_id'))->update($menu_update);
+
+					return response()->json(['success'=>'Menu Has been Update Successfully']);
+				}
+
+				public function update_submenu(Request $request){
+
+					$validator = Validator::make($request->all(), [
+						'submenu' => 'required|sometimes',
+						'menu_id'=>'required|sometimes',
+						'priority'=>'required|sometimes',
+						'route' => 'required|sometimes',
+					]);
+					if ($validator->fails()) {
+						return response()->json([
+							'error' => $validator->errors()->all()
+						]);
+					}
+
+					$menu_update=['submenu'=>$request->get('submenu'),'priority'=>$request->get('priority'),'menu_id'=>$request->get('menu_id'),'route_name'=>$request->get('route')];
+					$update_menu = SubMenu::where('id',$request->get('sub_menu_id'))->update($menu_update);
+					
+					return response()->json(['success'=>'Sub-Menu Has been Update Successfully']);
+				}
+
+				public function view($id){
+					$data = Admin::find($id);
+
+					return view('admin.AccessManagement.view-agent',compact('data'));
+
+				}
+
+				
+			}

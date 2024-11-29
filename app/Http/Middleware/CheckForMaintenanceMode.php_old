@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode as Middleware;
+use Closure;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
+use Symfony\Component\HttpFoundation\IpUtils;
+use App\model\Users\MaintenanceMode;
+class CheckForMaintenanceMode extends Middleware
+{
+    public function __construct(Application $app)
+    {
+        $this->app = $app;
+    }
+    
+    /**
+     * The URIs that should be reachable while maintenance mode is enabled.
+     *
+     * @var array
+     */
+    protected $except = [
+        //
+    ];
+    public function handle($request, Closure $next)
+    {
+        $get_mode = MaintenanceMode::where('allowed_ips', '!=', 'null')->where('status','enable')->first();
+        $get_mip = [];
+        if (!empty($get_mode)) {
+            $get_mip = explode(',', $get_mode->allowed_ips);
+        }
+        if ($this->app->isDownForMaintenance()) {
+            $data = json_decode(file_get_contents($this->app->storagePath() . '/framework/down'), true);
+            if (in_array($request->ip(), $get_mip)) {
+                return $next($request);
+            }
+            if ($this->inExceptArray($request)) {
+                return $next($request);
+            }
+            throw new MaintenanceModeException($data['time']);
+        }
+        return $next($request);
+    }
+}
