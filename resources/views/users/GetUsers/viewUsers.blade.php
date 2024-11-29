@@ -227,6 +227,13 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="searchPhone">Search by Phone Number</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchPhone" class="form-control" placeholder="Enter Phone Number">
+                                </div>
+                            </div>
                         </div>
                         <button type="button" id="getUsers" class="btn btn-primary mt-3">Get Users</button>
                     </form>
@@ -445,6 +452,7 @@
             if (params.searchIP) $('#searchIP').val(params.searchIP);
             if (params.verifiedBy) $('#verifiedBy').val(params.verifiedBy).trigger('change');
             if (params.cardStatus) $('#cardStatus').val(params.cardStatus).trigger('change');
+            if (params.searchPhone) $('#searchPhone').val(params.searchPhone);
 
             isPopulatingFilters = false;
         }
@@ -468,6 +476,7 @@
                 if ($('#verifiedBy').val()) params.append('verifiedBy', $('#verifiedBy').val());
                 if ($('#userStatus').val()) params.append('userStatus', $('#userStatus').val());
                 if ($('#cardStatus').val()) params.append('cardStatus', $('#cardStatus').val());
+                if ($('#searchPhone').val()) params.append('searchPhone', $('#searchPhone').val());
             }
 
             const newUrl = `/users/get-users?${params.toString()}`;
@@ -492,6 +501,7 @@
                             d.verifiedBy    = $('#verifiedBy').val();
                             d.userStatus    = $('#userStatus').val();
                             d.cardStatus    = $('#cardStatus').val();
+                            d.searchPhone   = $('#searchPhone').val();
                         },
                     },
                     columns: [
@@ -529,7 +539,8 @@
                 !$('#searchIP').val() &&
                 !$('#verifiedBy').val() &&
                 !$('#userStatus').val() &&
-                !$('#cardStatus').val()
+                !$('#cardStatus').val()&&
+                !$('#searchPhone').val()
             ) {
                 alert('Please select atleast one filter');
                 return;
@@ -538,26 +549,22 @@
             fetchData();
         });
 
-         // Initialize date range picker for Charge On
         $('#chargeOnRange').daterangepicker({
-            autoUpdateInput: false, // Prevent auto-filling input
+            autoUpdateInput: false,
             locale: {
-                cancelLabel: 'Clear', // Allow clearing
-                format: 'YYYY-MM-DD' // Date format
+                cancelLabel: 'Clear',
+                format: 'YYYY-MM-DD'
             }
         });
 
-        // When the user selects a range
         $('#chargeOnRange').on('apply.daterangepicker', function (ev, picker) {
             $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
         });
 
-        // Clear input if user clicks "Clear"
         $('#chargeOnRange').on('cancel.daterangepicker', function (ev, picker) {
             $(this).val('');
         });
 
-        // Initialize date range picker for Expire On
         $('#expireOnRange').daterangepicker({
             autoUpdateInput: false,
             locale: {

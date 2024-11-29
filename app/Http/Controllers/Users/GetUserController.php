@@ -44,11 +44,11 @@ class GetUserController extends Controller
             $query->where('user_info.sub_dealer_id', $request->traderId);
         }
         if ($request->filled('chargeOnRange')) {
-            $chargeOnRange = explode(' - ', $request->chargeOnRange); // Split start and end date
+            $chargeOnRange = explode(' - ', $request->chargeOnRange);
             $query->whereBetween('user_status_info.card_charge_on', [$chargeOnRange[0], $chargeOnRange[1]]);
         }
         if ($request->filled('expireOnRange')) {
-            $expireOnRange = explode(' - ', $request->expireOnRange); // Split start and end date
+            $expireOnRange = explode(' - ', $request->expireOnRange);
             $query->whereBetween('user_status_info.card_expire_on', [$expireOnRange[0], $expireOnRange[1]]);
         }
         if ($request->filled('searchIP')) {
@@ -83,6 +83,9 @@ class GetUserController extends Controller
             } elseif ($request->cardStatus === 'deactive') {
                 $query->where('user_status_info.card_expire_on', '<=', $today);
             }
+        }
+        if ($request->filled('searchPhone')) {
+            $query->where('user_info.mobilephone', 'like', '%' . $request->searchPhone . '%');
         }
 
 
