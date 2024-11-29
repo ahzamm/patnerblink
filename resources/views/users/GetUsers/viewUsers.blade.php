@@ -234,6 +234,13 @@
                                     <input type="text" id="searchPhone" class="form-control" placeholder="Enter Phone Number">
                                 </div>
                             </div>
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="searchCNIC">Search by CNIC</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchCNIC" class="form-control" placeholder="Enter CNIC">
+                                </div>
+                            </div>
                         </div>
                         <button type="button" id="getUsers" class="btn btn-primary mt-3">Get Users</button>
                     </form>
@@ -453,6 +460,7 @@
             if (params.verifiedBy) $('#verifiedBy').val(params.verifiedBy).trigger('change');
             if (params.cardStatus) $('#cardStatus').val(params.cardStatus).trigger('change');
             if (params.searchPhone) $('#searchPhone').val(params.searchPhone);
+            if (params.searchCNIC) $('#searchCNIC').val(params.searchCNIC);
 
             isPopulatingFilters = false;
         }
@@ -477,6 +485,7 @@
                 if ($('#userStatus').val()) params.append('userStatus', $('#userStatus').val());
                 if ($('#cardStatus').val()) params.append('cardStatus', $('#cardStatus').val());
                 if ($('#searchPhone').val()) params.append('searchPhone', $('#searchPhone').val());
+                if ($('#searchCNIC').val()) params.append('searchCNIC', $('#searchCNIC').val());
             }
 
             const newUrl = `/users/get-users?${params.toString()}`;
@@ -502,6 +511,7 @@
                             d.userStatus    = $('#userStatus').val();
                             d.cardStatus    = $('#cardStatus').val();
                             d.searchPhone   = $('#searchPhone').val();
+                            d.searchCNIC   = $('#searchCNIC').val();
                         },
                     },
                     columns: [
@@ -539,8 +549,9 @@
                 !$('#searchIP').val() &&
                 !$('#verifiedBy').val() &&
                 !$('#userStatus').val() &&
-                !$('#cardStatus').val()&&
-                !$('#searchPhone').val()
+                !$('#cardStatus').val() &&
+                !$('#searchPhone').val() &&
+                !$('#searchCNIC').val()
             ) {
                 alert('Please select atleast one filter');
                 return;

@@ -87,6 +87,9 @@ class GetUserController extends Controller
         if ($request->filled('searchPhone')) {
             $query->where('user_info.mobilephone', 'like', '%' . $request->searchPhone . '%');
         }
+        if ($request->filled('searchCNIC')) {
+            $query->where('user_info.nic', 'like', '%' . $request->searchCNIC . '%');
+        }
 
 
         $totalRecords = $query->count();
