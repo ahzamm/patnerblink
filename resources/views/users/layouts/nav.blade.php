@@ -8,7 +8,7 @@
         display:none;
       }
 @media only screen and (max-width: 600px) {
-      
+
       .exta{
         /*float: left;*/
         margin-left: -38%;
@@ -17,11 +17,11 @@
         margin-right: 235px;
       } */
     }
-    #bottom { 
-                position: absolute;               
-                bottom:0;                          
-                                       
-            } 
+    #bottom {
+                position: absolute;
+                bottom:0;
+
+            }
             .blink {
               animation: blinker 2s linear alternate infinite;
               color: #1c87c9;
@@ -29,20 +29,20 @@
        li {
     list-style-type: none;
 }
-      @keyframes blinker {  
+      @keyframes blinker {
         50% { opacity: .4; }
         100% { opacity: 1 }
        }
        .blink-one {
          animation: blinker-one 1s linear infinite;
        }
-       @keyframes blinker-one {  
+       @keyframes blinker-one {
          0% { opacity: 0; }
        }
        .blink-two {
          animation: blinker-two 1.4s linear infinite;
        }
-       @keyframes blinker-two {  
+       @keyframes blinker-two {
          100% { opacity: 0; }
        }
   </style>
@@ -57,7 +57,7 @@
       ->distinct('menus.id')->where($column,1)
       ->where('menus.category','nav')
       ->select(['menus.id','menus.menu','menus.has_submenu','menus.icon','menus.priority'])->get();
-      //  dd($menusAccess);    
+      //  dd($menusAccess);
 
 
     $url = url()->current();
@@ -103,7 +103,7 @@
           </a>
         </li>
         @endif
-        
+
         <li class="notify-toggle-wrapper showopacity">
             @if(Auth::user()->status != 'user' && Auth::user()->status != 'inhouse')
           <a href="#" data-toggle="dropdown" class="toggle">
@@ -156,20 +156,20 @@
             <li class="list" style="padding: 10px !important;">
               <ul class="dropdown-menu-list list-unstyled ps-scrollbar" >
                 <span id="newnotification">
-                 
+
                 </span>
               </ul>
             </li>
           </ul>
         </li>
-        
+
       </ul>
     </div>
-  
+
     <div class='pull-right'>
-        
+
       <ul class="info-menu right-links list-inline list-unstyled">
-       
+
       	@if(Auth::user()->status != "manager")
        @php
         $freeze_check = App\model\Users\FreezeAccount::where(['username' => Auth::user()->username])->first();
@@ -179,7 +179,7 @@
         $freeze = $freeze_check->freeze;
     }
     if($freeze == "yes"){
-    $red ="red"; 
+    $red ="red";
 }else{
   $red = "white";
 }
@@ -196,10 +196,10 @@ $cnicB = '';
       $cnic = $value['cnic'];
       $cnicF = $value['nic_front'];
       $cnicB = $value['nic_back'];
-     
+
     }
 ?>
-   
+
 @php
 // $check ='';
 // $pModule = array();
@@ -214,7 +214,7 @@ $cnicB = '';
 //         $pModule[] = $value['parentModule'];
 //         $cModule[] = $value['childModule'];
 //     }
-    
+
 // }
 // }
 
@@ -249,9 +249,9 @@ $billingType = App\model\Users\DealerProfileRate::where('dealerid',Auth::user()-
             <img src="{{asset('img/profile.jpg')}}" alt="user-image" class="img-circle img-inline">
             <span>{{Auth::user()->firstname}} &nbsp;&nbsp;<i class="fa fa-angle-down"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
           </a>
-          
+
           <ul class="dropdown-menu profile animated fadeIn">
-            
+
             <li>
               <a href="{{('#profileView')}}" data-toggle="modal">
                 <i class="fas fa-address-card fa-lg"></i>
@@ -262,7 +262,7 @@ $billingType = App\model\Users\DealerProfileRate::where('dealerid',Auth::user()-
               <a class="" href="{{('#changePass')}}" data-toggle="modal" ><i
                 class="fa fa-unlock-alt"> </i>Change Password</a>
               </li>
-            
+
               <li class="last">
                 <form id="logout-form" action="{{ route('users.logout') }}" method="POST" style="display: none;">
                   @csrf
@@ -277,7 +277,7 @@ $billingType = App\model\Users\DealerProfileRate::where('dealerid',Auth::user()-
         </li>
       </ul>
     </div>
-   
+
   </div>
 </div>
 <!-- search action -->
@@ -316,7 +316,7 @@ $('#searchIcon').click(function(){
               $("#numUserCount").html(data);
             else
               $("#numUserCount").html('');
-          
+
   }
   });
   });
@@ -353,7 +353,7 @@ $('#searchIcon').click(function(){
           success: function(data){
           alert('User has been  Rejected');
           location.reload();
-  
+
   }
   });
       }
@@ -361,7 +361,7 @@ $('#searchIcon').click(function(){
   </script>
 <!-- END TOPBAR -->
 <div class="page-sidebar fixedscroll expandit {{$shift_class2}}" style="z-index: 9">
-    
+
   <!-- MAIN MENU - START -->
   <div class="page-sidebar-wrapper" id="main-menu-wrapper">
     <!-- USER INFO - START -->
@@ -370,7 +370,7 @@ $('#searchIcon').click(function(){
         <a href="{{('#profileView')}}" data-toggle="modal">
           <img alt="" src="{{asset('img/profile.jpg')}}" class="img-responsive img-circle">
         </a>
-        
+
       </div>
       <div class="profile-details col-xs-8">
         <h3>
@@ -380,11 +380,11 @@ $('#searchIcon').click(function(){
         </h3>
 
           @if(Auth::user()->status == 'super')
-          <p class="profile-title">Administrator</p> 
+          <p class="profile-title">Administrator</p>
           @elseif(Auth::user()->status == 'manager')
-          <p class="profile-title">Manager</p> 
+          <p class="profile-title">Manager</p>
           @elseif(Auth::user()->status == 'reseller')
-          <p class="profile-title">Reseller</p> 
+          <p class="profile-title">Reseller</p>
           @elseif(Auth::user()->status == 'dealer')
           <p class="profile-title">Contractor</p>
           @elseif(Auth::user()->status == 'subdealer')
@@ -396,8 +396,8 @@ $('#searchIcon').click(function(){
           @else
           <p class="profile-title">Valued Consumer</p>
           @endif
-        
- 
+
+
       </div>
     </div>
     <!-- @if($check_account){ -->

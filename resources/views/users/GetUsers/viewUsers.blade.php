@@ -184,6 +184,25 @@
                                 </div>
                                 <div id="manager-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
                             @endif
+                            @if(($panelof == 'manager') || ($panelof == 'reseller'))
+                                @php $contractors = []; @endphp
+                                @if ($panelof == 'reseller')
+                                    @php $profiles = \App\model\Users\ResellerProfileRate::where('resellerid', Auth::user()->resellerid)->get(); @endphp
+                                    <div class="col-md-4">
+                                        <div class="form-group position-relative">
+                                            <label for="reseller-profile-dropdown">Select Profile</label>
+                                            <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                            <select id="reseller-profile-dropdown" class="form-select js-select2">
+                                                <option value="">-- Select Profile --</option>
+                                                @foreach ($profiles as $profile)
+                                                    <option value="{{ $profile->name }}">{{ $profile->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div id="reseller-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
+                                @endif
+                            @endif
                             <div class="col-md-4">
                                 <div class="form-group position-relative">
                                     <label for="chargeOnRange">Charge On</label>
@@ -313,6 +332,7 @@
         }
 
         function populateResellerDropdown(selectedValue = null) {
+            console.log('Populating Reseller Profile Dropdown '+selectedValue);
             const $resellerDropdown = $('#reseller-dropdown');
 
             if ($resellerDropdown.length === 0) {
@@ -415,6 +435,31 @@
             populateDropdown($managerProfileDropdown, options, selectedValue);
         }
 
+        function populateResellerProfileDropdown(selectedValue = null) {
+            const $resellerProfileDropdown = $('#reseller-profile-dropdown');
+
+            if ($resellerProfileDropdown.length === 0) {
+                console.warn('Reseller Profile dropdown not present for this user.');
+                return;
+            }
+
+            const resellerProfileData = $('#reseller-profile-data').text();
+            if (!resellerProfileData) {
+                console.error('No reseller data available.');
+                return;
+            }
+
+            const resellerProfiles = JSON.parse(resellerProfileData);
+            const options   = resellerProfiles.map(function (resellerProfile) {
+                return {
+                    value: resellerProfile.name,
+                    text: resellerProfile.name,
+                };
+            });
+
+            populateDropdown($resellerProfileDropdown, options, selectedValue);
+        }
+
         $('#reseller-dropdown').on('change', function () {
             $('#contractor-dropdown').html('<option value="">-- Select Contractor --</option>').val('').trigger('change');
             $('#trader-dropdown').html('<option value="">-- Select Trader --</option>').val('').trigger('change');
@@ -503,6 +548,15 @@
                 }
             }
 
+            const isResellerProfile = $('#reseller-profile-dropdown').length === 0;
+            if (!isResellerProfile) {
+                if (params.resellerProfile) {
+                    await populateResellerProfileDropdown(params.resellerProfile);
+                } else {
+                    await populateResellerProfileDropdown();
+                }
+            }
+
             if (params.userStatus) $('#userStatus').val(params.userStatus).trigger('change');
             if (params.chargeOnRange) $('#chargeOnRange').val(params.chargeOnRange);
             if (params.expireOnRange) $('#expireOnRange').val(params.expireOnRange);
@@ -529,6 +583,7 @@
                 if ($('#contractor-dropdown').val()) params.append('contractorId', $('#contractor-dropdown').val());
                 if ($('#trader-dropdown').val()) params.append('traderId', $('#trader-dropdown').val());
                 if ($('#manager-profile-dropdown').val()) params.append('managerProfile', $('#manager-profile-dropdown').val());
+                if ($('#reseller-profile-dropdown').val()) params.append('resellerProfile', $('#reseller-profile-dropdown').val());
                 if ($('#chargeOnRange').val()) params.append('chargeOnRange', $('#chargeOnRange').val());
                 if ($('#expireOnRange').val()) params.append('expireOnRange', $('#expireOnRange').val());
                 if ($('#searchIP').val()) params.append('searchIP', $('#searchIP').val());
@@ -556,6 +611,7 @@
                             d.contractorId   = $('#contractor-dropdown').val();
                             d.traderId       = $('#trader-dropdown').val();
                             d.managerProfile = $('#manager-profile-dropdown').val();
+                            d.resellerProfile = $('#reseller-profile-dropdown').val();
                             d.chargeOnRange  = $('#chargeOnRange').val();
                             d.expireOnRange  = $('#expireOnRange').val();
                             d.searchIP       = $('#searchIP').val();
@@ -597,6 +653,7 @@
                 !$('#contractor-dropdown').val() &&
                 !$('#trader-dropdown').val() &&
                 !$('#manager-profile-dropdown').val() &&
+                !$('#reseller-profile-dropdown').val() &&
                 !$('#chargeOnRange').val() &&
                 !$('#expireOnRange').val() &&
                 !$('#searchIP').val() &&
