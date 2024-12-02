@@ -60,6 +60,9 @@ class GetUserController extends Controller
         if ($request->filled('contractorProfile')) {
             $query->where('user_info.name', $request->contractorProfile);
         }
+        if ($request->filled('subdealerProfile')) {
+            $query->where('user_info.name', $request->subdealerProfile);
+        }
         if ($request->filled('chargeOnRange')) {
             $chargeOnRange = explode(' - ', $request->chargeOnRange);
             $query->whereBetween('user_status_info.card_charge_on', [$chargeOnRange[0], $chargeOnRange[1]]);

@@ -184,43 +184,53 @@
                                 </div>
                                 <div id="manager-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
                             @endif
-                            @if(($panelof == 'manager') || ($panelof == 'reseller'))
-                                @php $contractors = []; @endphp
-                                @if ($panelof == 'reseller')
-                                    @php $profiles = \App\model\Users\ResellerProfileRate::where('resellerid', Auth::user()->resellerid)->get(); @endphp
-                                    <div class="col-md-4">
-                                        <div class="form-group position-relative">
-                                            <label for="reseller-profile-dropdown">Select Profile</label>
-                                            <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                            <select id="reseller-profile-dropdown" class="form-select js-select2">
-                                                <option value="">-- Select Profile --</option>
-                                                @foreach ($profiles as $profile)
-                                                    <option value="{{ $profile->name }}">{{ $profile->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
+                            @if ($panelof == 'reseller')
+                                @php $profiles = \App\model\Users\ResellerProfileRate::where('resellerid', Auth::user()->resellerid)->get(); @endphp
+                                <div class="col-md-4">
+                                    <div class="form-group position-relative">
+                                        <label for="reseller-profile-dropdown">Select Profile</label>
+                                        <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                        <select id="reseller-profile-dropdown" class="form-select js-select2">
+                                            <option value="">-- Select Profile --</option>
+                                            @foreach ($profiles as $profile)
+                                                <option value="{{ $profile->name }}">{{ $profile->name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
-                                    <div id="reseller-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
-                                @endif
+                                </div>
+                                <div id="reseller-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
                             @endif
-                            @if(($panelof == 'manager') || ($panelof == 'reseller') || ($panelof == 'dealer') )
-                                @php $traders = []; @endphp
-                                @if ($panelof == 'dealer')
-                                    @php $profiles = \App\model\Users\DealerProfileRate::where('dealerid', Auth::user()->dealerid)->get(); @endphp
-                                    <div class="col-md-4">
-                                        <div class="form-group position-relative">
-                                            <label for="contractor-profile-dropdown">Select Profile</label>
-                                            <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                            <select id="contractor-profile-dropdown" class="form-select js-select2">
-                                                <option value="">-- Select Profile --</option>
-                                                @foreach ($profiles as $profile)
-                                                    <option value="{{ $profile->name }}">{{ $profile->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
+                            @if ($panelof == 'dealer')
+                                @php $profiles = \App\model\Users\DealerProfileRate::where('dealerid', Auth::user()->dealerid)->get(); @endphp
+                                <div class="col-md-4">
+                                    <div class="form-group position-relative">
+                                        <label for="contractor-profile-dropdown">Select Profile</label>
+                                        <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                        <select id="contractor-profile-dropdown" class="form-select js-select2">
+                                            <option value="">-- Select Profile --</option>
+                                            @foreach ($profiles as $profile)
+                                                <option value="{{ $profile->name }}">{{ $profile->name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
-                                    <div id="contractor-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
-                                @endif
+                                </div>
+                                <div id="contractor-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
+                            @endif
+                            @if($panelof == 'subdealer')
+                                @php $profiles = \App\model\Users\SubdealerProfileRate::where('sub_dealer_id', Auth::user()->sub_dealer_id)->distinct()->get(); @endphp
+                                <div class="col-md-4">
+                                    <div class="form-group position-relative">
+                                        <label for="subdealer-profile-dropdown">Select Profile <span style="color: red">*</span></label>
+                                        <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                        <select id="subdealer-profile-dropdown" class="form-select js-select2" required>
+                                            <option value="">-- Select Profile --</option>
+                                            @foreach($profiles  as $profile)
+                                                <option value="{{$profile->name}}">{{$profile->name}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="subdealer-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
                             @endif
                             <div class="col-md-4">
                                 <div class="form-group position-relative">
@@ -504,6 +514,31 @@
             populateDropdown($contractorProfileDropdown, options, selectedValue);
         }
 
+        function populateSubdealerProfileDropdown(selectedValue = null) {
+            const $subdealerProfileDropdown = $('#subdealer-profile-dropdown');
+
+            if ($subdealerProfileDropdown.length === 0) {
+                console.warn('Subdealer Profile dropdown not present for this user.');
+                return;
+            }
+
+            const subdealerProfileData = $('#subdealer-profile-data').text();
+            if (!subdealerProfileData) {
+                console.error('No subdealer data available.');
+                return;
+            }
+
+            const subdealerProfiles = JSON.parse(subdealerProfileData);
+            const options   = subdealerProfiles.map(function (subdealerProfile) {
+                return {
+                    value: subdealerProfile.name,
+                    text: subdealerProfile.name,
+                };
+            });
+
+            populateDropdown($subdealerProfileDropdown, options, selectedValue);
+        }
+
         $('#reseller-dropdown').on('change', function () {
             $('#contractor-dropdown').html('<option value="">-- Select Contractor --</option>').val('').trigger('change');
             $('#trader-dropdown').html('<option value="">-- Select Trader --</option>').val('').trigger('change');
@@ -610,6 +645,15 @@
                 }
             }
 
+            const isSubdealerProfile = $('#subdealer-profile-dropdown').length === 0;
+            if (!isSubdealerProfile) {
+                if (params.subdealerProfile) {
+                    await populateSubdealerProfileDropdown(params.subdealerProfile);
+                } else {
+                    await populateSubdealerProfileDropdown();
+                }
+            }
+
             if (params.userStatus) $('#userStatus').val(params.userStatus).trigger('change');
             if (params.chargeOnRange) $('#chargeOnRange').val(params.chargeOnRange);
             if (params.expireOnRange) $('#expireOnRange').val(params.expireOnRange);
@@ -638,6 +682,7 @@
                 if ($('#manager-profile-dropdown').val()) params.append('managerProfile', $('#manager-profile-dropdown').val());
                 if ($('#reseller-profile-dropdown').val()) params.append('resellerProfile', $('#reseller-profile-dropdown').val());
                 if ($('#contractor-profile-dropdown').val()) params.append('contractorProfile', $('#contractor-profile-dropdown').val());
+                if ($('#subdealer-profile-dropdown').val()) params.append('subdealerProfile', $('#subdealer-profile-dropdown').val());
                 if ($('#chargeOnRange').val()) params.append('chargeOnRange', $('#chargeOnRange').val());
                 if ($('#expireOnRange').val()) params.append('expireOnRange', $('#expireOnRange').val());
                 if ($('#searchIP').val()) params.append('searchIP', $('#searchIP').val());
@@ -667,6 +712,7 @@
                             d.managerProfile    = $('#manager-profile-dropdown').val();
                             d.resellerProfile   = $('#reseller-profile-dropdown').val();
                             d.contractorProfile = $('#contractor-profile-dropdown').val();
+                            d.subdealerProfile  = $('#subdealer-profile-dropdown').val();
                             d.chargeOnRange     = $('#chargeOnRange').val();
                             d.expireOnRange     = $('#expireOnRange').val();
                             d.searchIP          = $('#searchIP').val();
@@ -710,6 +756,7 @@
                 !$('#manager-profile-dropdown').val() &&
                 !$('#reseller-profile-dropdown').val() &&
                 !$('#contractor-profile-dropdown').val() &&
+                !$('#subdealer-profile-dropdown').val() &&
                 !$('#chargeOnRange').val() &&
                 !$('#expireOnRange').val() &&
                 !$('#searchIP').val() &&
