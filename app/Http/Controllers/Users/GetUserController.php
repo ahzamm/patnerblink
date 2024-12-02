@@ -18,13 +18,20 @@ class GetUserController extends Controller
 
     public function getFilterdUser(Request $request)
     {
-        $query = UserInfo::query()->where('user_info.status', 'user');
-
-        $query->leftJoin('user_status_info', 'user_info.username', '=', 'user_status_info.username')
+        $query = UserInfo::query()
+            ->select([
+                'user_info.id',
+                'user_info.username',
+                'user_info.email',
+                'user_info.status',
+                'user_ip_status.ip as ip_address',
+            ])
+            ->distinct()
+            ->where('user_info.status', 'user')
+            ->leftJoin('user_status_info', 'user_info.username', '=', 'user_status_info.username')
             ->leftJoin('user_ip_status', 'user_info.username', '=', 'user_ip_status.username')
             ->leftJoin('user_verification', 'user_info.username', '=', 'user_verification.username')
-            ->leftJoin('disabled_users', 'user_info.username', '=', 'disabled_users.username')
-            ->leftJoin('manager_profile_rate', 'user_info.manager_id', '=', 'manager_profile_rate.manager_id');
+            ->leftJoin('disabled_users', 'user_info.username', '=', 'disabled_users.username');
 
         $user = Auth::user();
         if ($user->status === 'reseller') {
@@ -45,10 +52,13 @@ class GetUserController extends Controller
             $query->where('user_info.sub_dealer_id', $request->traderId);
         }
         if ($request->filled('managerProfile')) {
-            $query->where('user_info.name', $request->managerProfile)->distinct();;
+            $query->where('user_info.name', $request->managerProfile);
         }
         if ($request->filled('resellerProfile')) {
-            $query->where('user_info.name', $request->resellerProfile)->distinct();;
+            $query->where('user_info.name', $request->resellerProfile);
+        }
+        if ($request->filled('contractorProfile')) {
+            $query->where('user_info.name', $request->contractorProfile);
         }
         if ($request->filled('chargeOnRange')) {
             $chargeOnRange = explode(' - ', $request->chargeOnRange);
@@ -98,7 +108,6 @@ class GetUserController extends Controller
             $query->where('user_info.nic', 'like', '%' . $request->searchCNIC . '%');
         }
 
-
         $totalRecords = $query->count();
         if ($request->filled('search.value')) {
             $searchValue = $request->input('search.value');
@@ -119,13 +128,7 @@ class GetUserController extends Controller
 
         $start = $request->input('start', 0);
         $length = $request->input('length', 10);
-        $data = $query->skip($start)->take($length)->get([
-            'user_info.id',
-            'user_info.username',
-            'user_info.email',
-            'user_info.status',
-            'user_ip_status.ip as ip_address',
-        ]);
+        $data = $query->skip($start)->take($length)->get();
 
         return response()->json([
             'draw'            => intval($request->input('draw')),
@@ -134,6 +137,5 @@ class GetUserController extends Controller
             'data'            => $data,
         ]);
     }
-
 
 }

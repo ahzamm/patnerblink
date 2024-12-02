@@ -203,6 +203,25 @@
                                     <div id="reseller-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
                                 @endif
                             @endif
+                            @if(($panelof == 'manager') || ($panelof == 'reseller') || ($panelof == 'dealer') )
+                                @php $traders = []; @endphp
+                                @if ($panelof == 'dealer')
+                                    @php $profiles = \App\model\Users\DealerProfileRate::where('dealerid', Auth::user()->dealerid)->get(); @endphp
+                                    <div class="col-md-4">
+                                        <div class="form-group position-relative">
+                                            <label for="contractor-profile-dropdown">Select Profile</label>
+                                            <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                            <select id="contractor-profile-dropdown" class="form-select js-select2">
+                                                <option value="">-- Select Profile --</option>
+                                                @foreach ($profiles as $profile)
+                                                    <option value="{{ $profile->name }}">{{ $profile->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div id="contractor-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
+                                @endif
+                            @endif
                             <div class="col-md-4">
                                 <div class="form-group position-relative">
                                     <label for="chargeOnRange">Charge On</label>
@@ -460,6 +479,31 @@
             populateDropdown($resellerProfileDropdown, options, selectedValue);
         }
 
+        function populateContractorProfileDropdown(selectedValue = null) {
+            const $contractorProfileDropdown = $('#contractor-profile-dropdown');
+
+            if ($contractorProfileDropdown.length === 0) {
+                console.warn('Contractor Profile dropdown not present for this user.');
+                return;
+            }
+
+            const contractorProfileData = $('#contractor-profile-data').text();
+            if (!contractorProfileData) {
+                console.error('No contractor data available.');
+                return;
+            }
+
+            const contractorProfiles = JSON.parse(contractorProfileData);
+            const options   = contractorProfiles.map(function (contractorProfile) {
+                return {
+                    value: contractorProfile.name,
+                    text: contractorProfile.name,
+                };
+            });
+
+            populateDropdown($contractorProfileDropdown, options, selectedValue);
+        }
+
         $('#reseller-dropdown').on('change', function () {
             $('#contractor-dropdown').html('<option value="">-- Select Contractor --</option>').val('').trigger('change');
             $('#trader-dropdown').html('<option value="">-- Select Trader --</option>').val('').trigger('change');
@@ -557,6 +601,15 @@
                 }
             }
 
+            const isContractorProfile = $('#contractor-profile-dropdown').length === 0;
+            if (!isContractorProfile) {
+                if (params.contractorProfile) {
+                    await populateContractorProfileDropdown(params.contractorProfile);
+                } else {
+                    await populateContractorProfileDropdown();
+                }
+            }
+
             if (params.userStatus) $('#userStatus').val(params.userStatus).trigger('change');
             if (params.chargeOnRange) $('#chargeOnRange').val(params.chargeOnRange);
             if (params.expireOnRange) $('#expireOnRange').val(params.expireOnRange);
@@ -584,6 +637,7 @@
                 if ($('#trader-dropdown').val()) params.append('traderId', $('#trader-dropdown').val());
                 if ($('#manager-profile-dropdown').val()) params.append('managerProfile', $('#manager-profile-dropdown').val());
                 if ($('#reseller-profile-dropdown').val()) params.append('resellerProfile', $('#reseller-profile-dropdown').val());
+                if ($('#contractor-profile-dropdown').val()) params.append('contractorProfile', $('#contractor-profile-dropdown').val());
                 if ($('#chargeOnRange').val()) params.append('chargeOnRange', $('#chargeOnRange').val());
                 if ($('#expireOnRange').val()) params.append('expireOnRange', $('#expireOnRange').val());
                 if ($('#searchIP').val()) params.append('searchIP', $('#searchIP').val());
@@ -607,19 +661,20 @@
                         url: '/users/get-filtered-users',
                         type: 'GET',
                         data: function (d) {
-                            d.resellerId     = $('#reseller-dropdown').val();
-                            d.contractorId   = $('#contractor-dropdown').val();
-                            d.traderId       = $('#trader-dropdown').val();
-                            d.managerProfile = $('#manager-profile-dropdown').val();
-                            d.resellerProfile = $('#reseller-profile-dropdown').val();
-                            d.chargeOnRange  = $('#chargeOnRange').val();
-                            d.expireOnRange  = $('#expireOnRange').val();
-                            d.searchIP       = $('#searchIP').val();
-                            d.verifiedBy     = $('#verifiedBy').val();
-                            d.userStatus     = $('#userStatus').val();
-                            d.cardStatus     = $('#cardStatus').val();
-                            d.searchPhone    = $('#searchPhone').val();
-                            d.searchCNIC     = $('#searchCNIC').val();
+                            d.resellerId        = $('#reseller-dropdown').val();
+                            d.contractorId      = $('#contractor-dropdown').val();
+                            d.traderId          = $('#trader-dropdown').val();
+                            d.managerProfile    = $('#manager-profile-dropdown').val();
+                            d.resellerProfile   = $('#reseller-profile-dropdown').val();
+                            d.contractorProfile = $('#contractor-profile-dropdown').val();
+                            d.chargeOnRange     = $('#chargeOnRange').val();
+                            d.expireOnRange     = $('#expireOnRange').val();
+                            d.searchIP          = $('#searchIP').val();
+                            d.verifiedBy        = $('#verifiedBy').val();
+                            d.userStatus        = $('#userStatus').val();
+                            d.cardStatus        = $('#cardStatus').val();
+                            d.searchPhone       = $('#searchPhone').val();
+                            d.searchCNIC        = $('#searchCNIC').val();
                         },
                     },
                     columns: [
@@ -654,6 +709,7 @@
                 !$('#trader-dropdown').val() &&
                 !$('#manager-profile-dropdown').val() &&
                 !$('#reseller-profile-dropdown').val() &&
+                !$('#contractor-profile-dropdown').val() &&
                 !$('#chargeOnRange').val() &&
                 !$('#expireOnRange').val() &&
                 !$('#searchIP').val() &&
