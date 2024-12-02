@@ -45,8 +45,7 @@ class GetUserController extends Controller
             $query->where('user_info.sub_dealer_id', $request->traderId);
         }
         if ($request->filled('managerProfile')) {
-            // dd($request->managerProfile);
-            $query->where('user_info.name', $request->managerProfile);
+            $query->where('user_info.name', $request->managerProfile)->distinct();;
         }
         if ($request->filled('chargeOnRange')) {
             $chargeOnRange = explode(' - ', $request->chargeOnRange);
