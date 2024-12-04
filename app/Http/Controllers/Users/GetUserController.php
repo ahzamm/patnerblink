@@ -110,6 +110,24 @@ class GetUserController extends Controller
         if ($request->filled('searchCNIC')) {
             $query->where('user_info.nic', 'like', '%' . $request->searchCNIC . '%');
         }
+        if ($request->filled('searchMAC')) {
+            $query->where('user_info.mac_address', 'like', '%' . $request->searchMAC . '%');
+        }
+        if ($request->filled('searchEmail')) {
+            $query->where('user_info.email', $request->email);
+        }
+        if ($request->filled('searchPassport')) {
+            $query->where('user_info.passport', $request->searchPassport);
+        }
+        if ($request->filled('searchAddress')) {
+            $query->where('user_info.address', $request->searchAddress);
+        }
+        if ($request->filled('searchCityState')) {
+            $query->where('user_info.city', $request->searchCityState)->orWhere('user_info.state', $request->searchCityState);
+        }
+        if ($request->filled('searchCreation')) {
+            $query->whereDate('user_info.creation', $request->searchCreation);
+        }
 
         $totalRecords = $query->count();
         if ($request->filled('search.value')) {

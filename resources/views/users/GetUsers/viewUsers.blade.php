@@ -305,6 +305,55 @@
                                     <input type="text" id="searchCNIC" class="form-control" placeholder="Enter CNIC">
                                 </div>
                             </div>
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="searchMAC">Search by MAC Address</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchMAC" class="form-control" placeholder="Enter MAC Address">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="searchDataUtilization">Search by Data Utilization (GBs)</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="number" id="searchDataUtilization" class="form-control" placeholder="">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="searchEmail">Search by Email</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchEmail" class="form-control" placeholder="Enter Email">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="searchPassport">Search by Passport</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchPassport" class="form-control" placeholder="Enter Passport Number">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="searchAddress">Search by Address</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchAddress" class="form-control" placeholder="Enter Address">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="searchCityState">Search by City/State</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchCityState" class="form-control" placeholder="Enter City/State">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group position-relative">
+                                    <label for="searchCreation">Search by Creation Date</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="date" id="searchCreation" class="form-control" placeholder="">
+                                </div>
+                            </div>
                         </div>
                         <button type="button" id="getUsers" class="btn btn-primary mt-3">Get Users</button>
                     </form>
@@ -553,7 +602,6 @@
             populateTraderDropdown(traderId);
         });
 
-
         async function populateFilters(params) {
             isPopulatingFilters = true;
 
@@ -662,11 +710,16 @@
             if (params.cardStatus) $('#cardStatus').val(params.cardStatus).trigger('change');
             if (params.searchPhone) $('#searchPhone').val(params.searchPhone);
             if (params.searchCNIC) $('#searchCNIC').val(params.searchCNIC);
+            if (params.searchMAC) $('#searchMAC').val(params.searchMAC);
+            if (params.searchDataUtilization) $('#searchDataUtilization').val(params.searchDataUtilization);
+            if (params.searchEmail) $('#searchEmail').val(params.searchEmail);
+            if (params.searchPassport) $('#searchPassport').val(params.searchPassport);
+            if (params.searchAddress) $('#searchAddress').val(params.searchAddress);
+            if (params.searchCityState) $('#searchCityState').val(params.searchCityState);
+            if (params.searchCreation) $('#searchCreation').val(params.searchCreation);
 
             isPopulatingFilters = false;
         }
-
-
 
         function fetchData(queryParams = null) {
             const params = new URLSearchParams();
@@ -691,6 +744,13 @@
                 if ($('#cardStatus').val()) params.append('cardStatus', $('#cardStatus').val());
                 if ($('#searchPhone').val()) params.append('searchPhone', $('#searchPhone').val());
                 if ($('#searchCNIC').val()) params.append('searchCNIC', $('#searchCNIC').val());
+                if ($('#searchMAC').val()) params.append('searchMAC', $('#searchMAC').val());
+                if ($('#searchDataUtilization').val()) params.append('searchDataUtilization', $('#searchDataUtilization').val());
+                if ($('#searchEmail').val()) params.append('searchEmail', $('#searchEmail').val());
+                if ($('#searchPassport').val()) params.append('searchPassport', $('#searchPassport').val());
+                if ($('#searchAddress').val()) params.append('searchAddress', $('#searchAddress').val());
+                if ($('#searchCityState').val()) params.append('searchCityState', $('#searchCityState').val());
+                if ($('#searchCreationDate').val()) params.append('searchCreationDate', $('#searchCreationDate').val());
             }
 
             const newUrl = `/users/get-users?${params.toString()}`;
@@ -706,21 +766,27 @@
                         url: '/users/get-filtered-users',
                         type: 'GET',
                         data: function (d) {
-                            d.resellerId        = $('#reseller-dropdown').val();
-                            d.contractorId      = $('#contractor-dropdown').val();
-                            d.traderId          = $('#trader-dropdown').val();
-                            d.managerProfile    = $('#manager-profile-dropdown').val();
-                            d.resellerProfile   = $('#reseller-profile-dropdown').val();
-                            d.contractorProfile = $('#contractor-profile-dropdown').val();
-                            d.subdealerProfile  = $('#subdealer-profile-dropdown').val();
-                            d.chargeOnRange     = $('#chargeOnRange').val();
-                            d.expireOnRange     = $('#expireOnRange').val();
-                            d.searchIP          = $('#searchIP').val();
-                            d.verifiedBy        = $('#verifiedBy').val();
-                            d.userStatus        = $('#userStatus').val();
-                            d.cardStatus        = $('#cardStatus').val();
-                            d.searchPhone       = $('#searchPhone').val();
-                            d.searchCNIC        = $('#searchCNIC').val();
+                            d.resellerId            = $('#reseller-dropdown').val();
+                            d.contractorId          = $('#contractor-dropdown').val();
+                            d.traderId              = $('#trader-dropdown').val();
+                            d.managerProfile        = $('#manager-profile-dropdown').val();
+                            d.resellerProfile       = $('#reseller-profile-dropdown').val();
+                            d.contractorProfile     = $('#contractor-profile-dropdown').val();
+                            d.subdealerProfile      = $('#subdealer-profile-dropdown').val();
+                            d.chargeOnRange         = $('#chargeOnRange').val();
+                            d.expireOnRange         = $('#expireOnRange').val();
+                            d.searchIP              = $('#searchIP').val();
+                            d.verifiedBy            = $('#verifiedBy').val();
+                            d.userStatus            = $('#userStatus').val();
+                            d.cardStatus            = $('#cardStatus').val();
+                            d.searchPhone           = $('#searchPhone').val();
+                            d.searchCNIC            = $('#searchCNIC').val();
+                            d.searchMAC             = $('#searchMAC').val();
+                            d.searchDataUtilization = $('#searchDataUtilization').val();
+                            d.searchEmail           = $('#searchEmail').val();
+                            d.searchAddress         = $('#searchAddress').val();
+                            d.searchCityState       = $('#searchCityState').val();
+                            d.searchCreation        = $('#searchCreation').val();
                         },
                     },
                     columns: [
@@ -746,7 +812,6 @@
             }
         })();
 
-
         $('#getUsers').on('click', function () {
             let isSelectFilter = false;
             if (
@@ -764,7 +829,14 @@
                 !$('#userStatus').val() &&
                 !$('#cardStatus').val() &&
                 !$('#searchPhone').val() &&
-                !$('#searchCNIC').val()
+                !$('#searchCNIC').val() &&
+                !$('#searchMAC').val() &&
+                !$('#searchDataUtilization').val() &&
+                !$('#searchEmail').val() &&
+                !$('#searchPassport').val() &&
+                !$('#searchAddress').val() &&
+                !$('#searchCityState').val() &&
+                !$('#searchCreation').val()
             ) {
                 alert('Please select atleast one filter');
                 return;
