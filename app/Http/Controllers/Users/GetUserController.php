@@ -159,4 +159,36 @@ class GetUserController extends Controller
         ]);
     }
 
+    public function getUserDetails($id)
+    {
+        $user = UserInfo::query()
+            ->select([
+                'user_info.id',
+                'user_info.username',
+                'user_info.email',
+                'user_info.status',
+                'user_info.address',
+                'user_info.city',
+                'user_info.state',
+                'user_info.mobilephone',
+                'user_info.mac_address',
+                'user_info.nic',
+                'user_info.passport',
+                'user_info.creationdate',
+                'user_ip_status.ip as ip_address',
+                'user_status_info.card_charge_on',
+                'user_status_info.card_expire_on',
+                'user_verification.cnic as verified_cnic',
+                'user_verification.mobile as verified_mobile',
+                'disabled_users.status as disabled_status',
+            ])
+            ->leftJoin('user_ip_status', 'user_info.username', '=', 'user_ip_status.username')
+            ->leftJoin('user_status_info', 'user_info.username', '=', 'user_status_info.username')
+            ->leftJoin('user_verification', 'user_info.username', '=', 'user_verification.username')
+            ->leftJoin('disabled_users', 'user_info.username', '=', 'disabled_users.username')
+            ->where('user_info.id', $id)
+            ->firstOrFail();
+
+        return response()->json($user);
+    }
 }

@@ -13,6 +13,9 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\admin\DeleteOldConsumerController;
+use App\Http\Controllers\admin\RecreateUserController;
+
 
 try {
  DB::connection()->getPdo();
@@ -30,7 +33,7 @@ try {
  <!-- Required meta tags -->
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
- 
+
  <!-- Bootstrap CSS -->
  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Press+Start+2P">
  <link rel="stylesheet" href="https://unpkg.com/nes.css@1.0.0/css/nes.min.css">
@@ -39,61 +42,61 @@ try {
    width: 100%;
    height: 100%;
  }
- 
+
  body {
    background-color: #26292d;
  }
- 
+
  .container {
    width: 100%;
    height: 100%;
-   
+
    padding-right: 15px;
    padding-left: 15px;
    margin-right: auto;
    margin-left: auto;
-   
+
    display: flex;
    flex-direction: column;
    justify-content: center;
  }
- 
+
  .title {
    text-align: center;
  }
- 
+
  .white-font {
    color: #fff;
  }
- 
+
  @media (min-width: 576px) {
    .container {
      max-width: 540px;
    }
  }
- 
+
  @media (min-width: 768px) {
    .container {
      max-width: 720px;
    }
  }
- 
+
  @media (min-width: 992px) {
    .container {
      max-width: 960px;
    }
  }
- 
+
  @media (min-width: 1200px) {
    .container {
      max-width: 1140px;
    }
  }
- 
+
  .text-justify {
    text-align: justify;
  }
- 
+
  .copyright {
    text-align: center;
    margin-top: 1rem;
@@ -112,9 +115,9 @@ try {
  </div>
  <!-- Optional JavaScript -->
  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
- 
+
  <script src="https://fonts.googleapis.com/css?family=Press+Start+2P" ></script>
- 
+
  </body>
  </html>';
  die();
@@ -136,7 +139,7 @@ try {
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  
+
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Press+Start+2P">
   <link rel="stylesheet" href="https://unpkg.com/nes.css@1.0.0/css/nes.min.css">
@@ -145,61 +148,61 @@ try {
    width: 100%;
    height: 100%;
  }
- 
+
  body {
    background-color: #26292d;
  }
- 
+
  .container {
    width: 100%;
    height: 100%;
-   
+
    padding-right: 15px;
    padding-left: 15px;
    margin-right: auto;
    margin-left: auto;
-   
+
    display: flex;
    flex-direction: column;
    justify-content: center;
  }
- 
+
  .title {
    text-align: center;
  }
- 
+
  .white-font {
    color: #fff;
  }
- 
+
  @media (min-width: 576px) {
    .container {
      max-width: 540px;
    }
  }
- 
+
  @media (min-width: 768px) {
    .container {
      max-width: 720px;
    }
  }
- 
+
  @media (min-width: 992px) {
    .container {
      max-width: 960px;
    }
  }
- 
+
  @media (min-width: 1200px) {
    .container {
      max-width: 1140px;
    }
  }
- 
+
  .text-justify {
    text-align: justify;
  }
- 
+
  .copyright {
    text-align: center;
    margin-top: 1rem;
@@ -218,9 +221,9 @@ try {
  </div>
  <!-- Optional JavaScript -->
  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
- 
+
  <script src="https://fonts.googleapis.com/css?family=Press+Start+2P" ></script>
- 
+
  </body>
  </html>';
  die();
@@ -238,13 +241,13 @@ Route::get('/401', function () {
  return view('users.errors.401');
 });
 Route::get('/myScript', function(){
-	
+
   $userList = App\model\Users\UserInfo::select('id','username')->where('status','user')->where('dealerid','logonhome')->get();
   $out = 'Done - ';
   foreach($userList as $user){
     $username = $user->username;
     $radCheckuser =  App\model\Users\UserInfo::where(['username' => $username])->first();
-    if($radCheckuser){		 
+    if($radCheckuser){
 //		 $out .= $user->id . ' -> '.$user->username . ' >> ' .$user->password . '-> ' . $radCheckuser->value . ' -> '.Illuminate\Support\Facades\Hash::make(''.$radCheckuser->value);
 		  //$user->password = Illuminate\Support\Facades\Hash::make(''.$radCheckuser->value);
 		  //$user->update();
@@ -257,7 +260,7 @@ Route::get('/myScript', function(){
 //			  $out .= "" . $username . '<br/>';
     }
   }
-  return $out; 
+  return $out;
 });
 
 
@@ -335,7 +338,7 @@ Route::group(['prefix'=>'admin'],function(){
    Route::post('/repair-id','admin\RepairIdController@store')->name('admin.repair.store');
    /// END ///
 
-   
+
 
    /// Migration Module Route ///
    Route::get('/migration','admin\MigrationController@index')->name('admin.migration.index');
@@ -344,7 +347,7 @@ Route::group(['prefix'=>'admin'],function(){
    Route::post('/migration/getprofile','admin\MigrationController@getprofile')->name('admin.migration.getprofile');
    Route::get('/get-nas','admin\MigrationController@nas')->name('admin.migration.nas');
    /// END ///
-   
+
    /// Banks Images ///
    Route::get('/bank/view','admin\BankImageController@index')->name('admin.banks.view');
    Route::post('/bank/store','admin\BankImageController@store')->name('admin.banks.store');
@@ -369,7 +372,7 @@ Route::group(['prefix'=>'admin'],function(){
    /// View Help Agent ///
    Route::get('/view/{id}','admin\ManagementController@view')->name('admin.manage.view');
    /// END ///
-   
+
    /// Taxation Routes ///
    Route::get('/taxation/view','admin\TaxationController@taxation_view')->name('admin.taxation.viewer');
    Route::post('/taxation/update','admin\TaxationController@taxation_update')->name('admin.taxation.update');
@@ -453,7 +456,7 @@ Route::group(['prefix'=>'admin'],function(){
    Route::post('/contractor_trader_profile_store','admin\ContTradPorfileController@store')->name('admin.contractor_trader_profile.store');
    Route::post('/contractor_trader_profile_delete','admin\ContTradPorfileController@delete')->name('admin.contractor_trader_profile.delete');
 
-   
+
    Route::post('adminSupportsearch','admin\SupportSearchController@index')->name('admin.Supportsearch');
    Route::post('adminsearchResult','admin\SupportSearchController@searchResult')->name('admin.SupportsearchResult');
    Route::post('adminSupportupdownGraph','admin\SupportSearchController@showupDownGraph')->name('admin.SupportupdownGraph');
@@ -515,7 +518,7 @@ Route::group(['prefix'=>'admin'],function(){
    Route::get('admin/downloadsheetall/{managerid}/{resellerid}','admin\DownloadSheetController@index_OLD')->name('admin.alluser.sheetdownload');
    Route::post('ajax/search','admin\SearchController@index')->name('admin.search.ajax.post');
 
-   
+
 
    Route::post('ajax/checkavailable','admin\CheckAvailablityController@index')->name('admin.check.available.post');
 
@@ -523,7 +526,7 @@ Route::group(['prefix'=>'admin'],function(){
 
 
    Route::get('view/management/{status}','admin\ViewSupportController@index')->name('admin.management.support.index');
-   
+
    Route::post('view/management/{status}','admin\ViewSupportController@store')->name('admin.management.support.post');
 
    Route::get('/error_log','admin\LoginErrorController@index')->name('admin.users.error_log');
@@ -583,7 +586,7 @@ Route::group(['prefix'=>'admin'],function(){
    Route::get('/logindetails','admin\DetailController@index')->name('admin.logindetails');
 
    Route::get('/loadSubdealer','admin\DetailController@loadSubDealer')->name('admin.loadSubDealer');
-   
+
    Route::post('/logindetails','admin\DetailController@usersreport')->name('admin.logindetails');
 
 
@@ -597,7 +600,7 @@ Route::group(['prefix'=>'admin'],function(){
    Route::post('/postcgn','admin\CgnController@addCGN')->name('admin.postcgn');
    /// END ///
 
-   /// Static IPs /// 
+   /// Static IPs ///
    Route::get('add-static-ip','admin\CgnController@add_static_ip_data')->name('admin.ips_create');
    Route::post('staticip','admin\CgnController@store_static_ip_data')->name('admin.store_ips_data');
    /// END ///
@@ -656,7 +659,7 @@ Route::group(['prefix'=>'users'],function(){
     Route::post('/static/approve','Users\ApproveController@approveStaticIPUser')->name('users.approvestatic.post');
     Route::post('/contractor/approve','Users\ApproveController@approveRadUserGroup')->name('users.approve.ajax.post');
     Route::post('/verify','Users\ApproveController@approveVerification')->name('users.approve.ajax.verify');
-    
+
     /// MRTG $ CACTI ///
     Route::get('mrtg','Users\GraphController@index')->name('user.graph.index');
     Route::post('graph-refresh','Users\GraphController@refresh')->name('user.graph.refresh');
@@ -753,12 +756,30 @@ Route::group(['prefix'=>'users'],function(){
     Route::get('/getNumOfOnlineUsers','Users\DashboardController@getNumOfOnlineUsers')->name('users.getNumOfOnlineUsers');
     Route::get('/getDisabledUser','Users\DashboardController@getDisabledUser')->name('getDisabledUser');
     Route::get('/getErrorLog','Users\DashboardController@getErrorLog')->name('getErrorLog');
-    
+
     Route::get('/users/index','Users\UserController@index')->name('users.user.index');
     Route::get('/users/expire/{status}','Users\UserController@epiredUser')->name('users.user.epiredUser');
-    Route::get('/users/online/{status}','Users\UserController@onlineUsers')->name('users.user.onlineuser')->middleware('useraccessallow');
-    Route::get('/users/onlinePost','Users\UserController@onlinePost')->name('users.user.onlinePost');
 
+    // Delete Old Consumers --------------- Start  ---------------
+    Route::get('/delete-old-consumer',[DeleteOldConsumerController::class, 'index'])->name('show.users.index');
+    Route::get('/get-delete-old-consumer',[DeleteOldConsumerController::class, 'show_delete_old_consumer'])->name('show.users');
+    Route::post('/bulk-deletes', [DeleteOldConsumerController::class, 'bulkDeletes'])->name('users.bulk_deletes');
+    Route::get('/get-contractors', [DeleteOldConsumerController::class, 'getContractors'])->name('get.contractors');
+    // Delete Old Consumers --------------- End ---------------
+
+    // Recreate User --------------- Start  ---------------
+    Route::get('/recreate-user',[RecreateUserController::class, 'index'])->name('recreate.user');
+    Route::post('/recreation-of-user',[RecreateUserController::class, 'recreation_of_user'])->name('recreation.of.user');
+    // Recreate User --------------- End ---------------
+
+    // Online View Consumer
+    Route::get('/new-users/online/{status}','Users\UserController@onlineUsers_view')->name('users.user.onlineuser.view');
+    Route::get('/users/online/datatable/view','Users\UserController@onlineUsers_get_table')->name('users.user.onlineuser.table');
+    // End
+
+
+
+    Route::get('/users/onlinePost','Users\UserController@onlinePost')->name('users.user.onlinePost');
 
     /// Online Consumers Detail ///
     Route::post('onlineUserDetails','Users\UserController@onlineUserDetails')->name('users.onlineUserDetails');
@@ -781,7 +802,7 @@ Route::group(['prefix'=>'users'],function(){
 
     Route::get('/users/{status}','Users\UserController@index1')->name('users.user.index1')->middleware('useraccessallow');
 
-    /// SMS VERIFICATION MODULE /// 
+    /// SMS VERIFICATION MODULE ///
     // Route::get('/verifyy/{username}','Users\UserController@verifyUser')->name('users.user.verifyUser');
     // Route::get('/smsverify/{username}','Users\UserController@verifySms')->name('users.user.smsverify');
     Route::get('/smsverify/{username}','Users\UserController@verifySms')->name('users.user.smsverify');
@@ -793,7 +814,7 @@ Route::group(['prefix'=>'users'],function(){
     Route::post('/users/{status}/{id}','Users\UserController@update')->name('users.user.update');
     Route::get('/user/{status}','Users\UserController@show')->name('users.user.show');
 
-    /// TERMINATED CONSUMERS /// 
+    /// TERMINATED CONSUMERS ///
     Route::post('/terminated','Users\UserController@userTerminated')->name('users.user.termination');
     /// END ///
 
@@ -818,7 +839,7 @@ Route::group(['prefix'=>'users'],function(){
 
 
     Route::post('/single/recharge','Users\RechargeController@recharge_it')->name('users.single.recharge');
-    
+
     // /////////// BULK RECHARGE ROUTES /////////////
     Route::get('/recharge/bulk','Users\BulkRechargeController@index')->name('users.bulk_recharge');
     Route::post('/recharge/bulk/show_consumer','Users\BulkRechargeController@show_consumer')->name('users.bulk_recharge.show_consumer');
@@ -826,7 +847,7 @@ Route::group(['prefix'=>'users'],function(){
     Route::post('/recharge/bulk/logs','Users\BulkRechargeController@recharge_logs')->name('users.bulk_recharge.logs');
     Route::post('/recharge/bulk/errorlogs','Users\BulkRechargeController@error_logs')->name('users.bulk_recharge.errorlogs');
     ///////////////////////////////////////////////
-    
+
     Route::get('/complaint','complain\ComplainController@index')->name('users.complain');
     Route::post('/complaint/give_feeback','complain\ComplainController@give_feedback')->name('users.complain.give_feedback');
     Route::post('/generate_complaint','complain\ComplainController@generate_complaint')->name('users.complain.generate_complaint');
@@ -854,7 +875,7 @@ Route::group(['prefix'=>'users'],function(){
     Route::get('/maxdata','Users\MaxDataUsageController@index')->name('users.billing.max_data_usage')->middleware('useraccessallow');
     Route::post('/data_exceed_consumers_list','Users\MaxDataUsageController@data_exceed_consumers_list')->name('users.billing.data_exceed_consumers_list');
     /// END ///
-    
+
     Route::post('ajax/checkunique','Users\CheckUniqueController@index')->name('users.checkunique.ajax.post');
 
 
@@ -874,9 +895,9 @@ Route::group(['prefix'=>'users'],function(){
 
 
 
-    
 
-    
+
+
     /// CLEAR MAC ADDRESS MODULE ///
     Route::post('/user/clearMac','Users\UserController@clearMac')->name('users.billing.user_detail');
     /// END ///
@@ -922,7 +943,7 @@ Route::group(['prefix'=>'users'],function(){
     Route::get('/loadTrader','Users\ReportController@loadTrader')->name('users.report.loadTrader');
 
     Route::post('/pdfprofit','Users\LedgerReportController@reportSummerypdf')->name('users.billing.summeryDetail');
-    
+
     Route::post('/pdfcommision','Users\LedgerReportController@commisionSummerypdf')->name('users.billing.commisionDetail');
 
     Route::post('/dealerpdfprofit','Users\LedgerReportController@dealerSummerypdf1')->name('users.billing.dealersummeryDetail');
@@ -942,10 +963,10 @@ Route::group(['prefix'=>'users'],function(){
     Route::get('/bill-register','Users\ReportController@bill_register')->name('users.billing.bill_register');
 
     Route::post('/bill-register-action','Users\ReportController@bill_register_action')->name('users.billing.bill_register_action');
-    
 
-    
-    
+
+
+
 
     Route::get('/supportView','Users\SupportManagementController@index')->name('users.manage.supportView')->middleware('useraccessallow');
     Route::get('/edit','Users\SupportManagementController@edit')->name('users.manage.edit');
@@ -954,7 +975,7 @@ Route::group(['prefix'=>'users'],function(){
     Route::get('/userUpdate/{id}','Users\SupportManagementController@update')->name('users.manage.userUpdate');
     Route::get('/allowAccess','Users\SupportManagementController@allow_Access')->name('users.manage.allowAccess')->middleware('useraccessallow');
     Route::post('/userAccess','Users\SupportManagementController@userAccess')->name('users.manage.userAccess');
-    
+
     Route::get('/allowsubdealerAccess','Users\SubdealerManagementController@allow_Access')->name('users.manage.allowsubdealerAccess');
     Route::get('/subdealerAccess','Users\SubdealerManagementController@subdealerAccess')->name('users.manage.subdealerAccess');
 
@@ -970,10 +991,10 @@ Route::group(['prefix'=>'users'],function(){
     Route::get('/showUser','Users\userPanelController@show')->name('users.userPanel.show');
     Route::get('/viewChangeUserPass','Users\userPanelController@viewChangeUserPass')->name('users.userPanel.viewChangeUserPass');
     Route::get('/changeUserPass','Users\userPanelController@changeUserPass')->name('users.userPanel.changeUserPass');
-    
+
     Route::post('/checkExpire','Users\userPanelController@checkExpire')->name('users.userPanel.checkExpire');
 
-    
+
     /// View Help Agent ///
     Route::get('/view/{id}','Users\SupportManagementController@view')->name('users.manage.view');
 
@@ -1013,14 +1034,14 @@ Route::group(['prefix'=>'users'],function(){
     /// Consumers Cnic Route ///
     Route::get('/userNicView','Users\userPanelController@userNicView')->name('users.userPanel.userNicView');
     Route::get('/userNicData','Users\userPanelController@userNicData')->name('users.userPanel.userNicData');
-    Route::post('/addNic','Users\userPanelController@addUserCnicData')->name('users.userPanel.addNic'); 
+    Route::post('/addNic','Users\userPanelController@addUserCnicData')->name('users.userPanel.addNic');
 
     /// Verification Route ///
     /// CNIC Verifications ///
     Route::post('/nicVerify','Users\NicController@verifyUser')->name('users.user.nicVerify');
     Route::post('/addNicToDB','Users\NicController@addCnicData')->name('users.billing.addNicToDB');
     Route::get('/nicData','Users\NicController@nicData')->name('users.billing.nicData');
-    
+
     /// SMS Verifications ///
     Route::post('/smsverify','Users\SmsSenderController@verifySms')->name('users.user.smsverify');
     Route::post('/smsSend','Users\SmsSenderController@sendSms')->name('users.billing.smsSend');
@@ -1039,10 +1060,10 @@ Route::group(['prefix'=>'users'],function(){
 
     /// DHCP IP Route Code Start ///
     Route::get('/dhcp','Users\DHCPController@DHCP_IP')->name('user.dhcp');
-    
+
     /// Never Expire Route start ///
     Route::get('/never_expire/consumers','Users\NeverExpireController@index')->name('users.never_expire.consumers');
-    
+
     Route::post('/never_expire_update','Users\NeverExpireController@never_expire_update')->name('users.never_expire_update');
     Route::post('/never_expire/errorlogs','Users\NeverExpireController@error_logs')->name('users.never_expire.errorlogs');
 
@@ -1147,6 +1168,7 @@ Route::group(['prefix'=>'users'],function(){
     ///// advance serach get users
     Route::get('/get-users', 'Users\GetUserController@index')->name('get-users');
     Route::get('/get-filtered-users', 'Users\GetUserController@getFilterdUser')->name('get-filtered-users');
+    Route::get('/details/{id}', 'Users\GetUserController@getUserDetails');
 //
     Route::post('/get/contractor-trader','Users\UserController@get_contractor_trader_profiles');
 

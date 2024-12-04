@@ -118,9 +118,9 @@
                         <div class="row">
                             @if($panelof == 'manager')
                                 @php $resellers = \App\model\Users\UserInfo::where('status','reseller')->where('manager_id',Auth::user()->manager_id)->get(); @endphp
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group position-relative">
-                                        <label for="reseller-dropdown">Select Reseller <span style="color: red">*</span></label>
+                                        <label for="reseller-dropdown">Select Reseller</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                         <select id="reseller-dropdown" class="form-select js-select2" required>
                                             <option value="">-- Select Reseller --</option>
@@ -137,7 +137,7 @@
                                 @if ($panelof == 'reseller')
                                     @php $contractors = App\model\Users\UserInfo::where('status', 'dealer')->where('resellerid', Auth::user()->resellerid)->get(); @endphp
                                 @endif
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group position-relative">
                                         <label for="contractor-dropdown">Select Contractor</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
@@ -155,7 +155,7 @@
                                 @if ($panelof == 'dealer')
                                     @php $traders = \App\model\Users\UserInfo::where('status', 'subdealer')->where('dealerid', Auth::user()->dealerid)->get(); @endphp
                                 @endif
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group position-relative">
                                         <label for="trader-dropdown">Select Trader</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
@@ -170,9 +170,9 @@
                             @endif
                             @if($panelof == 'manager')
                                 @php $profiles = \App\model\Users\ManagerProfileRate::where('manager_id', Auth::user()->manager_id)->distinct()->get(); @endphp
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group position-relative">
-                                        <label for="manager-profile-dropdown">Select Profile <span style="color: red">*</span></label>
+                                        <label for="manager-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                         <select id="manager-profile-dropdown" class="form-select js-select2" required>
                                             <option value="">-- Select Profile --</option>
@@ -186,7 +186,7 @@
                             @endif
                             @if ($panelof == 'reseller')
                                 @php $profiles = \App\model\Users\ResellerProfileRate::where('resellerid', Auth::user()->resellerid)->get(); @endphp
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group position-relative">
                                         <label for="reseller-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
@@ -202,7 +202,7 @@
                             @endif
                             @if ($panelof == 'dealer')
                                 @php $profiles = \App\model\Users\DealerProfileRate::where('dealerid', Auth::user()->dealerid)->get(); @endphp
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group position-relative">
                                         <label for="contractor-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
@@ -218,9 +218,9 @@
                             @endif
                             @if($panelof == 'subdealer')
                                 @php $profiles = \App\model\Users\SubdealerProfileRate::where('sub_dealer_id', Auth::user()->sub_dealer_id)->distinct()->get(); @endphp
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group position-relative">
-                                        <label for="subdealer-profile-dropdown">Select Profile <span style="color: red">*</span></label>
+                                        <label for="subdealer-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                         <select id="subdealer-profile-dropdown" class="form-select js-select2" required>
                                             <option value="">-- Select Profile --</option>
@@ -232,7 +232,7 @@
                                 </div>
                                 <div id="subdealer-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
                             @endif
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="chargeOnRange">Charge On</label>
                                     <div class="input-group">
@@ -241,7 +241,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="expireOnRange">Expire On</label>
                                     <div class="input-group">
@@ -250,14 +250,14 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="searchIP">Search by IP</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                     <input type="text" id="searchIP" class="form-control" placeholder="Enter IP address">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="verifiedBy">Verified By</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
@@ -269,7 +269,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="userStatus">User Status</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
@@ -280,7 +280,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="cardStatus">Active/Deactive</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
@@ -291,63 +291,63 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="searchPhone">Search by Phone Number</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                     <input type="text" id="searchPhone" class="form-control" placeholder="Enter Phone Number">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="searchCNIC">Search by CNIC</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                     <input type="text" id="searchCNIC" class="form-control" placeholder="Enter CNIC">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="searchMAC">Search by MAC Address</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                     <input type="text" id="searchMAC" class="form-control" placeholder="Enter MAC Address">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="searchDataUtilization">Search by Data Utilization (GBs)</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                     <input type="number" id="searchDataUtilization" class="form-control" placeholder="">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="searchEmail">Search by Email</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                     <input type="text" id="searchEmail" class="form-control" placeholder="Enter Email">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="searchPassport">Search by Passport</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                     <input type="text" id="searchPassport" class="form-control" placeholder="Enter Passport Number">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="searchAddress">Search by Address</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                     <input type="text" id="searchAddress" class="form-control" placeholder="Enter Address">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="searchCityState">Search by City/State</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                     <input type="text" id="searchCityState" class="form-control" placeholder="Enter City/State">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group position-relative">
                                     <label for="searchCreation">Search by Creation Date</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
@@ -369,6 +369,7 @@
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                     </table>
@@ -376,6 +377,25 @@
             </section>
         </section>
     </div>
+    <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userDetailsModalLabel" style="color: #fff">User Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="userDetailsContent">
+                        <!-- User details will be dynamically loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 @section('ownjs')
 <script>
@@ -794,6 +814,20 @@
                         { data: 'username', name: 'username' },
                         { data: 'email', name: 'email' },
                         { data: 'status', name: 'status' },
+                        {
+                            data: 'id', // Pass the user's ID to the button
+                            name: 'action',
+                            orderable: false,
+                            searchable: false,
+                            render: function (data, type, row) {
+                                return `
+                                <button class="btn btn-sm view-user-details" data-id="${data}" style="background-color: #17a2b8; border-color: #17a2b8; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fa fa-eye" style="font-size: 18px;"></i>
+                                </button>
+
+                                `;
+                            }
+                        },
                     ],
                 });
             } else {
@@ -876,6 +910,54 @@
         $('#expireOnRange').on('cancel.daterangepicker', function (ev, picker) {
             $(this).val('');
         });
+
+        $(document).on('click', '.view-user-details', function () {
+            const userId = $(this).data('id');
+
+            // Make an AJAX call to fetch user details
+            $.ajax({
+                url: `/users/details/${userId}`, // API endpoint to fetch user details
+                type: 'GET',
+                success: function (response) {
+                    $('#userDetailsContent').html(`
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><strong>ID</strong></td><td>${response.id}</td></tr>
+                                <tr><td><strong>Username</strong></td><td>${response.username}</td></tr>
+                                <tr><td><strong>Email</strong></td><td>${response.email}</td></tr>
+                                <tr><td><strong>Status</strong></td><td>${response.status}</td></tr>
+                                <tr><td><strong>Address</strong></td><td>${response.address || 'N/A'}</td></tr>
+                                <tr><td><strong>City</strong></td><td>${response.city || 'N/A'}</td></tr>
+                                <tr><td><strong>State</strong></td><td>${response.state || 'N/A'}</td></tr>
+                                <tr><td><strong>Phone</strong></td><td>${response.mobilephone || 'N/A'}</td></tr>
+                                <tr><td><strong>MAC Address</strong></td><td>${response.mac_address || 'N/A'}</td></tr>
+                                <tr><td><strong>NIC</strong></td><td>${response.nic || 'N/A'}</td></tr>
+                                <tr><td><strong>Passport</strong></td><td>${response.passport || 'N/A'}</td></tr>
+                                <tr><td><strong>Creation Date</strong></td><td>${response.creationdate || 'N/A'}</td></tr>
+                                <tr><td><strong>IP Address</strong></td><td>${response.ip_address || 'N/A'}</td></tr>
+                                <tr><td><strong>Card Charge On</strong></td><td>${response.card_charge_on || 'N/A'}</td></tr>
+                                <tr><td><strong>Card Expire On</strong></td><td>${response.card_expire_on || 'N/A'}</td></tr>
+                                <tr><td><strong>Verified CNIC</strong></td><td>${response.verified_cnic || 'N/A'}</td></tr>
+                                <tr><td><strong>Verified Mobile</strong></td><td>${response.verified_mobile || 'N/A'}</td></tr>
+                                <tr><td><strong>Disabled Status</strong></td><td>${response.disabled_status || 'N/A'}</td></tr>
+                            </tbody>
+                        </table>
+                    `);
+                    $('#userDetailsModal').modal('show');
+                },
+                error: function (error) {
+                    console.error('Error fetching user details:', error);
+                    alert('Failed to fetch user details.');
+                }
+            });
+        });
+
 
     });
 </script>
