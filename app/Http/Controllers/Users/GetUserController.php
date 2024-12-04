@@ -114,7 +114,7 @@ class GetUserController extends Controller
             $query->where('user_info.mac_address', 'like', '%' . $request->searchMAC . '%');
         }
         if ($request->filled('searchEmail')) {
-            $query->where('user_info.email', $request->email);
+            $query->where('user_info.email', $request->searchEmail);
         }
         if ($request->filled('searchPassport')) {
             $query->where('user_info.passport', $request->searchPassport);
@@ -126,7 +126,7 @@ class GetUserController extends Controller
             $query->where('user_info.city', $request->searchCityState)->orWhere('user_info.state', $request->searchCityState);
         }
         if ($request->filled('searchCreation')) {
-            $query->whereDate('user_info.creation', $request->searchCreation);
+            $query->whereDate('user_info.creationdate', $request->searchCreation);
         }
 
         $totalRecords = $query->count();
