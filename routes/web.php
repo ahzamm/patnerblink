@@ -773,7 +773,7 @@ Route::group(['prefix'=>'users'],function(){
     // Recreate User --------------- End ---------------
 
     // Online View Consumer
-    Route::get('/new-users/online/{status}','Users\UserController@onlineUsers_view')->name('users.user.onlineuser.view');
+    Route::get('/new-users/online/{status}','Users\UserController@onlineUsers')->name('users.user.onlineuser.view');
     Route::get('/users/online/datatable/view','Users\UserController@onlineUsers_get_table')->name('users.user.onlineuser.table');
     // End
 

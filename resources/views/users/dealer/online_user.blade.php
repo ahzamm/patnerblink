@@ -15,224 +15,336 @@
 * Created: September, 2024
 * Last Updated: 01th September, 2024
 * Author: SquadCloud Team <info@squadcloud.co>
-*-->
-<!-- Code Onset -->
-@extends('users.layouts.app')
-@include('users.layouts.bytesConvert')
-@section('title') Dashboard @endsection
-@section('owncss')
-<style type="text/css">
-	#sno select,
-	#username select,
-	#Full-Name select,
-	#address select,
-	#Login_Time select,
-	#Assign select,
-	#MAC select,
-	#Download select,
-	#Upload select,
-	#Session_Time select,
-	#getip select
-	{
-		display: none;
-	}
-	div.popover-body{
-		background-color: black !important;
-		color: white !important;
-		font-weight: bold !important;
-		font-size: 13px !important;
-	}
-</style>
-@endsection
-@section('content')
-<div class="page-container row-fluid container-fluid">
-	<!-- CONTENT START -->
-	<section id="main-content">
-		<section class="wrapper main-wrapper row" >
-			<div class="">
+	*-->
+	<!-- Code Onset -->
+	@extends('users.layouts.app')
+	@include('users.layouts.bytesConvert')
+	@section('title') Dashboard @endsection
+	@section('owncss')
+	<style type="text/css">
+		#sno select,
+		#username select,
+		#Full-Name select,
+		#address select,
+		#Login_Time select,
+		#Assign select,
+		#MAC select,
+		#Download select,
+		#Upload select,
+		#Session_Time select,
+		#getip select {
+			display: none;
+		}
+
+		div.popover-body {
+			background-color: black !important;
+			color: white !important;
+			font-weight: bold !important;
+			font-size: 13px !important;
+		}
+		#example12 {
+			margin: 0;
+			width: 100% !important;
+			overflow-x: hidden !important;
+		}
+		.table-responsive {
+			overflow-x: hidden;
+		}
+	</style>
+	@endsection
+	@section('content')
+	<div class="page-container row-fluid container-fluid">
+		<!-- CONTENT START -->
+		<section id="main-content">
+			<section class="wrapper main-wrapper row">
+
 				<div class="col-lg-12">
 					<div class="header_view">
 						<h2 id="heading">Online Consumers
 							<span class="info-mark" onmouseenter="popup_function(this, 'online_consumers');" onmouseleave="popover_dismiss();"><i class="las la-info-circle"></i></span>
 						</h2>
 					</div>
-					<table id="example1" class="table table-striped dt-responsive display" style="width:100%">
-						<thead>
-							<tr>
-								<th>Serial#</th>
-								<th>Consumer (ID)</th>
-								<th>Consumer Name</th>
-								<th class="desktop">Address</th>
-								<th>Login Date & Time</th>
-								<th>Session Time</th>
-								@php if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support'){ @endphp
-								<th>Contractor & Trader</th>
-								@php } @endphp
-								<th>Assign (CGN) IPs</th>
-								<th>MAC Address</th>
-								<th>Download/Upload (Data)</th>
-								@if(@$dhcp_server['server_id'] != 0)
-								<th>Dynamic (LOCAL)IPs</th>
-								@endif
-							</tr>
-							@php if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support'){ @endphp
-							<tr style="background:white !important;" id="filter_row">
-								<td id="sno"></td>
-								<td id="Consumer (ID)"></td>
-								<td id="Consumer Name"></td>
-								<td id="address"></td>
-								<td id="Login_Time"></td>
-								<td id="Session_Time"></td>
-								<td id=""></td>
-								<td id="Assign"></td>
-								<td id="MAC"></td>
-								<td id="Download"></td>
-								@if(@$dhcp_server['server_id'] != 0)
-								<td id="getip" ></td>
-								@endif
-							</tr>
-							@php } @endphp
-						</thead>
-						@php
-						$count=1;
-						$key_values = array_column($arr, 'acctstarttime'); 
-						array_multisort($key_values, SORT_DESC, $arr);
-						@endphp
-						<tbody>
-							@foreach($arr as $ar)
-							@php
-							$userDetail = App\model\Users\UserInfo::where(['username' => $ar->username])->first();
-							$fname = $userDetail->firstname;
-							$lname = $userDetail->lastname;
-							$address = $userDetail->address;
-							$sub_dealer_id = $userDetail->sub_dealer_id;
-							if($sub_dealer_id == ''){
-							$sub_dealer_id= $userDetail->dealerid.' (Contractor)';
-						}else{
-						$sub_dealer_id = $userDetail->sub_dealer_id.' (Trader)';
-					}
-					$seconds = $ar->acctsessiontime;
-					$dtF = new DateTime('@0');
-					$dtT = new DateTime("@$seconds");
-					$onlineTime =  $dtF->diff($dtT)->format('%aDays : %hHrs : %i Mins %s Secs');
-					$datetime1=new DateTime($ar->acctstarttime);
-					$datetime2=new DateTime("now");
-					$interval=$datetime1->diff($datetime2);
-					$Day=$interval->format('%dD' );
-					if($Day>0)
-					{
-						$session_time = $interval->format('%dDays : %hHrs : %iMins');
-					}
-					else
-					{
-						$session_time = $interval->format('%hHrs : %iMins : %sSecs');
-					}
-					$userExpire = App\model\Users\UserStatusInfo::where(['username' => $ar->username])->first();
-					$expire_date = @$userExpire['expire_datetime'];
-					$cur_date=date('Y-m-d H:i:s');
-					if($expire_date < $cur_date){
-					$color ='red';
-				}else{
-				$color ='black';
-			}
-			@endphp
-			<tr style="color: {{$color}}">
-				<td>{{$count++}}</td>
-				<td class="td__profileName">{{$ar->username}}</td>
-				<td>{{$fname}} {{$lname}}</td>
-				<td>{{$address}}</td>
-				<td><span style="color: #30761b">{{date('M d,Y H:i:s',strtotime($ar->acctstarttime))}}</span></td>
-				<td>{{$session_time}}</td>
-				<!-- <td>{{$onlineTime}}</td> -->
-				@php if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support'){ @endphp
-				<td>{{$sub_dealer_id}}</td>
-				@php } @endphp
-				<td>{{$ar->framedipaddress}}</td>
-				<td>{{$ar->callingstationid}}</td>
-				<td><span style="color: #30761b">{{ByteSize($ar->acctoutputoctets)}} | {{ByteSize($ar->acctinputoctets)}}</span></td>
-				@if(@$dhcp_server['server_id'] != 0)
-				<td><button type="button" class="btn btn-primary" onclick="getIP(this,'<?=$ar->callingstationid?>');">Dynamic (IP)</button></td>
-				@endif
-			</tr>
-			@endforeach
-		</tbody>
-	</table>
-</div>
-</div>
-<div class="chart-container " style="display: none;">
-	<div class="" style="height:200px" id="platform_type_dates"></div>
-	<div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
-	<div class="" style="height:200px" id="user_type"></div>
-	<div class="" style="height:200px" id="browser_type"></div>
-	<div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
-	<div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
-</div>
-</section>
-</section>
-<!-- CONTENT END -->
-</div>
-@endsection
-@section('ownjs')
-<script type="text/javascript">
-	$(document).ready(function() {
-		var table = $('#example1').DataTable({
-			responsive: true,
-			orderCellsTop: true
-		});
-		if($(window).width() > 1024){
-			$("#example1 thead td").each( function ( i ) {
-				var select = $('<select class="form-control"><option value="">Show All</option></select>')
-				.appendTo( $(this).empty() )
-				.on( 'change', function () {
-					table.column( i )
-					.search( $(this).val() )
-					.draw();
-				} );
-				table.column( i ).data().unique().sort().each( function ( d, j ) {
-					select.append( '<option value="'+d+'">'+d+'</option>' )
-				} );
-			} );
+
+					<div class="content-body" style="padding-top: 30px">
+
+						<?php
+						$manager_id = (empty(Auth::user()->manager_id)) ? null : Auth::user()->manager_id;
+						$resellerid = (empty(Auth::user()->resellerid)) ? null : Auth::user()->resellerid;
+						$dealerid = (empty(Auth::user()->dealerid)) ? null : Auth::user()->dealerid;
+						$sub_dealer_id = (empty(Auth::user()->sub_dealer_id)) ? null : Auth::user()->sub_dealer_id;
+						$trader_id = (empty(Auth::user()->trader_id)) ? null : Auth::user()->trader_id;
+						//
+						if (empty($resellerid)) {
+							$panelof = 'manager';
+						} else if (empty($dealerid)) {
+							$panelof = 'reseller';
+						} else if (empty($sub_dealer_id)) {
+							$panelof = 'dealer';
+						} else {
+							$panelof = 'subdealer';
+						}
+						?>
+
+						<div class="row">
+
+
+							<?php if (($panelof == 'reseller')) {
+								$selectedContractors = [];
+								if ($panelof == 'reseller') {
+									$selectedContractors = App\model\Users\UserInfo::where('status', 'dealer')
+									->where('resellerid', Auth::user()->resellerid)
+									->get();
+								}
+								?>
+								<div class="col-md-3">
+									<div class="form-group position-relative">
+										<label style="font-weight: normal">Contractor</label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'sample');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<select id="dealer-dropdown" class="js-select2" name="dealer_data">
+											<option value="">-- Select contractor --</option>
+											@foreach ($selectedContractors as $contractor)
+											<option value="{{ $contractor->dealerid }}">{{ $contractor->dealerid }}</option>
+											@endforeach
+										</select>
+									</div>
+								</div>
+
+							<?php }
+							if (($panelof == 'reseller') || ($panelof == 'dealer')) {
+								$selectedTraders = [];
+								if ($panelof == 'dealer') {
+									$selectedTraders = App\model\Users\UserInfo::where('status', 'subdealer')
+									->where('dealerid', Auth::user()->dealerid)
+									->get();
+								}
+								if($panelof == 'reseller' || ($panelof == 'dealer' && count($selectedTraders)) ){
+								?>
+								<div class="col-md-3 traderdropdownDiv  <?= ($panelof == 'reseller') ? 'hide' : NULL; ?>" >
+									<div class="form-group position-relative">
+										<label style="font-weight: normal">Trader</label>
+										<span class="helping-mark" onmouseenter="popup_function(this, 'sample');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+										<select id="trader-dropdown" class="js-select2" name="trader_data">
+											<option value="">-- Select trader --</option>
+											@foreach ($selectedTraders as $trader)
+											<option value="{{ $trader->sub_dealer_id }}">{{ $trader->sub_dealer_id }}</option>
+											@endforeach
+										</select>
+									</div>
+								</div>
+
+
+
+							<?php } } ?>
+
+							<div class="col-md-3">
+								<div class="form-group position-relative">
+									<label style="font-weight: normal">Login Data & Time</label>
+									<span class="helping-mark" onmouseenter="popup_function(this, 'sample');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+									<input type="date" class="form-control" name="dateFilter" id="dateFilter">
+								</div>
+							</div>
+							<div class="col-md-2">
+								<div class="form-group position-relative">
+									<label style="font-weight: normal">IP Address</label>
+									<span class="helping-mark" onmouseenter="popup_function(this, 'sample');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+									<input type="text" class="form-control" name="IpFilter" id="IpFilter">
+								</div>
+							</div>
+							<div class="col-md-2">
+								<div class="form-group position-relative">
+									<label style="font-weight: normal">Search</label>
+									<span class="helping-mark" onmouseenter="popup_function(this, 'sample');" onmouseleave="popover_dismiss();"><i class="fa fa-question"></i></span>
+									<input type="text" class="form-control" name="searchFilter" id="searchFilter">
+								</div>
+							</div>
+
+							<div class="col-md-2">
+									<button id="loadData" class="btn btn-primary mb-5" style="margin-top: 30px;">Get Online</button>
+								</div>
+
+
+						</div>
+
+
+
+						<div class="chart-container " style="display: none;">
+							<div class="" style="height:200px" id="platform_type_dates"></div>
+							<div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
+							<div class="" style="height:200px" id="user_type"></div>
+							<div class="" style="height:200px" id="browser_type"></div>
+							<div class="chart has-fixed-height" style="height:200px" id="scatter_chart"></div>
+							<div class="chart has-fixed-height" style="height:200px" id="page_views_today"></div>
+						</div>
+
+						<section id="tablediv" class="wrapper main-wrapper" style="margin-top: 0px;padding: 0px;">
+							<div class="table-responsive" id="tableContainer">
+								<table id="example12" class="table table-bordered dt-responsive display" style="width:100%">
+									<thead>
+										<tr>
+											<!-- <th>Serial#</th> -->
+											<th>Consumer (ID)</th>
+											<th>Consumer Name</th>
+											<th class="desktop">Address</th>
+											<th>Login Date & Time</th>
+											<th>Session Time</th>
+											@if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support')
+											<th>Contractor & Trader</th>
+											@endif
+											<th>Assign (CGN) IPs</th>
+											<th>Download/Upload (Data)</th>
+											<th>Dynamic (LOCAL)IPs</th>
+										</tr>
+									</thead>
+									<tbody>
+
+										<!-- Table body will be populated via AJAX -->
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+
+			</section>
+
+		</section>
+		<!-- CONTENT END -->
+	</div>
+	@endsection
+	@section('ownjs')
+	<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+
+	<!-- <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
+
+	<script>
+		function getIP(item, mac) {
+
+			$.ajax({
+				url: "{{route('user.dhcp')}}",
+				type: "GET",
+				data: {
+					mac: mac
+				},
+				beforeSend: function() {
+					$(item).prop("disabled", true);
+					$(item).text('Please Wait...');
+				},
+				success: function(data) {
+					$(item).css('font-weight', '900');
+					$(item).text(data);
+				},
+				complete: function() {}
+			});
 		}
-	} );
-</script>
-<script type="text/javascript">
-	$(document).ready(function(){
-		var width = window.innerWidth;
-		if (width < 767) {
-// Small Window
-$(".page-topbar").addClass("sidebar_shift").removeClass("chat_shift");
-$(".page-sidebar").addClass("collapseit").removeClass("expandit");
-$("#main-content").addClass("sidebar_shift").removeClass("chat_shift");
-$(".page-chatapi").removeClass("showit").addClass("hideit");
-$(".chatapi-windows").removeClass("showit").addClass("hideit");
-CMPLTADMIN_SETTINGS.mainmenuCollapsed();
-} else {
-// Large Window
-$(".page-topbar").addClass("sidebar_shift").removeClass("chat_shift");
-$(".page-sidebar").addClass("collapseit").removeClass("expandit");
-$("#main-content").addClass("sidebar_shift").removeClass("chat_shift");
-CMPLTADMIN_SETTINGS.mainmenuScroll();
-}
-});
-</script>
-<script>
-	function getIP(item,mac){	
-		$.ajax({
-			url: "{{route('user.dhcp')}}",
-			type: "GET",
-			data: {mac:mac},
-			beforeSend: function(){
-				$(item).prop("disabled",true);
-				$(item).text('Please Wait...');
+	</script>
+	<script>
+		$(document).ready(function() {
+			let table;
+
+			get_online_datatable();
+
+    // Initialize the DataTable on button click
+
+			//
+			$('#loadData').on('click', function() {
+				get_online_datatable();
+			});
+
+
+			function get_online_datatable(){
+
+				let selectedContractor = $('#dealer-dropdown').val();
+				let selectedTrader = $('#trader-dropdown').val();
+				let searchFilter = $('#searchFilter').val();
+				let dateFilter = $('#dateFilter').val();
+				let IpFilter = $('#IpFilter').val();
+
+				if (table) {
+			table.destroy(); // Destroy existing table if it exists
+		}
+
+        // Initialize the DataTable
+		table = $('#example12').DataTable({
+			processing: true,
+			serverSide: true,
+			responsive: true,
+			searching: false, // Disable the search box
+			ajax: {
+				url: "{{ route('users.user.onlineuser.table') }}",
+				type: "GET",
+				data: function(d) {
+					d.contractor = selectedContractor;
+					d.trader = selectedTrader;
+					d.searchFilter = searchFilter;
+					d.dateFilter = dateFilter;
+					d.IpFilter = IpFilter;
+				}
 			},
-			success: function(data){
-				$(item).css('font-weight', '900');
-				$(item).text(data);
-			},
-			complete: function(){
-			}
+			columns: [
+				// { data: 'id' },  // Serial#
+				{ data: 'username' , name:'radacct.username', class: 'td__profileName' },              // Consumer (ID)
+				{ data: 'firstname' , orderable: false },             // Consumer Name
+				{ data: 'address' , orderable: false },               // Address
+				{ data: 'login_time' , name: 'acctstarttime' },            // Login Date & Time
+				{ data: 'session_time' , orderable: false },          // Session Time
+				@if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support')
+				{ data: 'sub_dealer_id' , orderable: false },         // Contractor & Trader (only for dealers and support)
+				@endif
+				{ data: 'framedipaddress' , orderable: false},       // Assign (CGN) IPs
+				{ data: 'data_usage' , orderable: false },            // Download/Upload (Data)
+				{ data: 'dynamic_ips' , orderable: false },           // Dynamic (LOCAL)IPs
+				],
+			order: [[3, 'desc']],
+
 		});
+
+        // Reload the DataTable with new data based on selected filters
+        // table.ajax.reload();
 	}
+
+
+
+
+
+    // Handle the change in the dealer dropdown
+	$('#dealer-dropdown').change(function() {
+		const tradersUsername = $(this).val();
+
+        // Clear the traders dropdown if no trader is selected
+		if (!tradersUsername) {
+			$('#trader-dropdown').html('<option value="">-- Select Trader --</option>');
+			return;
+		}
+
+        // Send AJAX request to fetch traders for the selected dealer
+		$.ajax({
+			url: "{{route('get.trader')}}",
+			type: 'POST',
+			data: { dealer_id: tradersUsername },
+			success: function(response) {
+				//
+				if(response.subdealer.length > 0){
+					$('.traderdropdownDiv').removeClass('hide');
+				}else{
+					$('.traderdropdownDiv').addClass('hide');
+				}
+				//
+				const traderDropdown = $('#trader-dropdown');
+                traderDropdown.empty(); // Clear existing options
+                traderDropdown.append('<option value="">-- Select Trader --</option>');
+
+                // Populate the trader options dynamically
+                $.each(response.subdealer, function(index, trader) {
+                	traderDropdown.append(`<option value="${trader.sub_dealer_id}">${trader.sub_dealer_id}</option>`);
+                });
+            },
+            error: function(error) {
+            	console.error('Error fetching traders:', error);
+            }
+        });
+	});
+});
+
 </script>
 @endsection
 <!-- Code Finalize -->

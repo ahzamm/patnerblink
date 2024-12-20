@@ -105,7 +105,7 @@ public function index1($status, Request $request)
             $dealerCollection = UserInfo::where([
                 "status" => "dealer",
                 "manager_id" => Auth::user()->manager_id,
-            ])->get();  
+            ])->get();
         }else{
           $dealerCollection = UserInfo::where([
            "status" => "dealer",
@@ -156,7 +156,7 @@ public function index1($status, Request $request)
 }if(!empty($dealerid)){
     array_push($whereArray,array('user_info.dealerid' , $dealerid));
 }if(!empty($sub_dealer_id)){
-    array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));   
+    array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));
 }
     //
 $subdealerCollection = UserInfo::where("status","subdealer")->where($whereArray)->get();
@@ -278,7 +278,7 @@ if(!empty($manager_id)){
 }if(!empty($dealerid)){
     array_push($whereArray,array('user_info.dealerid' , $dealerid));
 }if(!empty($sub_dealer_id)){
-    array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));   
+    array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));
 }
 //
 $disabledUser  = DB::table('user_info')
@@ -288,7 +288,7 @@ $disabledUser  = DB::table('user_info')
 ->where($whereArray)
 ->where('user_info.status','=','user')
 ->get();
-// 
+//
 return view("users.dealer.disabled_user",['disabledUser' => $disabledUser]);
 
 
@@ -318,7 +318,7 @@ return redirect()->route("users.dashboard");
 }
 public function viewCustomerServerSideUser(Request $request)
 {
-	
+
     $dealerid = Auth::user()->dealerid;
     $sub_dealer_id = Auth::user()->sub_dealer_id;
     $status = Auth::user()->status;
@@ -347,11 +347,11 @@ public function viewCustomerServerSideUser(Request $request)
     }if(!empty($dealerid)){
         array_push($whereArray,array('user_info.dealerid' , $dealerid));
     }if(!empty($sub_dealer_id)){
-        array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));   
+        array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));
     }
     //
     $dealerHaveRightsOfMACBind = UserInfo::where('dealerid',Auth::user()->dealerid)->where('status','dealer')->where('bind_mac',1)->select('bind_mac')->first();
-    // 
+    //
     $userDealer = UserInfo::Join("user_status_info", function ($join) {
         $join->on(
             "user_status_info.username",
@@ -387,7 +387,7 @@ public function viewCustomerServerSideUser(Request $request)
         "user_info.trader_id",
         "user_info.id",
         "user_info.bind_mac",
-        "user_status_info.card_expire_on", 
+        "user_status_info.card_expire_on",
                           // billing work
         "user_status_info.card_charge_on",
                           // end
@@ -395,7 +395,7 @@ public function viewCustomerServerSideUser(Request $request)
         "mobile_status",
         "never_expire",
     ]);
-    // } 
+    // }
 
     $sno = 1;
     $pro_groupname = "";
@@ -412,9 +412,9 @@ public function viewCustomerServerSideUser(Request $request)
         '" class="btn btn-info mb1 btn-xs" style="margin-right:4px"><i class="fa fa-edit"></i> Edit</a>';
         $html .=
         '<div class="dropdown action-dropdown"><button class="btn dropdown-toggle action-dropdown_toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button><div class="dropdown-menu action-dropdown_menu"><ul><li class="dropdown-item"><a href="/users/user/user?id=' .$row->id .'"><i class="la la-eye"></i> View</a> </li><li class="dropdown-item"><a href="/users/users/user/' .$row->id .'"><i class="la la-edit"></i> Edit</a></li><hr style="margin-top:0">';
-        if ($row->profile == "DISABLED") { 
+        if ($row->profile == "DISABLED") {
          $html .= '<li class="dropdown-item"><a href="#" disabled><i class="fa fa-ban"></i>  DISABLED</a></li>';
-     } 
+     }
      $csrf = csrf_token();
      if (@$row->cnic != "" || @$row->cnic != null) {
         $html .=
@@ -608,10 +608,10 @@ public function expireServerSideUser(Request $request)
     }if(!empty($dealerid)){
         array_push($whereArray,array('user_info.dealerid' , $dealerid));
     }if(!empty($sub_dealer_id)){
-        array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));   
+        array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));
     }
     //
-	// 
+	//
     $allusers = UserInfo::Join("user_status_info", function ($join) {
      $join->on(
         "user_status_info.username",
@@ -676,7 +676,7 @@ public function expireServerSideUser(Request $request)
       '<a href="/users/user/user?id=' .
       $row->id .
       '" class="btn btn-primary btn-xs"><i class="fa fa-eye"></i>View</a> ';
-		// 
+		//
 
       if ($row->profile == "DISABLED") {
          $html .=
@@ -1076,7 +1076,7 @@ public function terminateServerSideUser(Request $request)
         return $html;
     })
     ->addColumn("new_expire", function ($row) {
-        // 
+        //
         if(strtotime(date($row->card_expire_on)) < strtotime(date('2000-01-01')) ){
             return 'NEW';
         }else{
@@ -1290,114 +1290,126 @@ public function epiredUser($status)
 		"allusers" => $allusers,
 	]);
 }
-public function onlineUsers($status)
-{
-	$arr = [];
-	$dealerids = [];
-	// $dealerid = Auth::user()->dealerid;
-	$currentStatus = Auth::user()->status;
-	// $sub_dealer_id = Auth::user()->sub_dealer_id;
-    //
-    $manager_id = (empty(Auth::user()->manager_id)) ? null : Auth::user()->manager_id;
-    $resellerid = (empty(Auth::user()->resellerid)) ? null : Auth::user()->resellerid;
-    $dealerid = (empty(Auth::user()->dealerid)) ? null : Auth::user()->dealerid;
-    $sub_dealer_id = (empty(Auth::user()->sub_dealer_id)) ? null : Auth::user()->sub_dealer_id;
-    $trader_id = (empty(Auth::user()->trader_id)) ? null : Auth::user()->trader_id;
-        //
-        //
-    $whereArray = array();
-    //
-    if(!empty($manager_id)){
-        array_push($whereArray,array('manager_id' , $manager_id));
-    }if(!empty($resellerid)){
-        array_push($whereArray,array('resellerid' , $resellerid));
-    }if(!empty($dealerid)){
-        array_push($whereArray,array('dealerid' , $dealerid));
-    }if(!empty($sub_dealer_id)){
-        array_push($whereArray,array('sub_dealer_id' , $sub_dealer_id));   
+
+//////////////
+public function onlineUsers(){
+    if(!MyFunctions::check_access('Online Consumers',Auth::user()->id)){
+        abort(404);
     }
-    //
-    $userDealer = UserInfo::where($whereArray)->select("username", "dealerid")->get();
-    $dhcp_server = Dhcp_dealer_server::where(["dealerid" => $dealerid])->first();
-
-	// if ($currentStatus == "dealer") {
-	// 	$userDealer = UserInfo::where(["dealerid" => $dealerid])
-	// 	->select("username", "dealerid")
-	// 	->get();
-	// 	$dhcp_server = Dhcp_dealer_server::where([
-	// 		"dealerid" => $dealerid,
-	// 	])->first();
-	// } elseif ($currentStatus == "subdealer") {
-	// 	$userDealer = UserInfo::where([
-	// 		"sub_dealer_id" => Auth::user()->sub_dealer_id,
-	// 		"status" => "user",
-	// 	])
-	// 	->select("username", "sub_dealer_id", "dealerid")
-	// 	->get();
-	// 	$dhcp_server = Dhcp_dealer_server::where([
-	// 		"dealerid" => $dealerid,
-	// 	])->first();
-	// } elseif ($currentStatus == "trader") {
-	// 	$userDealer = UserInfo::where([
-	// 		"trader_id" => Auth::user()->trader_id,
-	// 		"status" => "user",
-	// 	])
-	// 	->select("username", "sub_dealer_id", "dealerid")
-	// 	->get();
-	// 	$dhcp_server = Dhcp_dealer_server::where([
-	// 		"dealerid" => $dealerid,
-	// 	])->first();
-	// } elseif (
-	// 	$currentStatus == "inhouse" &&
-	// 	Auth::user()->sub_dealer_id == ""
-	// ) {
-	// 	$userDealer = UserInfo::where([
-	// 		"dealerid" => $dealerid,
-	// 		"status" => "user",
-	// 	])
-	// 	->select("username", "dealerid")
-	// 	->get();
-	// 	$dhcp_server = Dhcp_dealer_server::where([
-	// 		"dealerid" => $dealerid,
-	// 	])->first();
-	// } elseif (
-	// 	$currentStatus == "inhouse" &&
-	// 	Auth::user()->sub_dealer_id != ""
-	// ) {
-	// 	$userDealer = UserInfo::where([
-	// 		"sub_dealer_id" => Auth::user()->sub_dealer_id,
-	// 		"status" => "user",
-	// 	])
-	// 	->select("username", "sub_dealer_id","dealerid")
-	// 	->get();
-	// 	$dhcp_server = Dhcp_dealer_server::where([
-	// 		"dealerid" => $dealerid,
-	// 	])->first();
-	// }
-
-
-
-    foreach ($userDealer as $value) {
-      $dealerids = $value->dealerid;
-      $online = RadAcct::where([
-         "acctstoptime" => null,
-         "username" => $value->username,
-     ])->orderBy('acctstarttime','DESC')->get();
-      foreach ($online as $value) {
-         $arr[] = $value;
-     }
- }
-
-
-
- $num = count($arr);
- return view("users.dealer.online_user", [
-  "arr" => $arr,
-  "dealerids" => $dealerids,
-  "dhcp_server" => $dhcp_server,
-  "nn" => $num,
-]);
+    return view("users.dealer.Online_User.online_user");
 }
+////////////
+
+// public function onlineUsers_DELETED($status)
+// {
+// 	$arr = [];
+// 	$dealerids = [];
+// 	// $dealerid = Auth::user()->dealerid;
+// 	$currentStatus = Auth::user()->status;
+// 	// $sub_dealer_id = Auth::user()->sub_dealer_id;
+//     //
+//     $manager_id = (empty(Auth::user()->manager_id)) ? null : Auth::user()->manager_id;
+//     $resellerid = (empty(Auth::user()->resellerid)) ? null : Auth::user()->resellerid;
+//     $dealerid = (empty(Auth::user()->dealerid)) ? null : Auth::user()->dealerid;
+//     $sub_dealer_id = (empty(Auth::user()->sub_dealer_id)) ? null : Auth::user()->sub_dealer_id;
+//     $trader_id = (empty(Auth::user()->trader_id)) ? null : Auth::user()->trader_id;
+//         //
+//         //
+//     $whereArray = array();
+//     //
+//     if(!empty($manager_id)){
+//         array_push($whereArray,array('manager_id' , $manager_id));
+//     }if(!empty($resellerid)){
+//         array_push($whereArray,array('resellerid' , $resellerid));
+//     }if(!empty($dealerid)){
+//         array_push($whereArray,array('dealerid' , $dealerid));
+//     }if(!empty($sub_dealer_id)){
+//         array_push($whereArray,array('sub_dealer_id' , $sub_dealer_id));
+//     }
+//     //
+//     $userDealer = UserInfo::where($whereArray)->select("username", "dealerid")->get();
+//     $dhcp_server = Dhcp_dealer_server::where(["dealerid" => $dealerid])->first();
+
+// 	// if ($currentStatus == "dealer") {
+// 	// 	$userDealer = UserInfo::where(["dealerid" => $dealerid])
+// 	// 	->select("username", "dealerid")
+// 	// 	->get();
+// 	// 	$dhcp_server = Dhcp_dealer_server::where([
+// 	// 		"dealerid" => $dealerid,
+// 	// 	])->first();
+// 	// } elseif ($currentStatus == "subdealer") {
+// 	// 	$userDealer = UserInfo::where([
+// 	// 		"sub_dealer_id" => Auth::user()->sub_dealer_id,
+// 	// 		"status" => "user",
+// 	// 	])
+// 	// 	->select("username", "sub_dealer_id", "dealerid")
+// 	// 	->get();
+// 	// 	$dhcp_server = Dhcp_dealer_server::where([
+// 	// 		"dealerid" => $dealerid,
+// 	// 	])->first();
+// 	// } elseif ($currentStatus == "trader") {
+// 	// 	$userDealer = UserInfo::where([
+// 	// 		"trader_id" => Auth::user()->trader_id,
+// 	// 		"status" => "user",
+// 	// 	])
+// 	// 	->select("username", "sub_dealer_id", "dealerid")
+// 	// 	->get();
+// 	// 	$dhcp_server = Dhcp_dealer_server::where([
+// 	// 		"dealerid" => $dealerid,
+// 	// 	])->first();
+// 	// } elseif (
+// 	// 	$currentStatus == "inhouse" &&
+// 	// 	Auth::user()->sub_dealer_id == ""
+// 	// ) {
+// 	// 	$userDealer = UserInfo::where([
+// 	// 		"dealerid" => $dealerid,
+// 	// 		"status" => "user",
+// 	// 	])
+// 	// 	->select("username", "dealerid")
+// 	// 	->get();
+// 	// 	$dhcp_server = Dhcp_dealer_server::where([
+// 	// 		"dealerid" => $dealerid,
+// 	// 	])->first();
+// 	// } elseif (
+// 	// 	$currentStatus == "inhouse" &&
+// 	// 	Auth::user()->sub_dealer_id != ""
+// 	// ) {
+// 	// 	$userDealer = UserInfo::where([
+// 	// 		"sub_dealer_id" => Auth::user()->sub_dealer_id,
+// 	// 		"status" => "user",
+// 	// 	])
+// 	// 	->select("username", "sub_dealer_id","dealerid")
+// 	// 	->get();
+// 	// 	$dhcp_server = Dhcp_dealer_server::where([
+// 	// 		"dealerid" => $dealerid,
+// 	// 	])->first();
+// 	// }
+
+
+
+//     foreach ($userDealer as $value) {
+//       $dealerids = $value->dealerid;
+//       $online = RadAcct::where([
+//        "acctstoptime" => null,
+//        "username" => $value->username,
+//    ])->orderBy('acctstarttime','DESC')->get();
+//       foreach ($online as $value) {
+//        $arr[] = $value;
+//    }
+// }
+
+
+
+// $num = count($arr);
+// return view("users.dealer.online_user", [
+//   "arr" => $arr,
+//   "dealerids" => $dealerids,
+//   "dhcp_server" => $dhcp_server,
+//   "nn" => $num,
+// ]);
+// }
+
+
 // Offline
 public function offlineUserView()
 {
@@ -1423,7 +1435,7 @@ public function offlineUserView()
     }if(!empty($dealerid)){
         array_push($whereArray,array('user_info.dealerid' , $dealerid));
     }if(!empty($sub_dealer_id)){
-        array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));   
+        array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));
     }
     //
     $userDealer = UserInfo::join(
@@ -1521,7 +1533,6 @@ public function offlineUserView()
 	// 		"dealerid" => $dealerid,
 	// 	])->first();
 	// }
-
 
     foreach ($userDealer as $value) {
       $dealerids = $value->dealerid;
@@ -2136,29 +2147,430 @@ public function offlineUserDetails(Request $request)
 	]);
 }
 
-public function ByteSize($bytes)
+
+public function disableUserView()
 {
-	$size = $bytes / 1024;
-	if ($size < 1024) {
-		$size = number_format($size, 2);
-		$size .= " KB";
-	} else {
-		if ($size / 1024 < 1024) {
-			$size = number_format($size / 1024, 2);
-			$size .= " MB";
-		} elseif ($size / 1024 / 1024 < 1024) {
-			$size = number_format($size / 1024 / 1024, 2);
-			$size .= " GB";
-		} elseif ($size / 1024 / 1024 / 1024 < 1024) {
-			$size = number_format($size / 1024 / 1024 / 1024, 2);
-			$size .= " TB";
-		} elseif ($size / 1024 / 1024 / 1024 / 1024 < 1024) {
-			$size = number_format($size / 1024 / 1024 / 1024 / 1024, 2);
-			$size .= " PB";
-		}
-	}
-	$size = preg_replace("/.00/", "", $size);
-	return $size;
+    return view("users.dealer.disable_user");
+}
+public function disableUserViewdatatable(Request $request)
+{
+        // Initialize variables
+    $arr = [];
+    $whereArray = [];
+    $dealerids = [];
+    $currentStatus = Auth::user()->status;
+    $manager_id = Auth::user()->manager_id ?? null;
+    $resellerid = Auth::user()->resellerid ?? null;
+    $dealerid = Auth::user()->dealerid ?? null;
+    $sub_dealer_id = Auth::user()->sub_dealer_id ?? null;
+    $trader_id = Auth::user()->trader_id ?? null;
+
+        // Handle DataTable parameters
+        $start = $request->input('start', 0); // Get the start index for pagination (default to 0 if not provided)
+        $length = $request->input('length', 10); // Get the number of records per page (default to 10 if not provided)
+        $search = optional($request->input('search'))['value'] ?? ''; // Safely get search value or default to empty string
+
+        // Apply filters based on current user status
+        if ($manager_id) {
+            array_push($whereArray, ['user_info.manager_id', $manager_id]);
+        }
+        if ($resellerid) {
+            array_push($whereArray, ['user_info.resellerid', $resellerid]);
+        }
+        if ($dealerid) {
+            array_push($whereArray, ['user_info.dealerid', $dealerid]);
+        }
+        if ($sub_dealer_id) {
+            array_push($whereArray, ['user_info.sub_dealer_id', $sub_dealer_id]);
+        }
+
+        // Start building the query
+        $userQuery = UserInfo::where($whereArray)
+        ->where('status', 'user')
+        ->whereIn('username', function($query){
+            $query->select('username')
+            ->from('disabled_users')
+            ->where('status', 'disable');
+        })
+        ->select('username');
+
+        // Apply search filter if provided
+        if ($search) {
+            $userQuery->where(function($query) use ($search) {
+                $query->where('user_info.username', 'like', "%$search%")
+                ->orWhere('user_info.firstname', 'like', "%$search%")
+                ->orWhere('user_info.lastname', 'like', "%$search%");
+            });
+        }
+
+        // Get total records before pagination
+        $totalRecords = $userQuery->count();
+
+        // Apply pagination
+        $users = $userQuery->skip($start)->take($length)->get();
+
+        $data = [];
+        $count = $request->input('start') + 1;
+        foreach ($users as $user) {
+            $userDetail = UserInfo::join('disabled_users', 'disabled_users.username', '=', 'user_info.username')
+            ->where('user_info.username', $user->username)
+            ->select(
+                'user_info.id',
+                'user_info.username',
+                'user_info.firstname',
+                'user_info.lastname',
+                'user_info.address',
+                'user_info.mobilephone',
+                'user_info.sub_dealer_id',
+                'user_info.dealerid',
+                'disabled_users.updated_by'
+            )
+            ->first();
+
+            $fname = $userDetail->firstname;
+            $lname = $userDetail->lastname;
+            $mobile = $userDetail->mobilephone;
+            $address = $userDetail->address;
+            $disable_by = $userDetail->updated_by;
+
+            // Handle disable_by logic
+            $by = '';
+            if ($disable_by == 'dealer') {
+                $by = $userDetail->dealerid;
+                $disable_by = "Contractor";
+            } elseif ($disable_by == 'reseller') {
+                $by = $userDetail->resellerid;
+                $disable_by = "Reseller";
+            } elseif ($disable_by == 'subdealer') {
+                $by = $userDetail->sub_dealer_id;
+                $disable_by = "Trader";
+            }
+
+            //
+            $userExpire = UserStatusInfo::where('username', $user->username)->first();
+            $expire_date = $userExpire['expire_datetime'];
+            $cur_date = date('Y-m-d H:i:s');
+            $color = ($expire_date < $cur_date) ? 'red' : 'black';
+            $csrf = csrf_token();
+            $data[] = [
+                'serial_number' => $count++,
+                'username' => $user->username,
+                'fname' => $fname,
+                'lname' => $lname,
+                'address' => $address,
+                'mobile' => $mobile,
+                'mobile' =>'<a class="text-dark" href="tel:'.$mobile.'"><i class="fa fa-phone"></i> '.$mobile.'</a>',
+                'disable_by' => $by . '</br><small>'. $disable_by.'</small>',
+                'sub_dealer_id' => ($userDetail->sub_dealer_id) ? $userDetail->sub_dealer_id.'</br><small>Trader</small>' : $userDetail->dealerid.'</br><small>Contractor</small>' ,
+                'color' => $color,
+                'action' => ($currentStatus == 'dealer' || $currentStatus == 'subdealer') ? '<form action="/users/enableuser" method="POST" >
+                <input type="hidden" name="_token" value="'.$csrf .'">
+                <input type="hidden" name="username" value="'.$userDetail->username.'" >
+                <input type="hidden" name="userid" value="'.$userDetail->id.'">
+                <button type="submit" id="disableBtn" value="enable" onclick="return confirmEnable();" class=" mb1 bg-olive btn-sm btn btn-success" style="border-radius:5px;">Enable</button>
+                </form>' : 'N/A',
+            ];
+        }
+
+        // Return response for DataTable
+        return response()->json([
+            'draw' => $request->input('draw'),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecords,
+            'data' => $data
+        ]);
+    }
+    public function enableuser(Request $request)
+    {
+        $username = $request->get("username");
+        $userid = $request->get("userid");
+        $getprofile = RaduserGroup::select("groupname")
+        ->where(["username" => $username])
+        ->first();
+        $profile = $getprofile->groupname;
+        if ($profile == "DISABLED") {
+            $userInfo = UserInfo::where(["username" => $username])->first();
+            $oldprofile = $userInfo->disabled_old_profile;
+            $userInfo->profile = $oldprofile;
+            $userInfo->disabled_old_profile = null;
+            $userInfo->save();
+            $radusergroup = RaduserGroup::where([
+                "username" => $username,
+            ])->first();
+            $package = $oldprofile;
+            $radusergroup->groupname = $package;
+            $radusergroup->save();
+            $disabled_user = DisabledUser::where([
+                "username" => $username,
+            ])->first();
+            $disabled_user->status = "enable";
+            $disabled_user->updated_by = Auth::user()->status;
+            $disabled_user->last_update = date("Y-m-d H:i:s");
+            $disabled_user->save();
+        }
+        $url = "https://api-radius.logon.com.pk/kick/user-dc-api.php?username=" . $username;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "$url");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $result = curl_exec($ch);
+        return redirect()->route("users.disableUserView", [
+            "status" => "user",
+            "id" => $userid,
+        ]);
+    }
+
+
+    public function mobvarifiedUserView($status)
+    {
+        return view("users.dealer.mobvarified_user");
+    }
+    public function mobVerifiedUserDataTable(Request $request)
+    {
+        $whereArray = [];
+        $manager_id = Auth::user()->manager_id ?? null;
+        $resellerid = Auth::user()->resellerid ?? null;
+        $dealerid = Auth::user()->dealerid ?? null;
+        $sub_dealer_id = Auth::user()->sub_dealer_id ?? null;
+
+        // Build dynamic query conditions
+        if ($manager_id) array_push($whereArray, ['user_info.manager_id', $manager_id]);
+        if ($resellerid) array_push($whereArray, ['user_info.resellerid', $resellerid]);
+        if ($dealerid) array_push($whereArray, ['user_info.dealerid', $dealerid]);
+        if ($sub_dealer_id) array_push($whereArray, ['user_info.sub_dealer_id', $sub_dealer_id]);
+
+        // Initialize the query
+        $query = UserInfo::where($whereArray)
+        ->where('status', 'user')
+        ->whereIn('user_info.username', function ($subQuery) {
+            $subQuery->select('username')
+            ->from('user_verification');
+        })
+        ->join('user_verification', 'user_verification.username', '=', 'user_info.username');
+
+        // Apply mobile verification filter
+        if ($request->has('service_filter') && $request->input('service_filter') !== '') {
+            if ($request->input('service_filter') === 'Verified') {
+                $query->whereNotNull('user_verification.mobile');
+            } elseif ($request->input('service_filter') === 'Not Verified') {
+                $query->whereNull('user_verification.mobile');
+            }
+        }
+
+        // Get total records before filtering
+        $totalRecords = $query->count();
+
+        // Apply pagination
+        $users = $query->select(
+            'user_info.username',
+            'user_info.firstname',
+            'user_info.lastname',
+            'user_info.address',
+            'user_info.sub_dealer_id',
+            'user_info.dealerid',
+            'user_info.creationdate',
+            'user_verification.mobile',
+            'user_verification.cnic'
+        )
+        ->offset($request->input('start'))
+        ->limit($request->input('length'))
+        ->get();
+
+        // Prepare data for DataTable
+        $data = [];
+        $count = $request->input('start') + 1;
+
+        foreach ($users as $user) {
+            $status = $user->mobile ? 'Verified' : 'Not Verified';
+            // $sub_dealer_id = $user->sub_dealer_id ?: $user->dealerid;
+            $user->mobile = $user->mobile ?? 'N/A';
+            $user->cnic = $user->cnic ?? 'N/A';
+
+            $data[] = [
+                'serial_number' => $count++,
+                'username' => $user->username,
+                'fullname' => $user->firstname . ' ' . $user->lastname,
+                'address' => $user->address,
+                'mobile' => '<a class="text-dark" href="tel:'.$user->mobile.'"><i class="fa fa-phone"></i> '.$user->mobile.'</a>',
+                'cnic' => $user->cnic,
+                'sub_dealer_id' => $user->dealerid.' <br><small>'.$user->sub_dealer_id.'</small>',
+                'status' => $status,
+                'status_sort' => $user->mobile ? 1 : 0, // Sorting by verification status
+                'action' => $this->generateActionButtonmob($user->username, $status),
+                'creationdate' => date('M d,Y',strtotime($user->creationdate)),
+            ];
+        }
+
+        // Return response
+        return response()->json([
+            'draw' => $request->input('draw'),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecords, // Adjusted by filters
+            'data' => $data
+        ]);
+    }
+    // Helper method to generate action button
+    private function generateActionButtonmob($username, $status)
+    {
+        if ($status === 'Not Verified') {
+            if(Auth::user()->status == 'reseller'){
+                return  '<span style="color:red; font-weight:bold"><i class="las la-exclamation-triangle" ></i> <span class="">' . $status . '</span>' .'</span>';
+            }
+            else{
+                return '<form action="/users/smsverify" method="POST" style="display:inline">' .
+                csrf_field() .
+                '<input type="hidden" name="username" value="' . $username . '">' .
+                '<button type="submit" class="btn-status not-verified">' .
+                '<i class="las la-exclamation-triangle"></i> <span>' . $status . '</span>' .
+                '</button>' .
+                '</form>';
+            }
+        }
+        return '<span class="status verified">' .
+        '<i class="la la-check"></i> MOBILE (' . $status . ')' .
+        '</span>';
+    }
+
+    public function cnicvarifiedUserView($status)
+    {
+        return view("users.dealer.cnicvarified_user");
+    }
+    public function cnicVerifiedUserDataTable(Request $request)
+    {
+        $whereArray = [];
+        $manager_id = Auth::user()->manager_id ?? null;
+        $resellerid = Auth::user()->resellerid ?? null;
+        $dealerid = Auth::user()->dealerid ?? null;
+        $sub_dealer_id = Auth::user()->sub_dealer_id ?? null;
+
+        // Build dynamic query conditions
+        if ($manager_id) array_push($whereArray, ['user_info.manager_id', $manager_id]);
+        if ($resellerid) array_push($whereArray, ['user_info.resellerid', $resellerid]);
+        if ($dealerid) array_push($whereArray, ['user_info.dealerid', $dealerid]);
+        if ($sub_dealer_id) array_push($whereArray, ['user_info.sub_dealer_id', $sub_dealer_id]);
+
+        // Initialize the query
+        $query = UserInfo::where($whereArray)
+        ->where('status', 'user')
+        ->whereIn('user_info.username', function ($subQuery) {
+            $subQuery->select('username')
+            ->from('user_verification');
+        })
+        ->join('user_verification', 'user_verification.username', '=', 'user_info.username');
+
+        // Apply CNIC verification filter
+        if ($request->has('service_filter') && $request->input('service_filter') !== '') {
+            if ($request->input('service_filter') === 'Verified') {
+                $query->whereNotNull('user_verification.cnic');
+            } elseif ($request->input('service_filter') === 'Not Verified') {
+                $query->whereNull('user_verification.cnic');
+            }
+        }
+
+        // Get total records before filtering
+        $totalRecords = $query->count();
+
+        // Apply pagination
+        $users = $query->select(
+            'user_info.username',
+            'user_info.firstname',
+            'user_info.lastname',
+            'user_info.address',
+            'user_info.sub_dealer_id',
+            'user_info.dealerid',
+            'user_info.creationdate',
+            'user_verification.mobile',
+            'user_verification.cnic'
+        )
+        ->offset($request->input('start'))
+        ->limit($request->input('length'))
+        ->get();
+
+        // Prepare data for DataTable
+        $data = [];
+        $count = $request->input('start') + 1;
+
+        foreach ($users as $user) {
+            $cnic_status = $user->cnic ? 'Verified' : 'Not Verified';
+            // $sub_dealer_id = $user->sub_dealer_id ?: $user->dealerid;
+            // $user->mobile = $user->mobile ?? 'N/A';
+            $user->mobile = $user->mobile ? '<a class="text-dark" href="tel:'.$user->mobile.'"><i class="fa fa-phone"></i> '.$user->mobile.'</a>' : 'N/A';
+            $user->cnic = $user->cnic ?? 'N/A';
+            //
+            $data[] = [
+                'serial_number' => $count++,
+                'username' => $user->username,
+                'fullname' => $user->firstname . ' ' . $user->lastname,
+                'address' => $user->address,
+                'mobile' => $user->mobile,
+                'cnic' => $user->cnic,
+                'sub_dealer_id' => $user->dealerid.' <br><small>'.$user->sub_dealer_id.'</small>',
+                'status' => $cnic_status,
+                'status_sort' => $user->cnic ? 1 : 0, // Sorting by CNIC verification
+                'action' => $this->generateActionButtoncnic($user->username, $cnic_status),
+                'creationdate' => date('M d,Y',strtotime($user->creationdate)),
+            ];
+        }
+
+        // Return response
+        return response()->json([
+            'draw' => $request->input('draw'),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecords, // Adjusted by filters
+            'data' => $data
+        ]);
+    }
+    // Helper method to generate action button
+    private function generateActionButtoncnic($username, $cnic_status)
+    {
+        $buttons = '';
+        // CNIC verification button
+        if ($cnic_status === 'Not Verified') {
+            if(Auth::user()->status == 'reseller'){
+                return  '<span style="color:red; font-weight:bold"><i class="las la-exclamation-triangle" ></i> <span class="">' . $cnic_status . '</span>' .'</span>';
+            }
+            else{
+
+                $buttons .= '<form action="/users/nicVerify" method="POST" style="display:inline">' .
+                csrf_field() .
+                '<input type="hidden" name="username" value="' . $username . '">' .
+                '<button type="submit" class="btn-status not-verified">' .
+                '<i class="las la-exclamation-triangle"></i> <span> ' . $cnic_status .'</span>' .
+                '</button>' .
+                '</form>';
+            }
+        } else {
+            $buttons .= '<span class="status verified">' .
+            '<i class="la la-check"></i> ' . $cnic_status .
+            '</span>';
+        }
+
+        return $buttons;
+    }
+
+
+    public function ByteSize($bytes)
+    {
+     $size = $bytes / 1024;
+     if ($size < 1024) {
+      $size = number_format($size, 2);
+      $size .= " KB";
+  } else {
+      if ($size / 1024 < 1024) {
+       $size = number_format($size / 1024, 2);
+       $size .= " MB";
+   } elseif ($size / 1024 / 1024 < 1024) {
+       $size = number_format($size / 1024 / 1024, 2);
+       $size .= " GB";
+   } elseif ($size / 1024 / 1024 / 1024 < 1024) {
+       $size = number_format($size / 1024 / 1024 / 1024, 2);
+       $size .= " TB";
+   } elseif ($size / 1024 / 1024 / 1024 / 1024 < 1024) {
+       $size = number_format($size / 1024 / 1024 / 1024 / 1024, 2);
+       $size .= " PB";
+   }
+}
+$size = preg_replace("/.00/", "", $size);
+return $size;
 }
 
 public function store(Request $request, $status)
@@ -2166,7 +2578,7 @@ public function store(Request $request, $status)
 
     if(MyFunctions::is_freezed(Auth::user()->username)){
         Session()->flash("error", "Your panel has been freezed");
-        return back();      
+        return back();
     }
 
 
@@ -2202,7 +2614,7 @@ public function store(Request $request, $status)
          "bgImage" => "required",
          "theme_color" => "required",
          "login_alignment" => "required",
-         "mheading" => "required",                    
+         "mheading" => "required",
          "resellerid" => "required|unique:user_info",
          "password" => "required|confirmed",
 
@@ -2339,7 +2751,7 @@ $radreply->manager_id = $request->get("manager_id");
 $radreply->trader_id = null;
 
 
-if(!empty($userusualIPs->status)){ 
+if(!empty($userusualIPs->status)){
 	$userusualIPs->status = "1";
 }
 
@@ -2358,7 +2770,7 @@ $useripstatus->type = "usual_ip";
 DB::transaction(function () use (
 	$useripstatus,
 	$radusergroup,
-	$userusualIPs, 
+	$userusualIPs,
 	$radreply,
 	$RadCheck,
 	$RadCheck2,
@@ -2393,10 +2805,10 @@ $contractor_profile = 'NEW';
 $domainManagement = Domain::where('resellerid',$request->get("resellerid"))->first();
 //
 if(!empty($request->get("dealer_nas"))){
-    $CTprof = ContractorTraderProfile::where('nas_shortname',$request->get("dealer_nas"))->first(); 
+    $CTprof = ContractorTraderProfile::where('nas_shortname',$request->get("dealer_nas"))->first();
     if($CTprof){
-        $contractor_profile =  $CTprof->contractor_profile;    
-    } 
+        $contractor_profile =  $CTprof->contractor_profile;
+    }
 }
 //
 $user = new UserInfo();
@@ -2434,7 +2846,7 @@ if ($request->hasFile('cnic_back')) {
 
 $assignas = $request->get("dealer_nas");
 
-// 
+//
 $assignedNas = new AssignedNas();
 $assignedNas->id = $request->get("dealerid");
 $assignedNas->nas = $request->get("dealer_nas");
@@ -3252,7 +3664,7 @@ $assignedNas = AssignedNas::where(["id" => $reseller->resellerid])->get();
 //
 $domainInfo = Domain::where(['resellerid' => $reseller->resellerid])->first();
 //
-$assignedNasArray = array(); 
+$assignedNasArray = array();
 foreach($assignedNas as $assignedNasValue){
 	array_push($assignedNasArray,$assignedNasValue->nas);
 }
@@ -3278,6 +3690,9 @@ $profileList = ResellerProfileRate::where([
 ])
 ->orderby("groupname")
 ->get();
+
+$resellerPorfileInfo = ResellerProfileRate::where('resellerid' , $dealer->resellerid)->first();
+
 $graph1 = CactiGraph::where([
 	"user_id" => $dealer->username,
 ])->first();
@@ -3325,6 +3740,7 @@ return view("users.reseller.update_dealer", [
     "dhcp_server" => $dhcp_server,
     "nas" => $naslist,
     "assignedNas" => $assignedNas,
+    "resellerPorfileInfo" => $resellerPorfileInfo,
 ]);
 break;
 case "subdealer":
@@ -3337,6 +3753,8 @@ $profileList = DealerProfileRate::where([
 $graph1 = CactiGraph::where([
 	"user_id" => $subdealer->username,
 ])->first();
+
+$resellerPorfileInfo = ResellerProfileRate::where('resellerid' , $subdealer->resellerid)->first();
 
 $assignedProfileRates = SubdealerProfileRate::where('sub_dealer_id',$subdealer->sub_dealer_id)->get();// assign
 
@@ -3354,6 +3772,7 @@ return view("users.dealer.update_sub_dealer", [
 	"assignedProfileRates" => $assignedProfileRates,
 	"assignedProfileNameList" => $assignedProfileNameList,
 	"graph1" => $graph1,
+    "resellerPorfileInfo" => $resellerPorfileInfo,
 ]);
 break;
 case "trader":
@@ -3388,7 +3807,7 @@ break;
 case "user":
 
 
-// 
+//
 $check_user = UserInfo::find($id);
 $staticIp = StaticIPServer::where('userid',$check_user->username)->first();
 $staticIpRate = StaticIp::where("username", Auth::user()->dealerid)->first();
@@ -3424,7 +3843,7 @@ if ($status == "dealer" || $status == "inhouse") {
 			"url" => $url,
             "staticIp" => $staticIp,
             "userRadCheck" => $userRadCheck,
-            "staticIpRate" => $staticIpRate, 
+            "staticIpRate" => $staticIpRate,
             "nevereExpireInfo" => $nevereExpireInfo,
             "expireInfo" => $expireInfo,
             "updated_by" => $updated_by,
@@ -3439,9 +3858,9 @@ if ($status == "dealer" || $status == "inhouse") {
 			"id" => $id,
 			"user" => $user,
 			"url" => $url,
-            "staticIp" => $staticIp, 
+            "staticIp" => $staticIp,
             "userRadCheck" => $userRadCheck,
-            "staticIpRate" => $staticIpRate, 
+            "staticIpRate" => $staticIpRate,
             "nevereExpireInfo" => $nevereExpireInfo,
             "expireInfo" => $expireInfo,
             "updated_by" => $updated_by,
@@ -3455,7 +3874,7 @@ if ($status == "dealer" || $status == "inhouse") {
 			"id" => $id,
 			"user" => $user,
 			"url" => $url,
-            "staticIp" => $staticIp, 
+            "staticIp" => $staticIp,
             "userRadCheck" => $userRadCheck,
         ]);
 	} else {
@@ -3836,7 +4255,7 @@ public function show(Request $request, $status)
                   "download" => $download,
                   "upload" => $upload,
               ]);
-				// } 
+				// }
 
                 // else {
 				// 	return redirect()->route("users.dashboard");
@@ -3941,7 +4360,7 @@ public function update(Request $request, $status, $id)
 
     if(MyFunctions::is_freezed(Auth::user()->username)){
         Session()->flash("error", "Your panel has been freezed");
-        return back();      
+        return back();
     }
     /* 30 Jan 2023 */
 
@@ -4027,7 +4446,7 @@ public function update(Request $request, $status, $id)
         $staticIP = new StaticIp();
         $staticIP->username = $reseller->username;
         $staticIP->rates = $request->get('static_ip_rate');
-        $staticIP->save();  
+        $staticIP->save();
     }
         //
 
@@ -4056,6 +4475,8 @@ $resellerProfileRate->rate = $profileRate;
 $resellerProfileRate->final_rates = $profileRate;
 $resellerProfileRate->commission = $profileCommission;
 $resellerProfileRate->allow_auto_profit = $request->get('allow_auto_profit');
+$resellerProfileRate->allow_flat_rate = $request->get('allow_flat_rate');
+$resellerProfileRate->allow_manual_rate_update = $request->get('allow_manual_rate_update');
 $resellerProfileRate->save();
 }
 }
@@ -4086,7 +4507,7 @@ $domainManagement->domainname = $request->get("bm_domain");
 $domainManagement->slogan = $request->get("bm_slogan");
 $domainManagement->bm_invoice_email = $request->get("bm_invoice_email");
 $domainManagement->bm_helpline_number = $request->get("bm_helpline_number");
-// 
+//
 $domainManagement->main_heading = $request->get("bm_heading");
 $domainManagement->logo = $request->get("resellerid").'-logo.jpg';
 $domainManagement->bg_image = $request->get("resellerid").'-bgImg.jpg';
@@ -4105,7 +4526,7 @@ $domainManagement->save();
 // updating all contractor profiles
 if($request->get("contractor_profile")){
   $contractorList = DB::table('user_info')->select('username')->where('resellerid',$request->get("resellerid"))->where('status','dealer')->get();
-  // 
+  //
   foreach($contractorList as $value){
     //
     $updateUserInfo = DB::table('user_info')->where('username',$value->username)->where('resellerid',$request->get("resellerid"))->where('status','dealer')->update(['profile' => $request->get("contractor_profile"), 'name' => $request->get("contractor_profile")]);
@@ -4118,7 +4539,7 @@ if($request->get("contractor_profile")){
 // updating all trader profiles
 if($request->get("trader_profile")){
   $traderList = DB::table('user_info')->select('username')->where('resellerid',$request->get("resellerid"))->where('status','subdealer')->get();
-  // 
+  //
   foreach($traderList as $value){
     //
     $updateUserInfo = DB::table('user_info')->where('username',$value->username)->where('resellerid',$request->get("resellerid"))->where('status','subdealer')->update(['profile' => $request->get("trader_profile"), 'name' => $request->get("trader_profile")]);
@@ -4133,15 +4554,15 @@ if($request->get("trader_profile")){
 
 
 //
-if($request->hasFile('bm_logo')){ 
+if($request->hasFile('bm_logo')){
 	$bm_logo = $request->file('bm_logo');
 	$bm_logo_name = $request->get("resellerid").'-logo.jpg';
 	$bm_logo->move(public_path('img/'), $bm_logo_name);
-}if($request->hasFile('bm_bgImage')){ 
+}if($request->hasFile('bm_bgImage')){
 	$bm_bgImage = $request->file('bm_bgImage');
 	$bm_bgImage_name = $request->get("resellerid").'-bgImg.jpg';
 	$bm_bgImage->move(public_path('images/'), $bm_bgImage_name);
-}if($request->hasFile('bm_favicon')){ 
+}if($request->hasFile('bm_favicon')){
 	$bm_favicon = $request->file('bm_favicon');
 	$bm_favicon_name = $request->get("resellerid").'-fav.jpg';
 	$bm_favicon->move(public_path('img/favicon/'), $bm_favicon_name);
@@ -4177,7 +4598,7 @@ $isvisible = $request->isvisible;
 $proTax = DB::table('provincial_taxation')->where('state',$dealer->state)->first();
 if(empty($proTax)){
     Session()->flash("error", "Error : Invalid or no state found");
-    return back(); 
+    return back();
 }
 //
 $traderAllowed = $request->traderAllow;
@@ -4277,173 +4698,183 @@ if ($payment_type1 == "on") {
 }
 
 // delete existing profile rates of resller
-$dlt = DealerProfileRate::where([
-	"dealerid" => $dealer->dealerid,
-])->delete();
+// $dlt = DealerProfileRate::where([
+// 	"dealerid" => $dealer->dealerid,
+// ])->delete();
 
 
 // getting assigned profile rates
 $profileList = Profile::all();
 
-foreach ($profileList as $key => $profile) {
-	$name = $profile->name;
-	$profileName = ucfirst($profile->name);
-	if ($request->has("" . $profileName)) {
-		$profileRate = $request->get($profileName);
+// foreach ($profileList as $key => $profile) {
+// 	$name = $profile->name;
+// 	$profileName = ucfirst($profile->name);
+// 	if ($request->has("" . $profileName)) {
+// 		$profileRate = $request->get($profileName);
 
-        $basePrice = $request->get("bp" . $profileName);
-        $basePriceET = $request->get("bpET" . $profileName);
-        $profileComision = $request->get("comm" . $profileName);
-//end
-        $groupName = $profile->groupname;
+//         $basePrice = $request->get("bp" . $profileName);
+//         $basePriceET = $request->get("bpET" . $profileName);
+//         $profileComision = $request->get("comm" . $profileName);
+// //end
+//         $groupName = $profile->groupname;
 
-        $check_profile=$profileList->where('name',$name)->first()->base_price;
+//         $check_profile=$profileList->where('name',$name)->first()->base_price;
 
-        $checkmargin = ProfileMargins::where(
-           "dealerid",
-           $dealer["dealerid"]
-       )
-        ->where("sub_dealer_id", "=", null)
-        ->where("groupname", "=", $groupName)
-        ->first();
+//         $checkmargin = ProfileMargins::where(
+//            "dealerid",
+//            $dealer["dealerid"]
+//        )
+//         ->where("sub_dealer_id", "=", null)
+//         ->where("groupname", "=", $groupName)
+//         ->first();
 
-        if ($profileRate > $basePrice) {
-            Session()->flash("error", "Base Price Should be greator than " .$profileRate);
-            return back();
-        }
-    // if ($check_profile > $profileRate) {
-    //     Session()->flash("error", "Profile Rate Should be greator than or equal to " .$check_profile);
-    //     return back();
-    // }
+//         if ($profileRate > $basePrice) {
+//             Session()->flash("error", "Base Price Should be greator than " .$profileRate);
+//             return back();
+//         }
+//     // if ($check_profile > $profileRate) {
+//     //     Session()->flash("error", "Profile Rate Should be greator than or equal to " .$check_profile);
+//     //     return back();
+//     // }
 
 
-        if (empty($checkmargin)) {
-         $get_taxt_data = '';
-$sale_price = $basePrice; //700
-$profit_margin_dealer = $sale_price - $profileRate; //700-300=400
-$ss_tax = $basePrice * $sstfromdb; //136.5
-$after_ss_tax = $basePrice + $ss_tax; //836.5
-$adv_tax = $after_ss_tax * $advfromdb; //125.475
-$after_adv_tax = $after_ss_tax + $adv_tax; //961.975
-$sst = $ss_tax;
-$adv = $adv_tax;
-$consumer = $sale_price + $sst + $adv;
-$multyply = $profileRate * 2 + $sst + $adv;
-$final_rates = $multyply / 2;
+//         if (empty($checkmargin)) {
+//          $get_taxt_data = '';
+// $sale_price = $basePrice; //700
+// $profit_margin_dealer = $sale_price - $profileRate; //700-300=400
+// $ss_tax = $basePrice * $sstfromdb; //136.5
+// $after_ss_tax = $basePrice + $ss_tax; //836.5
+// $adv_tax = $after_ss_tax * $advfromdb; //125.475
+// $after_adv_tax = $after_ss_tax + $adv_tax; //961.975
+// $sst = $ss_tax;
+// $adv = $adv_tax;
+// $consumer = $sale_price + $sst + $adv;
+// $multyply = $profileRate * 2 + $sst + $adv;
+// $final_rates = $multyply / 2;
 
-$profileMargin = new ProfileMargins();
-$profileMargin->groupname = $groupName;
-$profileMargin->manager_id = $dealer->manager_id;
-$profileMargin->resellerid = $dealer->resellerid;
-$profileMargin->dealerid = $dealer->dealerid;
-$profileMargin->sub_dealer_id = "";
-$profileMargin->trader_id = null;
-$profileMargin->margin = $profile->margin;
-$profileMargin->save();
-} else {
-	$get_taxt_data = '';
-$sale_price = $basePrice; //700
-$profit_margin_dealer = $sale_price - $profileRate; //700-300=400
-$ss_tax = $basePrice * $sstfromdb; //136.5
-$after_ss_tax = $basePrice + $ss_tax; //836.5
-$adv_tax = $after_ss_tax * $advfromdb; //125.475
-$after_adv_tax = $after_ss_tax + $adv_tax; //961.975
-$sst = $ss_tax;
-$adv = $adv_tax;
-$consumer = $sale_price + $sst + $adv;
+// $profileMargin = new ProfileMargins();
+// $profileMargin->groupname = $groupName;
+// $profileMargin->manager_id = $dealer->manager_id;
+// $profileMargin->resellerid = $dealer->resellerid;
+// $profileMargin->dealerid = $dealer->dealerid;
+// $profileMargin->sub_dealer_id = "";
+// $profileMargin->trader_id = null;
+// $profileMargin->margin = $profile->margin;
+// $profileMargin->save();
+// } else {
+// 	$get_taxt_data = '';
+// $sale_price = $basePrice; //700
+// $profit_margin_dealer = $sale_price - $profileRate; //700-300=400
+// $ss_tax = $basePrice * $sstfromdb; //136.5
+// $after_ss_tax = $basePrice + $ss_tax; //836.5
+// $adv_tax = $after_ss_tax * $advfromdb; //125.475
+// $after_adv_tax = $after_ss_tax + $adv_tax; //961.975
+// $sst = $ss_tax;
+// $adv = $adv_tax;
+// $consumer = $sale_price + $sst + $adv;
 
-$multyply = $profileRate * 2 + $sst + $adv;
-$final_rates = $multyply / 2;
-}
+// $multyply = $profileRate * 2 + $sst + $adv;
+// $final_rates = $multyply / 2;
+// }
 
-$dealerid = $dealer->dealerid;
-// $profileComision = 0;
-$profileMax = 0;
+// $dealerid = $dealer->dealerid;
+// // $profileComision = 0;
+// $profileMax = 0;
 
-// save into reseller profile rate.
-$dealerProfileRate = new DealerProfileRate();
-$dealerProfileRate->groupname = $groupName;
-$dealerProfileRate->name = $name;
-$dealerProfileRate->dealerid = $dealer->dealerid;
-$dealerProfileRate->rate = $profileRate;
-$dealerProfileRate->sst = $sst;
-$dealerProfileRate->sstpercentage = $sstfromdb;
-$dealerProfileRate->advpercentage = $advfromdb;
-$dealerProfileRate->taxgroup = "E";
-$dealerProfileRate->adv_tax = $adv;
-$dealerProfileRate->final_rates = $final_rates;
-$dealerProfileRate->max = $profileMax;
-$dealerProfileRate->consumer = $consumer;
-$dealerProfileRate->changeprofile = $change;
-$dealerProfileRate->show_sub_dealer = $allowed;
-$dealerProfileRate->trader = $allowtrader;
-$dealerProfileRate->billing_type = $billingType;
-$dealerProfileRate->verify = $verify;
+// // save into reseller profile rate.
+// $dealerProfileRate = new DealerProfileRate();
+// $dealerProfileRate->groupname = $groupName;
+// $dealerProfileRate->name = $name;
+// $dealerProfileRate->dealerid = $dealer->dealerid;
+// $dealerProfileRate->rate = $profileRate;
+// $dealerProfileRate->sst = $sst;
+// $dealerProfileRate->sstpercentage = $sstfromdb;
+// $dealerProfileRate->advpercentage = $advfromdb;
+// $dealerProfileRate->taxgroup = "E";
+// $dealerProfileRate->adv_tax = $adv;
+// $dealerProfileRate->final_rates = $final_rates;
+// $dealerProfileRate->max = $profileMax;
+// $dealerProfileRate->consumer = $consumer;
+// $dealerProfileRate->changeprofile = $change;
+// $dealerProfileRate->show_sub_dealer = $allowed;
+// $dealerProfileRate->trader = $allowtrader;
+// $dealerProfileRate->billing_type = $billingType;
+// $dealerProfileRate->verify = $verify;
+// // $dealerProfileRate->commision = $profileComision;
+// $dealerProfileRate->allowplan = $yes;
+// $dealerProfileRate->payment_type = $payment_type;
+// $dealerProfileRate->discount = $request->discount;
+// $dealerProfileRate->username = $request->username;
+// $dealerProfileRate->base_price = $basePrice;
+// $dealerProfileRate->base_price_ET = $basePriceET;
 // $dealerProfileRate->commision = $profileComision;
-$dealerProfileRate->allowplan = $yes;
-$dealerProfileRate->payment_type = $payment_type;
-$dealerProfileRate->discount = $request->discount;
-$dealerProfileRate->username = $request->username;
-$dealerProfileRate->base_price = $basePrice;
-$dealerProfileRate->base_price_ET = $basePriceET;
-$dealerProfileRate->commision = $profileComision;
-$dealerProfileRate->save();
-}
-}
-// subDealerProfileRate Update as per dealer sst adv change start.... 
-$subdealerprofilerateData = SubdealerProfileRate::where('dealerid',$dealer->dealerid)->get();
-// delete existing profile rates of resller
-// $deleteSubdealerProfileRate = SubdealerProfileRate::where(['dealerid' => $dealer->dealerid])->delete();
-// dd($subdealerprofilerateData);
-foreach($subdealerprofilerateData as $profile){
-	$name = $profile->name;
-// $profileName = ucfirst($profile->name);
-// if($request->has(''.$profileName)){
-//       $profileRate = $request->get(''.$profileName); // will get rate form request
-	$profileRate = $profile->rate;
-	$groupName = $profile->groupname;
-	$checkmargin = ProfileMargins::where('dealerid',$dealer->dealerid)->where('sub_dealer_id','=',$profile->sub_dealer_id)->where('groupname','=',$groupName)->first();
+// $dealerProfileRate->save();
+// }
+// }
 
-	$marginByProfile = Profile::where('name',$name)->first();
-
-	if(empty($checkmargin)){
-		$margin = $marginByProfile->margin;
-		$total_margin = $profileRate + $margin;
-
-		$culsst = $total_margin * $sstfromdb;
-$sst =   $culsst;//number_format($culsst,2);
-$culadv = ($total_margin+$sst)* $advfromdb;
-
-$adv = $culadv; //number_format($culadv,2);
-$consumer = $total_margin + $sst + $adv;
-$multyply = $profileRate*2 + $sst + $adv;
-$final_rates = $multyply/2;
-
-}else{
-	$margin = $checkmargin->margin;
-	$total_margin = $profileRate + $margin;
-
-	$culsst = $total_margin * $sstfromdb;
-$sst =   $culsst;//number_format($culsst,2);
-$culadv = ($total_margin+$sst)* $advfromdb;
-
-$adv = $culadv; //number_format($culadv,2);
-$consumer = $total_margin + $sst + $adv;
-$multyply = $profileRate*2 + $sst + $adv;
-$final_rates = $multyply/2;
-}
-// save into reseller profile rate.
-$subdealerProfileRateUpdate = SubdealerProfileRate::where('name',$profile->name)->where('dealerid',$profile->dealerid)->where('sub_dealer_id',$profile->sub_dealer_id);
-$subdealerProfileRateUpdate->update([
-	'sst' => $sst,
-	'adv_tax' => $adv,
-	'sstpercentage' => $sstfromdb,
-	'advpercentage' => $advfromdb,
-	'final_rates' => $final_rates,
-	'consumer' => $consumer
+$dealerProfileRate = DealerProfileRate::where('dealerid',$dealer->dealerid);
+//
+$dealerProfileRate->update([
+    'verify' => $verify,
+    'show_sub_dealer' => $allowed,
+    'payment_type' => $payment_type,
 ]);
 
-}
+
+// subDealerProfileRate Update as per dealer sst adv change start....
+// $subdealerprofilerateData = SubdealerProfileRate::where('dealerid',$dealer->dealerid)->get();
+// // delete existing profile rates of resller
+// // $deleteSubdealerProfileRate = SubdealerProfileRate::where(['dealerid' => $dealer->dealerid])->delete();
+// // dd($subdealerprofilerateData);
+// foreach($subdealerprofilerateData as $profile){
+// 	$name = $profile->name;
+// // $profileName = ucfirst($profile->name);
+// // if($request->has(''.$profileName)){
+// //       $profileRate = $request->get(''.$profileName); // will get rate form request
+// 	$profileRate = $profile->rate;
+// 	$groupName = $profile->groupname;
+// 	$checkmargin = ProfileMargins::where('dealerid',$dealer->dealerid)->where('sub_dealer_id','=',$profile->sub_dealer_id)->where('groupname','=',$groupName)->first();
+
+// 	$marginByProfile = Profile::where('name',$name)->first();
+
+// 	if(empty($checkmargin)){
+// 		$margin = $marginByProfile->margin;
+// 		$total_margin = $profileRate + $margin;
+
+// 		$culsst = $total_margin * $sstfromdb;
+// $sst =   $culsst;//number_format($culsst,2);
+// $culadv = ($total_margin+$sst)* $advfromdb;
+
+// $adv = $culadv; //number_format($culadv,2);
+// $consumer = $total_margin + $sst + $adv;
+// $multyply = $profileRate*2 + $sst + $adv;
+// $final_rates = $multyply/2;
+
+// }else{
+// 	$margin = $checkmargin->margin;
+// 	$total_margin = $profileRate + $margin;
+
+// 	$culsst = $total_margin * $sstfromdb;
+// $sst =   $culsst;//number_format($culsst,2);
+// $culadv = ($total_margin+$sst)* $advfromdb;
+
+// $adv = $culadv; //number_format($culadv,2);
+// $consumer = $total_margin + $sst + $adv;
+// $multyply = $profileRate*2 + $sst + $adv;
+// $final_rates = $multyply/2;
+// }
+// // save into reseller profile rate.
+// $subdealerProfileRateUpdate = SubdealerProfileRate::where('name',$profile->name)->where('dealerid',$profile->dealerid)->where('sub_dealer_id',$profile->sub_dealer_id);
+// $subdealerProfileRateUpdate->update([
+// 	'sst' => $sst,
+// 	'adv_tax' => $adv,
+// 	'sstpercentage' => $sstfromdb,
+// 	'advpercentage' => $advfromdb,
+// 	'final_rates' => $final_rates,
+// 	'consumer' => $consumer
+// ]);
+
+// }
 // subDealerProfileRate Update as per dealer sst adv change End....
 ////
 $dlt = DealerFUP::where([
@@ -4584,7 +5015,7 @@ if($staticIpExist){
     $staticIP->username = $thisusername;
     $staticIP->rates = $staticIpRates;
     $staticIP->max_ip_rate = $staticIpRates_max;
-    $staticIP->save();  
+    $staticIP->save();
 }
 //
 //
@@ -4811,9 +5242,9 @@ if ($verification == "on") {
 }
 
 // delete existing profile rates of resller
-$dlt = SubdealerProfileRate::where([
-	"sub_dealer_id" => $subdealer->sub_dealer_id,
-])->delete();
+// $dlt = SubdealerProfileRate::where([
+// 	"sub_dealer_id" => $subdealer->sub_dealer_id,
+// ])->delete();
 // getting assigned profile rates
 // getting assigned profile rates
 $profileList = Profile::all();
@@ -4823,111 +5254,119 @@ if(empty($profileList))
     return back();
 }
 
-foreach ($profileList as $profile) {
-	$name = $profile->name;
-	$profileName = ucfirst($profile->name);
-	if ($request->has("" . $profileName)) {
-$profileRate = $request->get("" . $profileName); // will get rate form request
-//
-$basePrice = $request->get("bp" . $profileName);
-$basePriceET = $request->get($profileName);
-$ct_margin = $request->get("ctm" . $profileName);
+// foreach ($profileList as $profile) {
+// 	$name = $profile->name;
+// 	$profileName = ucfirst($profile->name);
+// 	if ($request->has("" . $profileName)) {
+// $profileRate = $request->get("" . $profileName); // will get rate form request
+// //
+// $basePrice = $request->get("bp" . $profileName);
+// $basePriceET = $request->get($profileName);
+// $ct_margin = $request->get("ctm" . $profileName);
 
 
-$groupName = $profile->groupname;
-$gname = $profile->name;
-$checkmargin = ProfileMargins::where(
-	"dealerid",
-	$dealerid
-)
-->where("sub_dealer_id", "=", $subdealerid)
-->where("name", "=", $gname)
-->first();
+// $groupName = $profile->groupname;
+// $gname = $profile->name;
+// $checkmargin = ProfileMargins::where(
+// 	"dealerid",
+// 	$dealerid
+// )
+// ->where("sub_dealer_id", "=", $subdealerid)
+// ->where("name", "=", $gname)
+// ->first();
 
-$get_Dealer_data = DealerProfileRate::where([
-    "dealerid" => $subdealer->dealerid,
-    'name' => $name
-])->first();
-                        // dd($get_Dealer_data);
-if (empty($get_Dealer_data)) {
-    Session()->flash("error", "You have't any Profile Assigned by Dealer!..");
-    return back();
-}
-//
-if ($get_Dealer_data->base_price_ET > $basePriceET) {
-    Session()->flash("error", "Profile rate should be greator than or equal to Dealer rate");
-    return back();
-}if ($get_Dealer_data->base_price > $basePrice) {
-    Session()->flash("error", "Company Consumer Base Price should be greator than or equal to Dealer Company Consumer Base Price");
-    return back();
-}
-//
-if (empty($checkmargin)) {
-    $sale_price = $profileRate;
-    $profit_margin_dealer = $sale_price - $profileRate;
-    $sstfromdb = $get_Dealer_data->sstpercentage;
-    $advfromdb = $get_Dealer_data->advpercentage;
-    $ss_tax = $sale_price * $sstfromdb;
-    $after_ss_tax = $sale_price + $ss_tax;
-    $adv_tax = $after_ss_tax * $advfromdb;
-    $after_adv_tax = $after_ss_tax + $adv_tax;
-    $sst = $ss_tax;
-    $adv = $adv_tax;
-    $consumer = $sale_price + $sst + $adv;
-    $multyply = $profileRate * 2 + $sst + $adv;
-    $final_rates = $multyply / 2;
+// $get_Dealer_data = DealerProfileRate::where([
+//     "dealerid" => $subdealer->dealerid,
+//     'name' => $name
+// ])->first();
+//                         // dd($get_Dealer_data);
+// if (empty($get_Dealer_data)) {
+//     Session()->flash("error", "You have't any Profile Assigned by Dealer!..");
+//     return back();
+// }
+// //
+// if ($get_Dealer_data->base_price_ET > $basePriceET) {
+//     Session()->flash("error", "Profile rate should be greator than or equal to Dealer rate");
+//     return back();
+// }if ($get_Dealer_data->base_price > $basePrice) {
+//     Session()->flash("error", "Company Consumer Base Price should be greator than or equal to Dealer Company Consumer Base Price");
+//     return back();
+// }
+// //
+// if (empty($checkmargin)) {
+//     $sale_price = $profileRate;
+//     $profit_margin_dealer = $sale_price - $profileRate;
+//     $sstfromdb = $get_Dealer_data->sstpercentage;
+//     $advfromdb = $get_Dealer_data->advpercentage;
+//     $ss_tax = $sale_price * $sstfromdb;
+//     $after_ss_tax = $sale_price + $ss_tax;
+//     $adv_tax = $after_ss_tax * $advfromdb;
+//     $after_adv_tax = $after_ss_tax + $adv_tax;
+//     $sst = $ss_tax;
+//     $adv = $adv_tax;
+//     $consumer = $sale_price + $sst + $adv;
+//     $multyply = $profileRate * 2 + $sst + $adv;
+//     $final_rates = $multyply / 2;
 
-    $profileMargin = new ProfileMargins();
-    $profileMargin->groupname = $groupName;
-    $profileMargin->name = $gname;
-    $profileMargin->manager_id = $subdealer->manager_id;
-    $profileMargin->resellerid = $subdealer->resellerid;
-    $profileMargin->dealerid = $subdealer->dealerid;
-    $profileMargin->sub_dealer_id = $subdealerid;
-    $profileMargin->trader_id = null;
-    $profileMargin->margin = $profile->margin;
-    $profileMargin->save();
-} else {
+//     $profileMargin = new ProfileMargins();
+//     $profileMargin->groupname = $groupName;
+//     $profileMargin->name = $gname;
+//     $profileMargin->manager_id = $subdealer->manager_id;
+//     $profileMargin->resellerid = $subdealer->resellerid;
+//     $profileMargin->dealerid = $subdealer->dealerid;
+//     $profileMargin->sub_dealer_id = $subdealerid;
+//     $profileMargin->trader_id = null;
+//     $profileMargin->margin = $profile->margin;
+//     $profileMargin->save();
+// } else {
 
-    $sale_price = $profileRate;
-    $profit_margin_dealer = $sale_price - $profileRate;
-    $sstfromdb = $get_Dealer_data->sstpercentage;
-    $advfromdb = $get_Dealer_data->advpercentage;
-    $ss_tax = $sale_price * $sstfromdb;
-    $after_ss_tax = $sale_price + $ss_tax;
-    $adv_tax = $after_ss_tax * $advfromdb;
-    $after_adv_tax = $after_ss_tax + $adv_tax;
-    $sst = $ss_tax;
-    $adv = $adv_tax;
-    $consumer = $sale_price + $sst + $adv;
-    $multyply = $profileRate * 2 + $sst + $adv;
-    $final_rates = $multyply / 2;
+//     $sale_price = $profileRate;
+//     $profit_margin_dealer = $sale_price - $profileRate;
+//     $sstfromdb = $get_Dealer_data->sstpercentage;
+//     $advfromdb = $get_Dealer_data->advpercentage;
+//     $ss_tax = $sale_price * $sstfromdb;
+//     $after_ss_tax = $sale_price + $ss_tax;
+//     $adv_tax = $after_ss_tax * $advfromdb;
+//     $after_adv_tax = $after_ss_tax + $adv_tax;
+//     $sst = $ss_tax;
+//     $adv = $adv_tax;
+//     $consumer = $sale_price + $sst + $adv;
+//     $multyply = $profileRate * 2 + $sst + $adv;
+//     $final_rates = $multyply / 2;
 
-}
+// }
 
-// save into reseller profile rate.
-$subdealerProfileRate = new SubdealerProfileRate();
-$subdealerProfileRate->sub_dealer_id = $subdealerid;
-$subdealerProfileRate->dealerid = $dealerid;
-$subdealerProfileRate->groupname = $groupName;
-$subdealerProfileRate->name = $name;
-$subdealerProfileRate->taxgroup = "E";
-$subdealerProfileRate->rate = $basePrice;
-$subdealerProfileRate->sst = $sst;
-$subdealerProfileRate->sstpercentage = $sstfromdb;
-$subdealerProfileRate->advpercentage = $advfromdb;
-$subdealerProfileRate->adv_tax = $adv;
-$subdealerProfileRate->final_rates = $final_rates;
-$subdealerProfileRate->consumer = $consumer;
-$subdealerProfileRate->allow_trader = $allowtraders;
-$subdealerProfileRate->verify = $verify;
-$subdealerProfileRate->base_price = $basePrice;
-$subdealerProfileRate->base_price_ET = $basePriceET;
-$subdealerProfileRate->margin = $ct_margin;
-$subdealerProfileRate->save();
+// // save into reseller profile rate.
+// $subdealerProfileRate = new SubdealerProfileRate();
+// $subdealerProfileRate->sub_dealer_id = $subdealerid;
+// $subdealerProfileRate->dealerid = $dealerid;
+// $subdealerProfileRate->groupname = $groupName;
+// $subdealerProfileRate->name = $name;
+// $subdealerProfileRate->taxgroup = "E";
+// $subdealerProfileRate->rate = $basePrice;
+// $subdealerProfileRate->sst = $sst;
+// $subdealerProfileRate->sstpercentage = $sstfromdb;
+// $subdealerProfileRate->advpercentage = $advfromdb;
+// $subdealerProfileRate->adv_tax = $adv;
+// $subdealerProfileRate->final_rates = $final_rates;
+// $subdealerProfileRate->consumer = $consumer;
+// $subdealerProfileRate->allow_trader = $allowtraders;
+// $subdealerProfileRate->verify = $verify;
+// $subdealerProfileRate->base_price = $basePrice;
+// $subdealerProfileRate->base_price_ET = $basePriceET;
+// $subdealerProfileRate->margin = $ct_margin;
+// $subdealerProfileRate->save();
 
-}
-}
+// }
+// }
+
+$subdealerProfileRate = SubdealerProfileRate::where('sub_dealer_id',$subdealerid);
+$subdealerProfileRate->update([
+    'taxgroup' => 'E',
+    'verify' => $verify,
+    'allow_trader' => $allowtraders,
+]);
+
 $isvisible = $request->isvisible;
 if ($isvisible == "on") {
 	$allowed = "yes";
@@ -5109,15 +5548,15 @@ if(!empty($request->get("static_ip")) && !empty($request->get("ipassign")) && $r
         //
     if(empty($static_ip) || $static_ip <= 0){
         $static_ip = $StaticIp_info->rates;
-    }else{ 
+    }else{
         if($static_ip > $StaticIp_info->max_ip_rate){
             Session()->flash("error", "Maximum IP rate is ".$StaticIp_info->max_ip_rate);
-            return back(); 
+            return back();
         } if($static_ip < $StaticIp_info->rates){
             Session()->flash("error", "IP rate should be greater than or equal to company rate.");
-            return back(); 
-        }   
-    }  
+            return back();
+        }
+    }
     //
     $staticip = StaticIPServer::where([
         "ipaddress" => $request->get("static_ip"),
@@ -5179,9 +5618,9 @@ $profilePrefix = Domain::where('resellerid', $user->resellerid)->first();
                       // billing work
                 if($request->get("base_price") > 0){
                     $user->profile_amount = $request->get("base_price");
-                    $user->company_rate = 'no';   
+                    $user->company_rate = 'no';
                 }else{
-                 $user->profile_amount = $profile_amount; 
+                 $user->profile_amount = $profile_amount;
                  $user->company_rate = 'yes';
              }
                 //end
@@ -5213,7 +5652,7 @@ $profilePrefix = Domain::where('resellerid', $user->resellerid)->first();
                 //
 
                 // session()->flash("success", "Congratulation! Consumer Successfully updated.");
-                //   
+                //
                 // return redirect()->to($request->url);
                 Session()->flash("success", "Updated Successfully");
                 return back();
@@ -5510,7 +5949,7 @@ $profilePrefix = Domain::where('resellerid', $user->resellerid)->first();
                         $profName = $profileInfo->name;
                     }else{
                         $profName = $oldprofile;
-                    } 
+                    }
   //
                     $package = $oldprofile;
 
@@ -5579,7 +6018,7 @@ $profilePrefix = Domain::where('resellerid', $user->resellerid)->first();
 
             if(MyFunctions::is_freezed(Auth::user()->username)){
                 Session()->flash("error", "Your panel has been freezed");
-                return back();      
+                return back();
             }
 
             $uName = $request->get("user");
@@ -5748,7 +6187,7 @@ public function cirProfile(Request $request)
 //API Call for DC user
          $url='http://192.168.100.103/api/user-dc-api.php?username='.$username;
          $ch = curl_init();
-         curl_setopt($ch, CURLOPT_URL, "$url"); 
+         curl_setopt($ch, CURLOPT_URL, "$url");
          curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
          $result = curl_exec($ch);
      }
@@ -5771,7 +6210,7 @@ public function cirProfile(Request $request)
 //API Call for DC user
          $url='http://192.168.100.103/api/user-dc-api.php?username='.$username;
          $ch = curl_init();
-         curl_setopt($ch, CURLOPT_URL, "$url"); 
+         curl_setopt($ch, CURLOPT_URL, "$url");
          curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
          $result = curl_exec($ch);
 
@@ -5799,7 +6238,7 @@ public function amount_profile(Request $request)
 //end
 public function view_billing_history()
 {
-	
+
 	return view('users.bill-history.view_bill_history');
 }
 //
@@ -5814,11 +6253,11 @@ public function create_access($userid,$status){
        //
         $accessMenu = new UserMenuAccess();
         $accessMenu->user_id = $userid;
-        $accessMenu->sub_menu_id = $submenu->id; 
+        $accessMenu->sub_menu_id = $submenu->id;
         if($submenu->id == 1 ){
-            $accessMenu->status = 1;  
+            $accessMenu->status = 1;
         }
-        $accessMenu->save(); 
+        $accessMenu->save();
     }
 }
 
@@ -5827,7 +6266,7 @@ public function create_access($userid,$status){
 public function change_user_pass(Request $request)
 {
 
-    $user = $request->get("user"); 
+    $user = $request->get("user");
     $redpass = $request->get('pass');
 
     $redcheck = RadCheck::where('username', $user)->where(['attribute'=>'Cleartext-Password'])
@@ -5847,12 +6286,12 @@ public function dataremove(Request $request){
     $reset = '';
     //
     if(empty($username)){
-     return back()->with( "error","Please type username"); 
+     return back()->with( "error","Please type username");
  }
     //
  $exist = UserVerification::where(['username'=>$username])->first();
  if(!$exist){
-     return back()->with( "error","Consumer unverified"); 
+     return back()->with( "error","Consumer unverified");
  }
     //
  if($nic =="on"){
@@ -5902,7 +6341,7 @@ return back()->with( "success","Reset Successfully.");
 
 public function get_contractor_trader_profiles(Request $request) {
 // This will be an array of selected NAS values
-  $nasArray = $request->nas; 
+  $nasArray = $request->nas;
 
 // Fetch records matching any of the NAS values
   $get_table = ContractorTraderProfile::whereIn('nas_shortname', $nasArray)->get();
@@ -5923,6 +6362,159 @@ public function get_contractor_trader_profiles(Request $request) {
 
 }
 
+
+
+
+// -------- Online view user ---------------
+public function onlineUsers_view() {
+    return view("users.dealer.Online_User.online_user");
+}
+
+// use DataTables;
+
+public function onlineUsers_get_table(Request $request)
+{
+
+    $manager_id = Auth::user()->manager_id ?? null;
+    $resellerid = Auth::user()->resellerid ?? null;
+    $dealerid = Auth::user()->dealerid ?? $request->contractor;
+    $sub_dealer_id = Auth::user()->sub_dealer_id ?? $request->trader;
+    $searchFilter = $request->searchFilter;
+    $dateFilter = $request->dateFilter;
+    // $IpFilter = $request->IpFilter;
+    // dd($manager_id, $resellerid, $dealerid, $sub_dealer_id);
+
+    $whereArray = [];
+    if ($manager_id) {
+        $whereArray[] = ['manager_id', $manager_id];
+    }
+    if ($resellerid) {
+        $whereArray[] = ['resellerid', $resellerid];
+    }
+    if ($dealerid) {
+        $whereArray[] = ['dealerid', $dealerid];
+    }
+    if ($sub_dealer_id) {
+        $whereArray[] = ['sub_dealer_id', $sub_dealer_id];
+    }
+    //
+    $Users = UserInfo::where($whereArray)
+    ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
+        $query->where(function ($subQuery) use ($searchFilter) {
+            $subQuery->where('username', 'LIKE', '%' . $searchFilter . '%')
+                ->orWhere('firstname', 'LIKE', '%' . $searchFilter . '%')
+                ->orWhere('lastname', 'LIKE', '%' . $searchFilter . '%')
+                // ->orWhere('nic', 'LIKE', '%' . $searchFilter . '%')
+                ->orWhere('address', 'LIKE', '%' . $searchFilter . '%');
+                // ->orWhere('city', 'LIKE', '%' . $searchFilter . '%')
+                // ->orWhere('permanent_address', 'LIKE', '%' . $searchFilter . '%');
+        });
+    })
+    ->where('status','user')
+    ->whereIn('username', function ($query) {
+        $query->select('username')
+        ->from('user_status_info')
+        ->where('card_expire_on', '>', now()->subDays(60));
+    })->select('username')->get()->toArray();
+    //
+    // dd($Users);
+    $query = RadAcct::where('acctstoptime', null)
+    ->whereIn('username', $Users)
+    ->select('username','acctstarttime');
+
+    // if($IpFilter){
+    //     $query->where('framedipaddress',$IpFilter);
+    // }
+    if($dateFilter){
+        $query->whereDate('acctstarttime',$dateFilter);
+    }
+    //
+    return DataTables::of($query)
+    ->addColumn('username', function ($user) {
+        $userStatusInfo = UserStatusInfo::where('username', $user->username)->select('expire_datetime')->first();
+        $isExpiredOrToday = $userStatusInfo && strtotime($userStatusInfo->expire_datetime) <= strtotime(now() );
+        return $isExpiredOrToday ? "{$user->username}<span style='color:red'><br><small>(Expired)</small></span>" : $user->username;
+    })
+    ->addColumn('firstname', function ($user) {
+        $userInfo = UserInfo::where('username', $user->username)->select('firstname','lastname')->first();
+        return $userInfo->firstname . ' ' . $userInfo->lastname;
+    })
+    ->addColumn('address', function ($user) {
+        $userInfo = UserInfo::where('username', $user->username)->select('address')->first();
+        return $userInfo->address;
+    })
+    ->addColumn('login_time', function ($user) {
+        $radAcct = RadAcct::where('username', $user->username)
+        ->whereNull('acctstoptime')
+        ->orderBy('acctstarttime', 'DESC')
+        ->first();
+        return $radAcct ? date('M d,Y H:i:s', strtotime($radAcct->acctstarttime)) : '-';
+    })
+    ->addColumn('session_time', function ($user) {
+        return $this->getSessionTime($user->acctstarttime);
+    })
+    ->addColumn('sub_dealer_id', function ($user) {
+        $userInfo = UserInfo::where('username', $user->username)->select('dealerid','sub_dealer_id')->first();
+        return $userInfo->sub_dealer_id ?: ($userInfo->dealerid . ' (Contractor)');
+    })
+    ->addColumn('framedipaddress', function ($user) {
+        $radAcct = RadAcct::where('username', $user->username)
+        ->whereNull('acctstoptime')
+        ->orderBy('acctstarttime', 'DESC')
+        ->first();
+        return $radAcct->framedipaddress ?? '-';
+    })
+    ->addColumn('data_usage', function ($user) {
+        $radAcct = RadAcct::where('username', $user->username)
+        ->whereNull('acctstoptime')
+        ->orderBy('acctstarttime', 'DESC')
+        ->first();
+        return $radAcct ? $this->ByteSize($radAcct->acctoutputoctets) . ' | ' . $this->ByteSize($radAcct->acctinputoctets) : '-';
+    })
+    ->addColumn('dynamic_ips', function ($user) {
+        $radAcct = RadAcct::where('username', $user->username)
+        ->whereNull('acctstoptime')
+        ->orderBy('acctstarttime', 'DESC')
+        ->first();
+        return $radAcct ? $this->getDynamicIP($radAcct->callingstationid) : '-';
+        //
+    })
+        ->rawColumns(['username','dynamic_ips']) // Allow raw HTML for the username column
+        ->make(true);
+    }
+//
+
+
+public function getSessionTime($givenDatetime)
+{
+    // $dtF = new DateTime('@0');
+    // $dtT = new DateTime("@$seconds");
+    // return $dtF->diff($dtT)->format('%a Days : %h Hrs : %i Mins %s Secs');
+
+    $currentDatetime = new DateTime(); // Current datetime
+    $givenDatetime = new DateTime($givenDatetime); // Convert input datetime string to DateTime object
+
+    // Calculate the difference
+    $interval = $currentDatetime->diff($givenDatetime);
+
+    // Format the result
+    $differenceString = sprintf(
+        "%d Days : %d Hrs : %d Mins : %d Secs",
+        $interval->days,
+        $interval->h,
+        $interval->i,
+        $interval->s
+    );
+
+    return $differenceString;
+
+}
+
+public function getDynamicIP($mac)
+{
+    return '<button type="button" class="btn btn-primary" onclick="getIP(this, \'' . $mac . '\');">Dynamic (IP)</button>';
+}
+// -------- End Online view user ------------
 
 
 
