@@ -159,14 +159,16 @@
 								<th>Consumer (ID)</th>
 								<th>Consumer Name</th>
 								<th class="desktop">Address</th>
-								<th>Login Date & Time</th>
-								<th>Session Time</th>
+								<th class="desktop">Last Login</th>
+								<th class="desktop">Logout</th>
+								{{-- <th>Login Date & Time</th>
+								<th>Session Time</th> --}}
 								@if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support')
 								<th>Contractor & Trader</th>
 								@endif
-								<th>Assign (CGN) IPs</th>
+								{{-- <th>Assign (CGN) IPs</th>
 								<th>Download/Upload (Data)</th>
-								<th>Dynamic (LOCAL)IPs</th>
+								<th>Dynamic (LOCAL)IPs</th> --}}
 							</tr>
 						</thead>
 						<tbody>
@@ -286,14 +288,16 @@ $(document).ready(function() {
 				{ data: 'username' , name: 'RadAcct.username' },              // Consumer (ID)
 				{ data: 'firstname' },             // Consumer Name
 				{ data: 'address' },               // Address
-				{ data: 'login_time', name: 'acctstarttime' },            // Login Date & Time
-				{ data: 'session_time' },          // Session Time
+				// { data: 'login_time', name: 'acctstarttime' },            // Login Date & Time
+				// { data: 'session_time' },          // Session Time
 				@if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support')
 				{ data: 'sub_dealer_id' },         // Contractor & Trader (only for dealers and support)
 				@endif
-				{ data: 'framedipaddress'},       // Assign (CGN) IPs
-				{ data: 'data_usage'},            // Download/Upload (Data)
-				{ data: 'dynamic_ips' },           // Dynamic (LOCAL)IPs
+				{ data: 'lastlogin'},       // Assign (CGN) IPs
+				{ data: 'logout'},       // Assign (CGN) IPs
+				// { data: 'framedipaddress'},       // Assign (CGN) IPs
+				// { data: 'data_usage'},            // Download/Upload (Data)
+				// { data: 'dynamic_ips' },           // Dynamic (LOCAL)IPs
             ],
             order: [[1, 'asc']]
         });

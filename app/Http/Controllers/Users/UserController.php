@@ -36,6 +36,7 @@ use App\model\Users\DisabledUser;
 use App\model\Users\Dhcp_server;
 use App\model\Users\Dhcp_dealer_server;
 use App\model\Users\PartnerThemesUser;
+use Carbon\Carbon;
 
 use Session;
 use App\model\Users\FreezeAccount;
@@ -6445,42 +6446,60 @@ public function offlineUsers_get_table(Request $request)
         $userInfo = UserInfo::where('username', $user->username)->select('address')->first();
         return $userInfo->address;
     })
-    ->addColumn('login_time', function ($user) {
-        $radAcct = RadAcct::where('username', $user->username)
-        ->whereNull('acctstoptime')
-        ->orderBy('acctstarttime', 'DESC')
-        ->first();
-        return $radAcct ? date('M d,Y H:i:s', strtotime($radAcct->acctstarttime)) : '-';
-    })
-    ->addColumn('session_time', function ($user) {
-        return $this->getSessionTime($user->acctstarttime);
-    })
+    // ->addColumn('login_time', function ($user) {
+    //     $radAcct = RadAcct::where('username', $user->username)
+    //     ->whereNull('acctstoptime')
+    //     ->orderBy('acctstarttime', 'DESC')
+    //     ->first();
+    //     return $radAcct ? date('M d,Y H:i:s', strtotime($radAcct->acctstarttime)) : '-';
+    // })
+    // ->addColumn('session_time', function ($user) {
+    //     return $this->getSessionTime($user->acctstarttime);
+    // })
     ->addColumn('sub_dealer_id', function ($user) {
         $userInfo = UserInfo::where('username', $user->username)->select('dealerid','sub_dealer_id')->first();
         return $userInfo->sub_dealer_id ?: ($userInfo->dealerid . ' (Contractor)');
     })
-    ->addColumn('framedipaddress', function ($user) {
-        $radAcct = RadAcct::where('username', $user->username)
-        ->whereNull('acctstoptime')
-        ->orderBy('acctstarttime', 'DESC')
-        ->first();
-        return $radAcct->framedipaddress ?? '-';
+    ->addColumn('lastlogin', function ($user) {
+        $userInfo = RadAcct::where('username', $user->username)
+            ->select('acctstarttime')
+            ->latest('acctstarttime')
+            ->first();
+
+        // Format the date-time using Carbon
+        return $userInfo ? Carbon::parse($userInfo->acctstarttime)->format('F j, Y, g:i a') : null;
     })
-    ->addColumn('data_usage', function ($user) {
-        $radAcct = RadAcct::where('username', $user->username)
-        ->whereNull('acctstoptime')
-        ->orderBy('acctstarttime', 'DESC')
-        ->first();
-        return $radAcct ? $this->ByteSize($radAcct->acctoutputoctets) . ' | ' . $this->ByteSize($radAcct->acctinputoctets) : '-';
+    ->addColumn('logout', function ($user) {
+        $userInfo = RadAcct::where('username', $user->username)
+            ->select('acctstoptime')
+            ->latest('acctstoptime')
+            ->first();
+
+        // Format the date-time using Carbon
+        return $userInfo ? Carbon::parse($userInfo->acctstoptime)->format('F j, Y, g:i a') : null;
     })
-    ->addColumn('dynamic_ips', function ($user) {
-        $radAcct = RadAcct::where('username', $user->username)
-        ->whereNull('acctstoptime')
-        ->orderBy('acctstarttime', 'DESC')
-        ->first();
-        return $radAcct ? $this->getDynamicIP($radAcct->callingstationid) : '-';
+    // ->addColumn('framedipaddress', function ($user) {
+    //     $radAcct = RadAcct::where('username', $user->username)
+    //     ->whereNull('acctstoptime')
+    //     ->orderBy('acctstarttime', 'DESC')
+    //     ->first();
+    //     return $radAcct->framedipaddress ?? '-';
+    // })
+    // ->addColumn('data_usage', function ($user) {
+    //     $radAcct = RadAcct::where('username', $user->username)
+    //     ->whereNull('acctstoptime')
+    //     ->orderBy('acctstarttime', 'DESC')
+    //     ->first();
+    //     return $radAcct ? $this->ByteSize($radAcct->acctoutputoctets) . ' | ' . $this->ByteSize($radAcct->acctinputoctets) : '-';
+    // })
+    // ->addColumn('dynamic_ips', function ($user) {
+    //     $radAcct = RadAcct::where('username', $user->username)
+    //     ->whereNull('acctstoptime')
+    //     ->orderBy('acctstarttime', 'DESC')
+    //     ->first();
+        // return $radAcct ? $this->getDynamicIP($radAcct->callingstationid) : '-';
         //
-    })
+    // })
         ->rawColumns(['username','dynamic_ips']) // Allow raw HTML for the username column
         ->make(true);
     }
