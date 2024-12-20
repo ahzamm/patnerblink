@@ -1298,6 +1298,12 @@ public function onlineUsers(){
     }
     return view("users.dealer.Online_User.online_user");
 }
+public function offlineUsers(){
+    if(!MyFunctions::check_access('Online Consumers',Auth::user()->id)){
+        abort(404);
+    }
+    return view("users.dealer.offline_user");
+}
 ////////////
 
 // public function onlineUsers_DELETED($status)
@@ -6365,12 +6371,121 @@ public function get_contractor_trader_profiles(Request $request) {
 
 
 
-// -------- Online view user ---------------
-public function onlineUsers_view() {
-    return view("users.dealer.Online_User.online_user");
-}
 
 // use DataTables;
+
+public function offlineUsers_get_table(Request $request)
+{
+
+    $manager_id = Auth::user()->manager_id ?? null;
+    $resellerid = Auth::user()->resellerid ?? null;
+    $dealerid = Auth::user()->dealerid ?? $request->contractor;
+    $sub_dealer_id = Auth::user()->sub_dealer_id ?? $request->trader;
+    $searchFilter = $request->searchFilter;
+    $dateFilter = $request->dateFilter;
+    // $IpFilter = $request->IpFilter;
+    // dd($manager_id, $resellerid, $dealerid, $sub_dealer_id);
+
+    $whereArray = [];
+    if ($manager_id) {
+        $whereArray[] = ['manager_id', $manager_id];
+    }
+    if ($resellerid) {
+        $whereArray[] = ['resellerid', $resellerid];
+    }
+    if ($dealerid) {
+        $whereArray[] = ['dealerid', $dealerid];
+    }
+    if ($sub_dealer_id) {
+        $whereArray[] = ['sub_dealer_id', $sub_dealer_id];
+    }
+    //
+    $Users = UserInfo::where($whereArray)
+    ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
+        $query->where(function ($subQuery) use ($searchFilter) {
+            $subQuery->where('username', 'LIKE', '%' . $searchFilter . '%')
+                ->orWhere('firstname', 'LIKE', '%' . $searchFilter . '%')
+                ->orWhere('lastname', 'LIKE', '%' . $searchFilter . '%')
+                // ->orWhere('nic', 'LIKE', '%' . $searchFilter . '%')
+                ->orWhere('address', 'LIKE', '%' . $searchFilter . '%');
+                // ->orWhere('city', 'LIKE', '%' . $searchFilter . '%')
+                // ->orWhere('permanent_address', 'LIKE', '%' . $searchFilter . '%');
+        });
+    })
+    ->where('status','user')
+    ->whereIn('username', function ($query) {
+        $query->select('username')
+        ->from('user_status_info')
+        ->where('card_expire_on', '>', now()->subDays(60));
+    })->select('username')->get()->toArray();
+    //
+    // dd($Users);
+    $query = RadAcct::whereNotNull('acctstoptime')
+    ->whereIn('username', $Users)
+    ->select('username','acctstarttime');
+
+    // if($IpFilter){
+    //     $query->where('framedipaddress',$IpFilter);
+    // }
+    if($dateFilter){
+        $query->whereDate('acctstarttime',$dateFilter);
+    }
+    //
+    return DataTables::of($query)
+    ->addColumn('username', function ($user) {
+        $userStatusInfo = UserStatusInfo::where('username', $user->username)->select('expire_datetime')->first();
+        $isExpiredOrToday = $userStatusInfo && strtotime($userStatusInfo->expire_datetime) <= strtotime(now() );
+        return $isExpiredOrToday ? "{$user->username}<span style='color:red'><br><small>(Expired)</small></span>" : $user->username;
+    })
+    ->addColumn('firstname', function ($user) {
+        $userInfo = UserInfo::where('username', $user->username)->select('firstname','lastname')->first();
+        return $userInfo->firstname . ' ' . $userInfo->lastname;
+    })
+    ->addColumn('address', function ($user) {
+        $userInfo = UserInfo::where('username', $user->username)->select('address')->first();
+        return $userInfo->address;
+    })
+    ->addColumn('login_time', function ($user) {
+        $radAcct = RadAcct::where('username', $user->username)
+        ->whereNull('acctstoptime')
+        ->orderBy('acctstarttime', 'DESC')
+        ->first();
+        return $radAcct ? date('M d,Y H:i:s', strtotime($radAcct->acctstarttime)) : '-';
+    })
+    ->addColumn('session_time', function ($user) {
+        return $this->getSessionTime($user->acctstarttime);
+    })
+    ->addColumn('sub_dealer_id', function ($user) {
+        $userInfo = UserInfo::where('username', $user->username)->select('dealerid','sub_dealer_id')->first();
+        return $userInfo->sub_dealer_id ?: ($userInfo->dealerid . ' (Contractor)');
+    })
+    ->addColumn('framedipaddress', function ($user) {
+        $radAcct = RadAcct::where('username', $user->username)
+        ->whereNull('acctstoptime')
+        ->orderBy('acctstarttime', 'DESC')
+        ->first();
+        return $radAcct->framedipaddress ?? '-';
+    })
+    ->addColumn('data_usage', function ($user) {
+        $radAcct = RadAcct::where('username', $user->username)
+        ->whereNull('acctstoptime')
+        ->orderBy('acctstarttime', 'DESC')
+        ->first();
+        return $radAcct ? $this->ByteSize($radAcct->acctoutputoctets) . ' | ' . $this->ByteSize($radAcct->acctinputoctets) : '-';
+    })
+    ->addColumn('dynamic_ips', function ($user) {
+        $radAcct = RadAcct::where('username', $user->username)
+        ->whereNull('acctstoptime')
+        ->orderBy('acctstarttime', 'DESC')
+        ->first();
+        return $radAcct ? $this->getDynamicIP($radAcct->callingstationid) : '-';
+        //
+    })
+        ->rawColumns(['username','dynamic_ips']) // Allow raw HTML for the username column
+        ->make(true);
+    }
+//
+
 
 public function onlineUsers_get_table(Request $request)
 {

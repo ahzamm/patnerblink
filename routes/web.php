@@ -777,6 +777,11 @@ Route::group(['prefix'=>'users'],function(){
     Route::get('/users/online/datatable/view','Users\UserController@onlineUsers_get_table')->name('users.user.onlineuser.table');
     // End
 
+    // offline View Consumer
+    Route::get('/new-users/offline/{status}','Users\UserController@offlineUsers')->name('users.user.offlineuser.view');
+    Route::get('/users/offline/datatable/view','Users\UserController@offlineUsers_get_table')->name('users.user.offlineuser.table');
+    // End
+
 
 
     Route::get('/users/onlinePost','Users\UserController@onlinePost')->name('users.user.onlinePost');

@@ -57,11 +57,11 @@
 	<!-- CONTENT START -->
 	<section id="main-content">
 		<section class="wrapper main-wrapper row">
-
+			
 				<div class="col-lg-12">
 					<div class="header_view">
-						<h2 id="heading">Offline Consumers
-							<span class="info-mark" onmouseenter="popup_function(this, 'offline_consumers');" onmouseleave="popover_dismiss();"><i class="las la-info-circle"></i></span>
+						<h2 id="heading">Online Consumers
+							<span class="info-mark" onmouseenter="popup_function(this, 'online_consumers');" onmouseleave="popover_dismiss();"><i class="las la-info-circle"></i></span>
 						</h2>
 					</div>
 
@@ -138,9 +138,9 @@
 							<button id="loadData" class="btn btn-primary mb-5" style="margin-top: 30px;">Get Data</button>
 						</div>
 					</div>
+					
 
-
-
+			
 			<div class="chart-container " style="display: none;">
 				<div class="" style="height:200px" id="platform_type_dates"></div>
 				<div class="chart has-fixed-height" style="height:200px" id="gauge_chart"></div>
@@ -273,7 +273,7 @@ $(document).ready(function() {
             serverSide: true,
 			responsive: true,
             ajax: {
-                url: "{{ route('users.user.offlineuser.table') }}",
+                url: "{{ route('users.user.onlineuser.table') }}",
                 type: "GET",
                 data: function(d) {
                     d.contractor = selectedContractor;
