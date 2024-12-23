@@ -6384,8 +6384,6 @@ public function offlineUsers_get_table(Request $request)
     $sub_dealer_id = Auth::user()->sub_dealer_id ?? $request->trader;
     $searchFilter = $request->searchFilter;
     $dateFilter = $request->dateFilter;
-    // $IpFilter = $request->IpFilter;
-    // dd($manager_id, $resellerid, $dealerid, $sub_dealer_id);
 
     $whereArray = [];
     if ($manager_id) {
@@ -6400,38 +6398,37 @@ public function offlineUsers_get_table(Request $request)
     if ($sub_dealer_id) {
         $whereArray[] = ['sub_dealer_id', $sub_dealer_id];
     }
-    //
+
     $Users = UserInfo::where($whereArray)
     ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
         $query->where(function ($subQuery) use ($searchFilter) {
             $subQuery->where('username', 'LIKE', '%' . $searchFilter . '%')
                 ->orWhere('firstname', 'LIKE', '%' . $searchFilter . '%')
                 ->orWhere('lastname', 'LIKE', '%' . $searchFilter . '%')
-                // ->orWhere('nic', 'LIKE', '%' . $searchFilter . '%')
                 ->orWhere('address', 'LIKE', '%' . $searchFilter . '%');
-                // ->orWhere('city', 'LIKE', '%' . $searchFilter . '%')
-                // ->orWhere('permanent_address', 'LIKE', '%' . $searchFilter . '%');
         });
     })
     ->where('status','user')
     ->whereIn('username', function ($query) {
         $query->select('username')
         ->from('user_status_info')
-        ->where('card_expire_on', '>', now()->subDays(60));
-    })->select('username')->get()->toArray();
-    //
-    // dd($Users);
-    $query = RadAcct::whereNotNull('acctstoptime')
-    ->whereIn('username', $Users)
-    ->select('username','acctstarttime');
+        ->where('card_expire_on', '>', Carbon::today()->toDateString())
+        ->where('expire_datetime', '>', Carbon::today()->toDateString());
+    })->pluck('username')->toArray();
 
-    // if($IpFilter){
-    //     $query->where('framedipaddress',$IpFilter);
-    // }
+    $query = RadAcct::whereIn('username', $Users)
+    ->whereIn('acctstarttime', function ($subQuery) {
+        $subQuery->select(DB::raw('MAX(acctstarttime)'))
+            ->from('radacct')
+            ->groupBy('username');
+    })
+    ->whereNotNull('acctstoptime')
+    ->select('username', 'acctstarttime');
+
     if($dateFilter){
         $query->whereDate('acctstarttime',$dateFilter);
     }
-    //
+
     return DataTables::of($query)
     ->addColumn('username', function ($user) {
         $userStatusInfo = UserStatusInfo::where('username', $user->username)->select('expire_datetime')->first();
@@ -6446,16 +6443,6 @@ public function offlineUsers_get_table(Request $request)
         $userInfo = UserInfo::where('username', $user->username)->select('address')->first();
         return $userInfo->address;
     })
-    // ->addColumn('login_time', function ($user) {
-    //     $radAcct = RadAcct::where('username', $user->username)
-    //     ->whereNull('acctstoptime')
-    //     ->orderBy('acctstarttime', 'DESC')
-    //     ->first();
-    //     return $radAcct ? date('M d,Y H:i:s', strtotime($radAcct->acctstarttime)) : '-';
-    // })
-    // ->addColumn('session_time', function ($user) {
-    //     return $this->getSessionTime($user->acctstarttime);
-    // })
     ->addColumn('sub_dealer_id', function ($user) {
         $userInfo = UserInfo::where('username', $user->username)->select('dealerid','sub_dealer_id')->first();
         return $userInfo->sub_dealer_id ?: ($userInfo->dealerid . ' (Contractor)');
@@ -6466,7 +6453,6 @@ public function offlineUsers_get_table(Request $request)
             ->latest('acctstarttime')
             ->first();
 
-        // Format the date-time using Carbon
         return $userInfo ? Carbon::parse($userInfo->acctstarttime)->format('F j, Y, g:i a') : null;
     })
     ->addColumn('logout', function ($user) {
@@ -6475,32 +6461,9 @@ public function offlineUsers_get_table(Request $request)
             ->latest('acctstoptime')
             ->first();
 
-        // Format the date-time using Carbon
         return $userInfo ? Carbon::parse($userInfo->acctstoptime)->format('F j, Y, g:i a') : null;
     })
-    // ->addColumn('framedipaddress', function ($user) {
-    //     $radAcct = RadAcct::where('username', $user->username)
-    //     ->whereNull('acctstoptime')
-    //     ->orderBy('acctstarttime', 'DESC')
-    //     ->first();
-    //     return $radAcct->framedipaddress ?? '-';
-    // })
-    // ->addColumn('data_usage', function ($user) {
-    //     $radAcct = RadAcct::where('username', $user->username)
-    //     ->whereNull('acctstoptime')
-    //     ->orderBy('acctstarttime', 'DESC')
-    //     ->first();
-    //     return $radAcct ? $this->ByteSize($radAcct->acctoutputoctets) . ' | ' . $this->ByteSize($radAcct->acctinputoctets) : '-';
-    // })
-    // ->addColumn('dynamic_ips', function ($user) {
-    //     $radAcct = RadAcct::where('username', $user->username)
-    //     ->whereNull('acctstoptime')
-    //     ->orderBy('acctstarttime', 'DESC')
-    //     ->first();
-        // return $radAcct ? $this->getDynamicIP($radAcct->callingstationid) : '-';
-        //
-    // })
-        ->rawColumns(['username','dynamic_ips']) // Allow raw HTML for the username column
+        ->rawColumns(['username','dynamic_ips'])
         ->make(true);
     }
 //
