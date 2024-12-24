@@ -51,7 +51,7 @@
 					</header>
 					<div class="content-body">
 						<div class="row">
-							<table id="example-1" class="table table-bordered dt-responsive" style="width: 100%">
+							<table id="example-2" class="table table-bordered dt-responsive" style="width: 100%">
 								<thead>
 									<tr>
 										<th>Serial#</th>
@@ -67,38 +67,6 @@
 										<th>Trader</th>
 									</tr>
 								</thead>
-								<tbody>
-									@php $sno=1; @endphp
-									@foreach($expiry_users as $value)
-									@php
-									$now = time(); 
-									$your_date = strtotime($value->card_expire_on);
-									$datediff = $your_date - $now;
-									$days_remains= round($datediff / (60 * 60 * 24)+1);
-									$profile=$value->name;
-									if($days_remains < 1){
-									$days_remains='to';
-								}
-								@endphp
-								<tr>
-									<td>{{$sno++}}</td>
-									<td class="td__profileName">{{$value->username}}</td>
-									<td>{{$value->firstname}} {{$value->lastname}}</td>
-									<td>
-										@if($value->mobilephone != '')
-										<a href="tel:{{$value->mobilephone}}" class="cta_btn"> <i class="fa fa-phone"></i> {{$value->mobilephone}}</a>
-										@endif
-									</td>
-									<td>{{$value->address}}</td>
-									<td><span class="blinkMe">{{$days_remains}} day(s)</span></td>
-									<td>{{$profile}}</td>
-									<td>{{date('M d,Y',strtotime($value->card_charge_on))}}</td>
-									<td class="td__profileName">{{date('M d,Y',strtotime($value->card_expire_on))}}</td>
-									<td>{{$value->dealerid}}</td>
-									<td>{{(empty($value->sub_dealer_id) ? 'N/A' : $value->sub_dealer_id)}}</td>
-								</tr>
-								@endforeach
-							</tbody>
 						</table>
 					</div>
 				</div>
@@ -109,7 +77,35 @@
 </div>
 @endsection
 @section('ownjs')
-<script></script>
+<script>
+    $(document).ready(function() {
+    $('#example-2').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '{{ route('users.billing.upcoming_expiry.data') }}',
+        columns: [
+            { data: 'serial', name: 'serial' },
+            { data: 'username', name: 'username' },
+            { data: 'fullname', name: 'fullname' },
+            { data: 'mobilephone', name: 'mobilephone' },
+            { data: 'address', name: 'address' },
+            { data: 'remaining_days', name: 'remaining_days' },
+            { data: 'profile', name: 'profile' },
+            { data: 'card_charge_on', name: 'card_charge_on' },
+            { data: 'card_expire_on', name: 'card_expire_on' },
+            { data: 'dealerid', name: 'dealerid' },
+            { data: 'sub_dealer_id', name: 'sub_dealer_id' }
+        ],
+        createdRow: function(row, data, dataIndex) {
+            if (data.remaining_days < 1) {
+                $('td:eq(5)', row).html('<span class="blinkMe">to day(s)</span>');
+            } else {
+                $('td:eq(5)', row).html('<span class="blinkMe">' + data.remaining_days + ' day(s)</span>');
+            }
+        }
+    });
+});
+</script>
 <script></script>
 @endsection
 <!-- Code Finalize -->

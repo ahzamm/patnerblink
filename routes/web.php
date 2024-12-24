@@ -869,6 +869,7 @@ Route::group(['prefix'=>'users'],function(){
 
     Route::get('/upcomingexpiry','Users\UpComingExpiryController@index')->name('users.billing.upcoming_expiry')->middleware('useraccessallow');
     Route::post('ajax/search','Users\SearchEngineController@index')->name('users.search.ajax.post');
+    Route::get('users/billing/upcoming-expiry/data', 'Users\UpComingExpiryController@getUpcomingExpiryData')->name('users.billing.upcoming_expiry.data');
 
     Route::get('user/downloadsheet/{managerid}/{resellerid}','Users\DownloadSheetController@index')->name('users.my.sheetdownload');
     Route::get('user/downloadallusersheet/{resellerid}/{dealerid}','Users\DownloadSheetController@download_all_users')->name('users.all.sheetdownload');
