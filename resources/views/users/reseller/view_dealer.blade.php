@@ -29,7 +29,7 @@
             <a href="{{('#add_dealer')}}" data-toggle="modal"><button class="btn btn-primary mb1 bg-olive btn-md"><i class="fas fa-user-friends"></i> Add Contractor </button></a>
           <?php } ?>
           <div class="header_view">
-            <h2>Contractors 
+            <h2>Contractors
               <span class="info-mark" onmouseenter="popup_function(this, 'contractors');" onmouseleave="popover_dismiss();"><i class="las la-info-circle"></i></span>
             </h2>
           </div>
@@ -62,6 +62,7 @@
                   <th>Contractor (ID) </th>
                   <th>Number of Traders</th>
                   <th>Number of Consumers</th>
+                  <th>Number of Active Users</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -102,6 +103,13 @@
                 //  ->where('user_status_info.card_expire_on', '>', today())
                 ->where('user_status_info.expire_datetime', '>', DATE('Y-m-d H:i:s'))
                 ->where(['status' => 'user','resellerid' => $data->resellerid,'dealerid' => $data->dealerid])->count() }}</td>
+
+            <td>{{ DB::table('user_info')
+                ->join('user_status_info', 'user_status_info.username', '=', 'user_info.username')
+                ->where('user_info.dealerid', $data->dealerid)
+                ->where('user_status_info.expire_datetime', '>', DATE('Y-m-d H:i:s'))
+                ->count() }}
+            </td>
                 <td>
                   <div style="display:flex;align-items:center;justify-content:center;column-gap:10px;">
                     <a href="{{route('users.user.show',['status' => 'dealer','id' => $data->id])}}" >
@@ -110,7 +118,7 @@
                         <?php if(Auth::user()->status == 'reseller'){ ?>
                           <a href="{{route('users.user.edit',['status' => 'dealer','id' => $data->id])}}"><button class="btn btn-info mb1 bg-olive btn-xs" style="margin-bottom:4px">
                             <i class="fa fa-edit"> </i> Edit
-                          </button></a> 
+                          </button></a>
                         <?php } ?>
                         <!-- Dropdown -->
                         <?php if(Auth::user()->status != 'inhouse'){ ?>
@@ -121,7 +129,7 @@
                                 <li class="dropdown-item"><a href="{{route('users.user.show',['status' => 'dealer','id' => $data->id])}}" > <i class="la la-eye"> </i> View</a></li>
                                 <?php if(Auth::user()->status == 'reseller'){ ?>
                                   <li class="dropdown-item">
-                                    <a href="{{route('users.user.edit',['status' => 'dealer','id' => $data->id])}}"><i class="la la-edit"> </i> Edit</a> 
+                                    <a href="{{route('users.user.edit',['status' => 'dealer','id' => $data->id])}}"><i class="la la-edit"> </i> Edit</a>
                                   </li>
                                 <?php } ?>
                                 <hr style="margin-top:0">
@@ -144,10 +152,10 @@
                                 <li>
                                   <button class="dropdown-item agent-account" data-id="{{$data->id}}" data-username="{{$data->username}}" data-status="{{$data->account_disabled}}">
                                     @if($data->account_disabled==1)
-                                    <i class="las la-user-check"> </i> Active 
-                                    @else 
-                                    <i class="las la-user-alt-slash"> </i> Deactive 
-                                  @endif</button> 
+                                    <i class="las la-user-check"> </i> Active
+                                    @else
+                                    <i class="las la-user-alt-slash"> </i> Deactive
+                                  @endif</button>
                                 </li>
                               </ul>
                             </div>
@@ -214,7 +222,7 @@ $('#dealercheck').html(data);
       $('.toggleClass2').toggleClass('fa-eye fa-eye-slash');
     }
     $(document).ready(function(){
-      setTimeout(function(){ 
+      setTimeout(function(){
         $('.alert').fadeOut(); }, 3000);
     });
   </script>

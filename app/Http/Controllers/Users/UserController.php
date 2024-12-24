@@ -71,12 +71,12 @@ public function __construct()
 public function index1($status, Request $request)
 {
 
-	$manager_id = Auth::user()->manager_id;
-	$resellerid = Auth::user()->resellerid;
-	$dealerid = Auth::user()->dealerid;
+	$manager_id    = Auth::user()->manager_id;
+	$resellerid    = Auth::user()->resellerid;
+	$dealerid      = Auth::user()->dealerid;
 	$sub_dealer_id = Auth::user()->sub_dealer_id;
-	$trader_id = Auth::user()->trader_id;
-	$numShow = $request->get("countFilter");
+	$trader_id     = Auth::user()->trader_id;
+	$numShow       = $request->get("countFilter");
 	if ($numShow == "") {
 		$numShow = 10;
 	}
@@ -100,8 +100,24 @@ public function index1($status, Request $request)
 		]);
 		break;
 		case "dealer":
+
 		$resellerid = Auth::user()->resellerid;
         //
+        // if(empty($resellerid)){
+        //     $dealerCollection = UserInfo::select('user_info.*')
+        //         ->selectRaw('(SELECT COUNT(*) FROM user_status_info WHERE user_status_info.username = user_info.username AND expire_datetime > ?) as active_user_count', [now()])
+        //         ->where([
+        //             "status" => "dealer",
+        //             "manager_id" => Auth::user()->manager_id,
+        //         ])->get();
+        // }else{
+        //     $dealerCollection = UserInfo::select('user_info.*')
+        //         ->selectRaw('(SELECT COUNT(*) FROM user_status_info WHERE user_status_info.username = user_info.id AND expire_datetime > ?) as active_user_count', [now()])
+        //         ->where([
+        //             "status" => "dealer",
+        //             "resellerid" => $resellerid,
+        //         ])->get();
+        // }
         if(empty($resellerid)){
             $dealerCollection = UserInfo::where([
                 "status" => "dealer",
@@ -116,6 +132,7 @@ public function index1($status, Request $request)
       //
       $assignedNas = AssignedNas::where(["id" => Auth::user()->resellerid ])->get();
       //
+
       return view("users.reseller.view_dealer", [
        "dealerCollection" => $dealerCollection,
        "assignedNas" => $assignedNas,
