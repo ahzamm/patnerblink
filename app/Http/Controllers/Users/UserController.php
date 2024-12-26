@@ -627,6 +627,14 @@ public function expireServerSideUser(Request $request)
     ->leftJoin("user_verification", function ($join) {
         $join->on("user_verification.username", "=", "user_info.username");
     })
+    ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
+        $query->where(function ($subQuery) use ($searchFilter) {
+            $subQuery->where('user_info.username', 'LIKE', '%' . $searchFilter . '%')
+                ->orWhere('user_info.firstname', 'LIKE', '%' . $searchFilter . '%')
+                ->orWhere('user_info.lastname', 'LIKE', '%' . $searchFilter . '%')
+                ->orWhere('user_info.address', 'LIKE', '%' . $searchFilter . '%');
+        });
+    })
     ->where("user_info.status", "user")
     ->where([
         ["user_status_info.card_expire_on", ">=", date("Y-m-d", strtotime("-7 day"))],
