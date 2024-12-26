@@ -21,36 +21,44 @@ public function index(){
     return view('users.billing.upcoming_expiry');
 }
 
-public function getUpcomingExpiryData()
+public function getUpcomingExpiryData(Request $request)
 {
-    $manager_id = (empty(Auth::user()->manager_id)) ? null : Auth::user()->manager_id;
-    $resellerid = (empty(Auth::user()->resellerid)) ? null : Auth::user()->resellerid;
-    $dealerid = (empty(Auth::user()->dealerid)) ? null : Auth::user()->dealerid;
-    $sub_dealer_id = (empty(Auth::user()->sub_dealer_id)) ? null : Auth::user()->sub_dealer_id;
-    $trader_id = (empty(Auth::user()->trader_id)) ? null : Auth::user()->trader_id;
+    $manager_id = Auth::user()->manager_id ?? null;
+    $resellerid = Auth::user()->resellerid ?? null;
+    $dealerid = Auth::user()->dealerid ?? $request->contractor;
+    $sub_dealer_id = Auth::user()->sub_dealer_id ?? $request->trader;
+    $searchFilter = $request->searchFilter;
+    $dateFilter = $request->dateFilter;
 
-    $whereArray = array();
-
-    if (!empty($manager_id)) {
-        array_push($whereArray, ['user_info.manager_id', $manager_id]);
+    $whereArray = [];
+    if ($manager_id) {
+        // Explicitly specify the table name to avoid ambiguity
+        $whereArray[] = ['user_info.manager_id', $manager_id]; // Updated
     }
-    if (!empty($resellerid)) {
-        array_push($whereArray, ['user_info.resellerid', $resellerid]);
+    if ($resellerid) {
+        $whereArray[] = ['user_info.resellerid', $resellerid]; // Updated
     }
-    if (!empty($dealerid)) {
-        array_push($whereArray, ['user_info.dealerid', $dealerid]);
+    if ($dealerid) {
+        $whereArray[] = ['user_info.dealerid', $dealerid]; // Updated
     }
-    if (!empty($sub_dealer_id)) {
-        array_push($whereArray, ['user_info.sub_dealer_id', $sub_dealer_id]);
+    if ($sub_dealer_id) {
+        $whereArray[] = ['user_info.sub_dealer_id', $sub_dealer_id]; // Updated
     }
 
     $seven_days = date('Y-m-d', strtotime("+7 days", strtotime(date('Y-m-d'))));
-
     $expiry_users = DB::table('user_info')
         ->join('user_status_info', 'user_status_info.username', '=', 'user_info.username')
         ->where('user_status_info.card_expire_on', '>=', date('Y-m-d'))
         ->where('user_status_info.card_expire_on', '<=', $seven_days)
         ->where($whereArray)
+        ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
+            $query->where(function ($subQuery) use ($searchFilter) {
+                $subQuery->where('user_info.username', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.firstname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.lastname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.address', 'LIKE', '%' . $searchFilter . '%');
+            });
+        })
         ->where('user_info.status', '=', 'user')
         ->orderBy('user_status_info.card_expire_on', 'ASC')
         ->select([
