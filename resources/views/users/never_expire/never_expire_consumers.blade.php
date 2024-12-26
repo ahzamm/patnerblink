@@ -55,7 +55,7 @@
 						<div id="tab1" class="tab-pane fade active in">
 							<div class="content-body">
 								<div class="row">
-									<table id="example-1" class="table table-bordered dt-responsive" style="width: 100%">
+									<table id="example-2" class="table table-bordered dt-responsive" style="width: 100%">
 										<thead>
 											<tr>
 												<th>Serial#</th>
@@ -70,22 +70,6 @@
 											</tr>
 										</thead>
 										<tbody>
-											@php $sno=1; @endphp
-											@foreach($consumers as $value)
-											@php
-											@endphp
-											<tr>
-												<td>{{$sno++}}</td>
-												<td class="td__profileName">{{$value->username}}</td>
-												<td>{{$value->firstname}} {{$value->lastname}}</td>
-												<td>{{date('M d,Y',strtotime($value->card_charge_on))}}</td>
-												<td>{{date('M d,Y',strtotime($value->card_expire_on))}}</td>
-												<td>{{date('M Y',strtotime($value->date))}}</td>
-												<td>{{$value->dealerid}}</td>
-												<td>{{(empty($value->sub_dealer_id) ? 'N/A' : $value->sub_dealer_id)}}</td>
-												<td><a href="/users/users/user/{{$value->id}}" class="btn btn-info mb1 btn-xs" style="margin-right:4px"><i class="fa fa-edit"></i> Edit</a></td>
-											</tr>
-											@endforeach
 										</tbody>
 									</table>
 								</div>
@@ -96,7 +80,7 @@
 								<div class="row">
 									<div class="d-flex">
 										<label class="d-flex">Seach by Date: </label>
-										<input type="date" name="date" id="datefilter" class="d-flex" value="<?= date('Y-m-d');?>" >				
+										<input type="date" name="date" id="datefilter" class="d-flex" value="<?= date('Y-m-d');?>" >
 									</div>
 									<table id="errorLogTable" class="table table-bordered dt-responsive" style="width: 100%">
 										<thead>
@@ -133,7 +117,7 @@
 	});
 	function get_error(){
 		var date = $('#datefilter').val();
-		$.ajax({ 
+		$.ajax({
 			type: "POST",
 			url: "{{route('users.never_expire.errorlogs')}}",
 			data: "date="+date,
@@ -150,6 +134,23 @@
 			},
 		});
 	}
+
+    $('#example-2').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ route('users.never_expire.getConsumers') }}',
+            columns: [
+                { data: 'serial', name: 'serial' },
+                { data: 'consumer_id', name: 'consumer_id' },
+                { data: 'full_name', name: 'full_name' },
+                { data: 'last_charged_date', name: 'last_charged_date' },
+                { data: 'current_expiry_date', name: 'current_expiry_date' },
+                { data: 'never_expire_till', name: 'never_expire_till' },
+                { data: 'contractor', name: 'contractor' },
+                { data: 'trader', name: 'trader' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ]
+        });
 </script>
 @endsection
 <!-- Code Finalize -->

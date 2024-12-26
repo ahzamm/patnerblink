@@ -27,51 +27,91 @@ use App\model\Users\Tax;
 use Illuminate\Support\Facades\Route;
 use App\model\Users\Error;
 use App\MyFunctions;
+use Yajra\DataTables\Facades\DataTables;
 
 
 class NeverExpireController extends Controller{
     //
     public function index(){
-        //
-        if(!MyFunctions::check_access('Never Expire Consumers',Auth::user()->id)){
-            return 'Permission denied';      
-        }
-        //
-        $status = Auth::user()->status;
-        //
-        $manager_id = (empty(Auth::user()->manager_id)) ? null : Auth::user()->manager_id;
-        $resellerid = (empty(Auth::user()->resellerid)) ? null : Auth::user()->resellerid;
-        $dealerid = (empty(Auth::user()->dealerid)) ? null : Auth::user()->dealerid;
-        $sub_dealer_id = (empty(Auth::user()->sub_dealer_id)) ? null : Auth::user()->sub_dealer_id;
-        $trader_id = (empty(Auth::user()->trader_id)) ? null : Auth::user()->trader_id;
-        //
-        //
-        $whereArray = array();
-        //
-        if(!empty($manager_id)){
-            array_push($whereArray,array('user_info.manager_id' , $manager_id));
-        }if(!empty($resellerid)){
-            array_push($whereArray,array('user_info.resellerid' , $resellerid));
-        }if(!empty($dealerid)){
-            array_push($whereArray,array('user_info.dealerid' , $dealerid));
-        }if(!empty($sub_dealer_id)){
-            array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));  
-        }
-    ////
-        $consumers  = DB::table('user_info')
-        ->join('user_status_info', 'user_status_info.username', '=', 'user_info.username')
-        ->join('never_expire', 'user_status_info.username', '=', 'never_expire.username')
-        ->where($whereArray)
-        ->where('user_info.status','=','user')
-        ->where('never_expire.status','=','enable')
-        ->orderBy('user_status_info.card_expire_on','ASC')
-        ->select('never_expire.date','never_expire.username','user_info.firstname','user_info.lastname','user_info.dealerid','user_info.id','user_info.sub_dealer_id','user_status_info.card_charge_on','user_status_info.card_expire_on')
-        ->get();
-
-    //
-        return view('users.never_expire.never_expire_consumers' , ['consumers' => $consumers]);
-    //
+        return view('users.never_expire.never_expire_consumers');
     }
+
+
+    public function getNeverExpireUsers(Request $request)
+    {
+        if (!MyFunctions::check_access('Never Expire Consumers', Auth::user()->id)) {
+            return 'Permission denied';
+        }
+
+        $manager_id = empty(Auth::user()->manager_id) ? null : Auth::user()->manager_id;
+        $resellerid = empty(Auth::user()->resellerid) ? null : Auth::user()->resellerid;
+        $dealerid = empty(Auth::user()->dealerid) ? null : Auth::user()->dealerid;
+        $sub_dealer_id = empty(Auth::user()->sub_dealer_id) ? null : Auth::user()->sub_dealer_id;
+        $trader_id = empty(Auth::user()->trader_id) ? null : Auth::user()->trader_id;
+
+        $whereArray = [];
+
+        if (!empty($manager_id)) {
+            array_push($whereArray, ['user_info.manager_id', $manager_id]);
+        }
+        if (!empty($resellerid)) {
+            array_push($whereArray, ['user_info.resellerid', $resellerid]);
+        }
+        if (!empty($dealerid)) {
+            array_push($whereArray, ['user_info.dealerid', $dealerid]);
+        }
+        if (!empty($sub_dealer_id)) {
+            array_push($whereArray, ['user_info.sub_dealer_id', $sub_dealer_id]);
+        }
+
+        if ($request->ajax()) {
+            $consumers = DB::table('user_info')
+                ->join('user_status_info', 'user_status_info.username', '=', 'user_info.username')
+                ->join('never_expire', 'user_status_info.username', '=', 'never_expire.username')
+                ->where($whereArray)
+                ->where('user_info.status', 'user')
+                ->where('never_expire.status', 'enable')
+                ->select('never_expire.date', 'never_expire.username', 'user_info.firstname', 'user_info.lastname',
+                        'user_info.dealerid', 'user_info.id', 'user_info.sub_dealer_id', 'user_status_info.card_charge_on',
+                        'user_status_info.card_expire_on')
+                ->orderBy('user_status_info.card_expire_on', 'ASC');
+
+            return DataTables::of($consumers)
+                ->addColumn('serial', function ($row) {
+                    static $sno = 1;
+                    return $sno++;
+                })
+                ->addColumn('consumer_id', function ($row) {
+                    return $row->username;
+                })
+                ->addColumn('full_name', function ($row) {
+                    return $row->firstname . ' ' . $row->lastname;
+                })
+                ->addColumn('last_charged_date', function ($row) {
+                    return date('M d,Y', strtotime($row->card_charge_on));
+                })
+                ->addColumn('current_expiry_date', function ($row) {
+                    return date('M d,Y', strtotime($row->card_expire_on));
+                })
+                ->addColumn('never_expire_till', function ($row) {
+                    return date('M Y', strtotime($row->date));
+                })
+                ->addColumn('contractor', function ($row) {
+                    return $row->dealerid;
+                })
+                ->addColumn('trader', function ($row) {
+                    return empty($row->sub_dealer_id) ? 'N/A' : $row->sub_dealer_id;
+                })
+                ->addColumn('action', function ($row) {
+                    return '<a href="/users/users/user/'.$row->id.'" class="btn btn-info mb1 btn-xs" style="margin-right:4px"><i class="fa fa-edit"></i> Edit</a>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('users.never_expire.never_expire_consumers');
+    }
+
     //
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +125,7 @@ class NeverExpireController extends Controller{
     public function never_expire_update(request $request){
       //
         if(!MyFunctions::check_access('Never Expire Consumers',Auth::user()->id)){
-            return '<span class="badge badge-danger">Permission Denied</span>';      
+            return '<span class="badge badge-danger">Permission Denied</span>';
         }
         //
         $username = $request->get('username');
@@ -102,15 +142,15 @@ class NeverExpireController extends Controller{
             $exist = DB::table('never_expire')->where('username',$username)->first();
             //
             if($exist){
-              DB::table('never_expire')->where('username',$username)->update(['status' => $status, 'updated_at' => date('Y-m-d H:i:s'), 'date' => $date]);  
+              DB::table('never_expire')->where('username',$username)->update(['status' => $status, 'updated_at' => date('Y-m-d H:i:s'), 'date' => $date]);
           }else{
-           DB::table('never_expire')->insert(['username' => $username ,'status' => $status, 'updated_at' => date('Y-m-d H:i:s'), 'date' => $date]); 
+           DB::table('never_expire')->insert(['username' => $username ,'status' => $status, 'updated_at' => date('Y-m-d H:i:s'), 'date' => $date]);
        }
             //
        return 'Updated Successfully';
             //
    }
-        //  
+        //
 
 }
     //
@@ -157,10 +197,10 @@ public function recharge_it(request $request,$username){
         // if(!MyFunctions::check_access('Single Recharge',Auth::user()->id)){
             // $error_msg = 'Error : Permission denied.';
             // $this->create_error_log($username,$error_msg,$panelUsername);
-            // return (403, $error_msg); 
+            // return (403, $error_msg);
         // }
     if(empty($username)){
-        return ('Error : Kindly selected consumer first.');    
+        return ('Error : Kindly selected consumer first.');
     }
         //
     $panelInfo = UserInfo::where('username',$username)->where('status','user')->first();
@@ -170,18 +210,18 @@ public function recharge_it(request $request,$username){
     }
         //
     if(empty($panelInfo->sub_dealer_id)){
-        $panelStatus = 'dealer'; 
+        $panelStatus = 'dealer';
         $panelUsername = $panelInfo->dealerid;
     }else{
-        $panelStatus = 'subdealer'; 
-        $panelUsername = $panelInfo->sub_dealer_id;  
+        $panelStatus = 'subdealer';
+        $panelUsername = $panelInfo->sub_dealer_id;
     }
     //
     $contTradInfo = UserInfo::where('username',$panelUsername)->first();
     if(!MyFunctions::check_access('Never Expire Consumers',$contTradInfo->id)){
         $error_msg = 'Error : Permission Denied.';
         $this->create_error_log($username,$error_msg,$panelUsername);
-        return ($error_msg);      
+        return ($error_msg);
     }
     //
     //
@@ -192,7 +232,7 @@ public function recharge_it(request $request,$username){
     }if($freezeAccount == 'yes'){
         $error_msg = 'Error : Your account has been freezed.';
         $this->create_error_log($username,$error_msg,$panelUsername);
-        return ($error_msg);  
+        return ($error_msg);
     }
         //
     $total_wallet_deduction = 0;
@@ -266,7 +306,7 @@ public function recharge_it(request $request,$username){
 
     }
     /////// Show error when rates changed
-    if(($userInfo->company_rate == 'yes')  && ($userInfo->profile_amount != $profileRate->base_price)){ 
+    if(($userInfo->company_rate == 'yes')  && ($userInfo->profile_amount != $profileRate->base_price)){
         $error_msg = 'Error : Profile rate has been changed, kindly update '.$username.' rate once.';
         $this->create_error_log($username,$error_msg,$panelUsername);
         return ( $error_msg);
@@ -277,7 +317,7 @@ public function recharge_it(request $request,$username){
     $total_wallet_deduction += $walletDedArray['wallet_deduction'];
         //
     $userAmount = UserAmount::where('username', $panelUsername)->first();
-    if($userAmount->amount < $total_wallet_deduction){  
+    if($userAmount->amount < $total_wallet_deduction){
         $error_msg = 'Error : Sorry you do not have enough amount in your wallet.';
         $this->create_error_log($username,$error_msg,$panelUsername);
         return ( $error_msg);
@@ -301,7 +341,7 @@ public function recharge_it(request $request,$username){
     $walletDedArray = $this->check_deduction_amount($profileRate,$userInfo,$panelInfo->dealerid);
     $wallet_deduction = $walletDedArray['wallet_deduction'];
         //
-    if($wallet_deduction <= 0){ 
+    if($wallet_deduction <= 0){
         $error_msg = 'Error : Something went wrong. Deduction amount is 0 '.$username;
         $this->create_error_log($username,$error_msg,$panelUsername);
         return ( $error_msg);
@@ -312,22 +352,22 @@ public function recharge_it(request $request,$username){
     if($userAmount->amount < $wallet_deduction){
         $error_msg = 'Error : Sorry you do not have enough amount remaining in your wallet.';
         $this->create_error_log($username,$error_msg,$panelUsername);
-        return ( $error_msg); 
+        return ( $error_msg);
 
     }
         //
     $assignedNas = AssignedNas::where(["id" => $panelInfo->dealerid])->where('nas','!=',NULL)->first();
-    if(empty($assignedNas)){ 
+    if(empty($assignedNas)){
         $error_msg = 'Error : No NAS assigned.';
         $this->create_error_log($username,$error_msg,$panelUsername);
         return ( $error_msg);
     }
     $userUsualIp = UserUsualIP::where(['status' => '0', 'nas' => $assignedNas->nas])->first();
-        // 
+        //
     if(empty($userUsualIp)){
         $error_msg = 'Error : Sorry no CGN IP available.';
         $this->create_error_log($username,$error_msg,$panelUsername);
-        return ( $error_msg); 
+        return ( $error_msg);
 
     }
         //
@@ -335,16 +375,16 @@ public function recharge_it(request $request,$username){
     if($checkIPinRadreply > 0){
         $error_msg = "IP already in use ".$userUsualIp->ip;
         $this->create_error_log($username,$error_msg,$panelUsername);
-        return ( $error_msg); 
+        return ( $error_msg);
 
     }
         //
     $uniqueID = $username . str_replace('-', '', date('Y-m-d'));
     $billExist = AmountBillingInvoice::where('userid',$uniqueID)->first();
-    if($billExist){ 
+    if($billExist){
         $error_msg = 'Error : Bill of same month already exist of consumer '.$username;
         $this->create_error_log($username,$error_msg,$panelUsername);
-        return ($error_msg);  
+        return ($error_msg);
     }
         //
     $this->lets_recharge_it_now($request,$userInfo->name,$username,$wallet_deduction);
@@ -353,7 +393,7 @@ public function recharge_it(request $request,$username){
         ////
         // $url='https://api-radius.logon.com.pk/kick/user-dc-api.php?username='.$username;
         // $ch = curl_init();
-        // curl_setopt($ch, CURLOPT_URL, "$url"); 
+        // curl_setopt($ch, CURLOPT_URL, "$url");
         // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         // $result = curl_exec($ch);
         ////////////
@@ -378,11 +418,11 @@ public function lets_recharge_it_now(Request $request,$profileName,$username,$wa
     $panelInfo = UserInfo::where('username',$username)->where('status','user')->first();
         //
     if(empty($panelInfo->sub_dealer_id)){
-        $panelStatus = 'dealer'; 
+        $panelStatus = 'dealer';
         $currentUser = UserInfo::where('username',$panelInfo->dealerid)->first();
     }else{
         $panelStatus = 'subdealer';
-        $currentUser = UserInfo::where('username',$panelInfo->sub_dealer_id)->first(); 
+        $currentUser = UserInfo::where('username',$panelInfo->sub_dealer_id)->first();
     }
         //
         ////////// WALLET DEDUCTION ////////////////
@@ -396,12 +436,12 @@ public function lets_recharge_it_now(Request $request,$profileName,$username,$wa
     $charge = strtotime(date('H:i:s'));
         //
     if($charge > strtotime('11:59:59') ){
-    // 
+    //
         $time=strtotime($cur_date);
         $exp_date = date("Y-m-d", strtotime("+1 month", $time));
     //
     }else{
-    // 
+    //
         $time=strtotime($cur_date);
         $final = strtotime(date("Y-m-d", strtotime("+1 month", $time)));
         $exp_date = date("Y-m-d", strtotime("-1 day", $final));
@@ -413,7 +453,7 @@ public function lets_recharge_it_now(Request $request,$profileName,$username,$wa
     $assignedNas = AssignedNas::where(["id" => $currentUser->dealerid])->first();
     $userUsualIp = UserUsualIP::where(['status' => '0', 'nas' => $assignedNas->nas])->lockForUpdate()->first();
     if($radReply){
-            // 
+            //
         $userIpStatus = UserIPStatus::where('username',$username)->first();
             // ip will not null in user_ip_status
         if(!$userIpStatus){
@@ -423,14 +463,14 @@ public function lets_recharge_it_now(Request $request,$profileName,$username,$wa
         }
 
     }else{
-        // 
+        //
         if(!$userIpStatus){
             $userIpStatus = new UserIPStatus();
             $userIpStatus->username = $username;
         }
         //
         // lock the IP: assigned
-        $userUsualIp->status = 1; 
+        $userUsualIp->status = 1;
         //
         $ip = $userUsualIp->ip;
         //
@@ -480,7 +520,7 @@ public function lets_recharge_it_now(Request $request,$profileName,$username,$wa
     $userStatusInfo->card_charge_on = $cur_date;
     $userStatusInfo->card_expire_on = $exp_date;
     $userStatusInfo->expire_datetime = $exp_date.' 12:00:00';
-    $userStatusInfo->card_charge_by = $currentUser->username; 
+    $userStatusInfo->card_charge_by = $currentUser->username;
     $userStatusInfo->card_charge_by_ip = $request->ip();
     //updateting expired user
     $expire_user = ExpireUser::where('username' , $username)->first();
@@ -591,7 +631,7 @@ public function lets_recharge_it_now(Request $request,$profileName,$username,$wa
     $insertAmountBilling->recharge_from = 'neverExpire';
     $insertAmountBilling->nas = $assignedNas->nas;
 
-    /////////// profit 
+    /////////// profit
     if($resellerprofileRate->allow_auto_profit == 'yes'){
         //
         $rechargeControlller = new RechargeController();
@@ -671,7 +711,7 @@ public function check_deduction_amount($profileRate,$userInfo,$dealerid){
     }if($get_taxt_data->tip_adv == 'yes'){
         $tip_adv = ($tip_charges + $tip_sst) * $adv_rate_per;
     }
-    // 
+    //
     $adv_tax_u = $fll_adv + $cvas_adv + $tip_adv;
     //
     $filer_tax_rate = 0;
@@ -698,7 +738,7 @@ public function check_deduction_amount($profileRate,$userInfo,$dealerid){
         }
     }
     $filer_tax_rate = $profit_margin_dealer * $filer;
-    $wallet_deduction = $total_charges + $sst_u + $adv_tax_u + $filer_tax_rate; 
+    $wallet_deduction = $total_charges + $sst_u + $adv_tax_u + $filer_tax_rate;
     if($userInfo->company_rate != 'yes'){
         $wallet_deduction = $wallet_deduction - $profit_margin_dealer;
         $wallet_deduction = $wallet_deduction / 2 ;
@@ -729,12 +769,12 @@ public function check_deduction_amount($profileRate,$userInfo,$dealerid){
 public function create_error_log($consumer,$msg,$username){
         //
     $data = array(
-        'username' => $username, 
-        'message' => $msg, 
+        'username' => $username,
+        'message' => $msg,
         'route_name' => Route::currentRouteName(),
         'route_action' => Route::currentRouteAction(),
-        'trace' => null,       
-        'consumer' => $consumer,       
+        'trace' => null,
+        'consumer' => $consumer,
     );
     // dd($data);
     Error::create($data);
@@ -748,7 +788,7 @@ public function error_logs(request $request){
     //
     $username = Auth::user()->username;
     //
-    $errorLogs = DB::table('error_log')->where('username',$username)->where('route_name','users.get_never_expire_consumers')->where('consumer','!=', NULL)->whereDate('created_on','=',$date)->get();  
+    $errorLogs = DB::table('error_log')->where('username',$username)->where('route_name','users.get_never_expire_consumers')->where('consumer','!=', NULL)->whereDate('created_on','=',$date)->get();
    //
     foreach($errorLogs as $key => $data){
     //
@@ -782,7 +822,7 @@ public function get_modal_content(request $request){
     $nevereExpireStatus = NULL;
     $nevereExpireDate = NULL;
     $nevereExpireLastUpdatDate = NULL;
-    $neverExpireBtn = 'show'; 
+    $neverExpireBtn = 'show';
     //
     $panelOf = $user->dealerid;
     if(!empty($user->sub_dealer_id)){
@@ -798,11 +838,11 @@ public function get_modal_content(request $request){
     $invalidProfile = array('NEW','DISABLED','EXPIRED','TERMINATE');
     //
     if(in_array($user->name, $invalidProfile)){
-        return abort(403, 'Error : Invalid or no profile selected');  
+        return abort(403, 'Error : Invalid or no profile selected');
     }if(!MyFunctions::check_access('Never Expire Consumers',Auth::user()->id)){
-        return abort(403, 'Error : Access denied');  
+        return abort(403, 'Error : Access denied');
     }if($panelOf != Auth::user()->username){
-        return abort(403, 'Error : Access denied'); 
+        return abort(403, 'Error : Access denied');
     }
 
 
@@ -816,7 +856,7 @@ public function get_modal_content(request $request){
             <span class='back'>
               <span class='toggle'></span>
               <span class='label on'>Enable</span>
-              <span class='label off'>Disable</span>  
+              <span class='label off'>Disable</span>
           </span>
       </label>
   </div>

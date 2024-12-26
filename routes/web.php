@@ -1070,6 +1070,7 @@ Route::group(['prefix'=>'users'],function(){
 
     /// Never Expire Route start ///
     Route::get('/never_expire/consumers','Users\NeverExpireController@index')->name('users.never_expire.consumers');
+    Route::get('/never_expire/consumers/get-consumers','Users\NeverExpireController@getNeverExpireUsers')->name('users.never_expire.getConsumers');
 
     Route::post('/never_expire_update','Users\NeverExpireController@never_expire_update')->name('users.never_expire_update');
     Route::post('/never_expire/errorlogs','Users\NeverExpireController@error_logs')->name('users.never_expire.errorlogs');
