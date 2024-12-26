@@ -758,7 +758,7 @@ Route::group(['prefix'=>'users'],function(){
     Route::get('/getErrorLog','Users\DashboardController@getErrorLog')->name('getErrorLog');
 
     Route::get('/users/index','Users\UserController@index')->name('users.user.index');
-    Route::get('/users/expire/{status}','Users\UserController@epiredUser')->name('users.user.epiredUser');
+    Route::get('/users/expires/{status}','Users\UserController@epiredUser')->name('users.user.epiredUser');
 
     // Delete Old Consumers --------------- Start  ---------------
     Route::get('/delete-old-consumer',[DeleteOldConsumerController::class, 'index'])->name('show.users.index');

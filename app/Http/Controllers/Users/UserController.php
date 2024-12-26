@@ -70,7 +70,6 @@ public function __construct()
 
 public function index1($status, Request $request)
 {
-
 	$manager_id    = Auth::user()->manager_id;
 	$resellerid    = Auth::user()->resellerid;
 	$dealerid      = Auth::user()->dealerid;
@@ -281,7 +280,6 @@ case "expire":
 if(!MyFunctions::check_access('Expired Consumers',Auth::user()->id)){
     abort(404);
 }
-     //////////////////////////////////////////////////////
 return view("users.billing.expired_user");
 
 break;
@@ -600,216 +598,179 @@ return $html;
 }
 public function expireServerSideUser(Request $request)
 {
-	$dealerid = Auth::user()->dealerid;
-	$sub_dealer_id = Auth::user()->sub_dealer_id;
-	$status = Auth::user()->status;
+    $manager_id = Auth::user()->manager_id ?? null;
+    $resellerid = Auth::user()->resellerid ?? null;
+    $dealerid = Auth::user()->dealerid ?? $request->contractor;
+    $sub_dealer_id = Auth::user()->sub_dealer_id ?? $request->trader;
+    $searchFilter = $request->searchFilter;
+    $dateFilter = $request->dateFilter;
 
-	$dealerid = Auth::user()->dealerid;
-	$sub_dealer_id = Auth::user()->sub_dealer_id;
-	$trader_id = Auth::user()->trader_id;
-	$status = Auth::user()->status;
-
-	$date = date("Y-m-d");
-    //
-    $manager_id = (empty(Auth::user()->manager_id)) ? null : Auth::user()->manager_id;
-    $resellerid = (empty(Auth::user()->resellerid)) ? null : Auth::user()->resellerid;
-    $dealerid = (empty(Auth::user()->dealerid)) ? null : Auth::user()->dealerid;
-    $sub_dealer_id = (empty(Auth::user()->sub_dealer_id)) ? null : Auth::user()->sub_dealer_id;
-    $trader_id = (empty(Auth::user()->trader_id)) ? null : Auth::user()->trader_id;
-    //
-    $whereArray = array();
-    //
-    if(!empty($manager_id)){
-        array_push($whereArray,array('user_info.manager_id' , $manager_id));
-    }if(!empty($resellerid)){
-        array_push($whereArray,array('user_info.resellerid' , $resellerid));
-    }if(!empty($dealerid)){
-        array_push($whereArray,array('user_info.dealerid' , $dealerid));
-    }if(!empty($sub_dealer_id)){
-        array_push($whereArray,array('user_info.sub_dealer_id' , $sub_dealer_id));
+    $whereArray = [];
+    if ($manager_id) {
+        // Explicitly specify the table name to avoid ambiguity
+        $whereArray[] = ['user_info.manager_id', $manager_id]; // Updated
     }
-    //
-	//
-    $allusers = UserInfo::Join("user_status_info", function ($join) {
-     $join->on(
-        "user_status_info.username",
-        "=",
-        "user_info.username"
-    );
- })
+    if ($resellerid) {
+        $whereArray[] = ['user_info.resellerid', $resellerid]; // Updated
+    }
+    if ($dealerid) {
+        $whereArray[] = ['user_info.dealerid', $dealerid]; // Updated
+    }
+    if ($sub_dealer_id) {
+        $whereArray[] = ['user_info.sub_dealer_id', $sub_dealer_id]; // Updated
+    }
+
+    $allusers = UserInfo::where($whereArray)
+    ->Join("user_status_info", function ($join) {
+        $join->on("user_status_info.username", "=", "user_info.username");
+    })
     ->leftJoin("user_verification", function ($join) {
-     $join->on(
-        "user_verification.username",
-        "=",
-        "user_info.username"
-    );
- })
-    ->where($whereArray)
-    ->where("user_info.status","user")
+        $join->on("user_verification.username", "=", "user_info.username");
+    })
+    ->where("user_info.status", "user")
     ->where([
-     [
-        "user_status_info.card_expire_on",
-        ">=",
-        date("Y-m-d", strtotime("-7 day")),
-    ],
-])
-    ->where(
-     "user_status_info.expire_datetime",
-     "<=",
-     date("Y-m-d H:i:s")
- )
+        ["user_status_info.card_expire_on", ">=", date("Y-m-d", strtotime("-7 day"))],
+    ])
+    ->where("user_status_info.expire_datetime", "<=", date("Y-m-d H:i:s"))
     ->get([
-     "user_info.dealerid",
-     "user_info.username",
-     "user_info.profile",
-     "user_info.firstname",
-     "user_info.lastname",
-     "user_info.address",
-     "user_info.name",
-     "user_info.sub_dealer_id",
-     "user_info.trader_id",
-     "user_info.id",
-     "user_info.status",
-     "user_info.mobilephone",
-     "user_status_info.card_expire_on",
-     "user_verification.cnic",
-     "mobile_status",
-
- ]);
-//
-
+        "user_info.dealerid",
+        "user_info.username",
+        "user_info.profile",
+        "user_info.firstname",
+        "user_info.lastname",
+        "user_info.address",
+        "user_info.name",
+        "user_info.sub_dealer_id",
+        "user_info.trader_id",
+        "user_info.id",
+        "user_info.status",
+        "user_info.mobilephone",
+        "user_status_info.card_expire_on",
+        "user_verification.cnic",
+        "user_verification.mobile_status", // Update to get mobile_status from user_verification table
+    ]);
 
 
     $sno = 1;
     $pro_groupname = "";
     $allData = [];
     foreach ($allusers as $data) {
-      $allData[] = $data;
-// dd($allData);
-  }
-
-  return Datatables::of($allData)
-  ->addColumn("action", function ($row) {
-      $html =
-      '<a href="/users/user/user?id=' .
-      $row->id .
-      '" class="btn btn-primary btn-xs"><i class="fa fa-eye"></i>View</a> ';
-		//
-
-      if ($row->profile == "DISABLED") {
-         $html .=
-         '<a href="#" class="btn btn-danger btn-xs disabled mb1 bg-olive btn-xs" style="margin-right:4px"><i class="fa fa-ban"></i> DISABLED</a>';
-     } else {
-        if(Auth::user()->status == 'dealer' || Auth::user()->status == 'subdealer' ){
-           $html .=
-           '<a href="/users/single/' .
-           $row->id .
-           '" class="btn btn-success btn-xs mb1 btn-xs" style="margin-right: 4px;"><i class="fa fa-recycle"></i>Recharge</a>';
-       }
-   }
-     //
-   if(Auth::user()->status != 'inhouse'){
-
-       $html .=
-       '<div class="dropdown action-dropdown"><button class="btn dropdown-toggle action-dropdown_toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button><div class="dropdown-menu action-dropdown_menu"><ul><li class="dropdown-item"><a href="/users/user/user?id=' .$row->id .'"><i class="la la-eye"></i> View</a> </li><li class="dropdown-item"><a href="/users/users/user/' .$row->id .'"><i class="la la-edit"></i> Edit</a></li><hr style="margin-top:0">';
-
-
-       $csrf = csrf_token();
-       if (@$row->cnic != "" || @$row->cnic != null) {
-           $html .=
-           '<li class="dropdown-item"><a href="#" disabled><i class="la la-check"></i> CNIC <span style="color:darkgreen">(Verified)</span></a></li>';
-       } else {
-           $html .=
-           '<li class="dropdown-item"><form action="/users/nicVerify" method="POST" style="display:inline">
-           <input type="hidden" name="_token" value="' .
-           $csrf .
-           '">
-           <input type="hidden" name="username" id="username" value="' .
-           $row->username .
-           '">
-           <button type="submit"><i class="las la-exclamation-triangle"></i> CNIC <span style="color:red">(Not verified)</span></button>
-           </form></li>';
-       }
-       if (@$row->mobile_status != 0 || @$row->mobile_status != null) {
-           $html .=
-           '<li class="dropdown-item"><a href="#" disabled><i class="la la-check"></i> Mobile <span style="color:darkgreen">(Verified)</span></a></li>';
-       } else {
-           $html .=
-           '<li class="dropdown-item"><form action="/users/smsverify" method="POST" style="display:inline">
-           <input type="hidden" name="_token" value="' .
-           $csrf .
-           '">
-           <input type="hidden" name="username" id="username" value="' .
-           $row->username .
-           '">
-           <button type="submit"><i class="las la-exclamation-triangle"></i> MOBILE <span style="color:red">(Not verified)</span></button>
-           </form></li>';
-       }
-       //
-       if(MyFunctions::check_access('Never Expire Consumers',Auth::user()->id) ){
-        $html .= '<li class="dropdown-item">
-        <a href="#" class="nexpmodal" data-username="'.$row->username.'"><i class="la la-exclamation"></i> Never Expire</a>
-        </li>';
+        $allData[] = $data;
     }
-       //
-    $html .= '</ul></div></div>';
-     //
+
+    return Datatables::of($allData)
+        ->addColumn("action", function ($row) {
+            $html =
+                '<a href="/users/user/user?id=' . $row->id . '" class="btn btn-primary btn-xs"><i class="fa fa-eye"></i>View</a> ';
+
+            if ($row->profile == "DISABLED") {
+                $html .=
+                    '<a href="#" class="btn btn-danger btn-xs disabled mb1 bg-olive btn-xs" style="margin-right:4px"><i class="fa fa-ban"></i> DISABLED</a>';
+            } else {
+                if (Auth::user()->status == 'dealer' || Auth::user()->status == 'subdealer') {
+                    $html .=
+                        '<a href="/users/single/' . $row->id . '" class="btn btn-success btn-xs mb1 btn-xs" style="margin-right: 4px;"><i class="fa fa-recycle"></i>Recharge</a>';
+                }
+            }
+
+            if (Auth::user()->status != 'inhouse') {
+                $html .=
+                    '<div class="dropdown action-dropdown"><button class="btn dropdown-toggle action-dropdown_toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button><div class="dropdown-menu action-dropdown_menu"><ul><li class="dropdown-item"><a href="/users/user/user?id=' . $row->id . '"><i class="la la-eye"></i> View</a> </li><li class="dropdown-item"><a href="/users/users/user/' . $row->id . '"><i class="la la-edit"></i> Edit</a></li><hr style="margin-top:0">';
+                $csrf = csrf_token();
+                if (@$row->cnic != "" || @$row->cnic != null) {
+                    $html .=
+                        '<li class="dropdown-item"><a href="#" disabled><i class="la la-check"></i> CNIC <span style="color:darkgreen">(Verified)</span></a></li>';
+                } else {
+                    $html .=
+                        '<li class="dropdown-item"><form action="/users/nicVerify" method="POST" style="display:inline">
+                        <input type="hidden" name="_token" value="' .
+                        $csrf .
+                        '">
+                        <input type="hidden" name="username" id="username" value="' .
+                        $row->username .
+                        '">
+                        <button type="submit"><i class="las la-exclamation-triangle"></i> CNIC <span style="color:red">(Not verified)</span></button>
+                        </form></li>';
+                }
+
+                if (@$row->mobile_status != 0 || @$row->mobile_status != null) {
+                    $html .=
+                        '<li class="dropdown-item"><a href="#" disabled><i class="la la-check"></i> Mobile <span style="color:darkgreen">(Verified)</span></a></li>';
+                } else {
+                    $html .=
+                        '<li class="dropdown-item"><form action="/users/smsverify" method="POST" style="display:inline">
+                        <input type="hidden" name="_token" value="' .
+                        $csrf .
+                        '">
+                        <input type="hidden" name="username" id="username" value="' .
+                        $row->username .
+                        '">
+                        <button type="submit"><i class="las la-exclamation-triangle"></i> MOBILE <span style="color:red">(Not verified)</span></button>
+                        </form></li>';
+                }
+
+                if (MyFunctions::check_access('Never Expire Consumers', Auth::user()->id)) {
+                    $html .= '<li class="dropdown-item">
+                    <a href="#" class="nexpmodal" data-username="' . $row->username . '"><i class="la la-exclamation"></i> Never Expire</a>
+                    </li>';
+                }
+
+                $html .= '</ul></div></div>';
+            }
+
+            return $html;
+        })
+        ->addColumn("fullname", function ($row) {
+            return $row->firstname . " " . $row->lastname;
+        })
+        ->addColumn("subdealerid", function ($row) {
+            return (empty($row->sub_dealer_id)) ? 'N/A' : $row->sub_dealer_id;
+        })
+        ->addColumn("expireDate", function ($row) {
+            return date('M d,Y', strtotime($row->card_expire_on));
+        })
+        ->editColumn("action_delete", function ($row) {
+            $csrf = csrf_token();
+            if (@$row->cnic != "" || @$row->cnic != null) {
+                $html =
+                    '<a href="#" class="btn btn-success btn-xs" style="margin:5px;" disabled><i class="fa fa-check"></i>CNIC</a>';
+            } else {
+                $html =
+                    ' <form action="/users/nicVerify" method="POST" style="display:inline">
+                    <input type="hidden" name="_token" value="' .
+                    $csrf .
+                    '">
+                    <input type="hidden" name="username" id="username" value="' .
+                    $row->username .
+                    '">
+                    <button type="submit"  class="btn btn-danger btn-xs"><i class="las la-exclamation-triangle"></i>CNIC</button>
+                    </form>';
+            }
+            if (@$row->mobile_status != 0 || @$row->mobile_status != null) {
+                $html .=
+                    '<a href="#" class="btn btn-info btn-xs" disabled><i class="fa fa-check"></i>Mobile</a>';
+            } else {
+                $html .=
+                    '<form action="/users/smsverify" method="POST" style="display:inline">
+                    <input type="hidden" name="_token" value="' .
+                    $csrf .
+                    '">
+                    <input type="hidden" name="username" id="username" value="' .
+                    $row->username .
+                    '">
+                    <button type="submit"  class="btn btn-danger btn-xs"><i class="las la-exclamation-triangle"></i>MOBILE</button>
+                    </form>';
+            }
+            return $html;
+        })
+        ->rawColumns([
+            "action_delete" => "action_delete",
+            "action" => "action",
+        ])
+        ->addIndexColumn()
+        ->make(true);
 }
-return $html;
-})
-  ->addColumn("fullname", function ($row) {
-      return $row->firstname . " " . $row->lastname;
-  })
-  ->addColumn("subdealerid", function ($row) {
-     return (empty($row->sub_dealer_id)) ? 'N/A': $row->sub_dealer_id;
-        // return $row->sub_dealer_id;
- })
-  ->addColumn("expireDate", function ($row) {
-    return date('M d,Y',strtotime($row->card_expire_on));
-})
-  ->editColumn("action_delete", function ($row) {
-      $csrf = csrf_token();
-      if (@$row->cnic != "" || @$row->cnic != null) {
-         $html =
-         '<a href="#" class="btn btn-success btn-xs" style="margin:5px;" disabled><i class="fa fa-check"></i>CNIC</a>';
-     } else {
-// $html = "<a href='#' onclick=nicVerify('".$row->username."') class='btn btn-danger btn-xs' style='margin:5px;border-radius:7px;'><i class='fa fa-close'></i>CNIC</a>";
-         $html =
-         ' <form action="/users/nicVerify" method="POST" style="display:inline">
-         <input type="hidden" name="_token" value="' .
-         $csrf .
-         '">
-         <input type="hidden" name="username" id="username" value="' .
-         $row->username .
-         '">
-         <button type="submit"  class="btn btn-danger btn-xs"><i class="las la-exclamation-triangle"></i>CNIC</button>
-         </form>';
-     }
-     if (@$row->mobile_status != 0 || @$row->mobile_status != null) {
-         $html .=
-         '<a href="#" class="btn btn-info btn-xs" disabled><i class="fa fa-check"></i>Mobile</a>';
-     } else {
-         $html .=
-         '<form action="/users/smsverify" method="POST" style="display:inline">
-         <input type="hidden" name="_token" value="' .
-         $csrf .
-         '">
-         <input type="hidden" name="username" id="username" value="' .
-         $row->username .
-         '">
-         <button type="submit"  class="btn btn-danger btn-xs"><i class="las la-exclamation-triangle"></i>MOBILE</button>
-         </form>';
-// $html .= '<a href="#" class="btn btn-danger btn-xs" style="border-radius:7px;"><i class="fa fa-close"></i>Mobile</a>';
-     }
-     return $html;
- })
-  ->rawColumns([
-      "action_delete" => "action_delete",
-      "action" => "action",
-  ])
-  ->addIndexColumn()
-  ->make(true);
-}
+
 public function terminateServerSideUser(Request $request)
 {
 // -----------------------------------------------------------------------------
@@ -1238,6 +1199,7 @@ public function verifySms($username)
 //Aslam Work
 public function epiredUser($status)
 {
+    dd('sdf');
 	$dealerid = Auth::user()->dealerid;
 	$sub_dealer_id = Auth::user()->sub_dealer_id;
 	$status = Auth::user()->status;
@@ -3171,6 +3133,8 @@ $this->validate($request, [
 //
 $domainManagement = Domain::where('resellerid',$request->get("resellerid"))->first();
 //
+
+$user = new UserInfo();
 $user->username = $request->get("username");
 $user->manager_id = $request->get("manager_id");
 $user->resellerid = $request->get("resellerid");
@@ -6146,6 +6110,8 @@ $profilePrefix = Domain::where('resellerid', $user->resellerid)->first();
                        "status" => "plan",
                    ]);
                 } else {
+
+                    $changeplan = new ChangePlan();
                     $changeplan->username = $username;
                     $changeplan->dealerid = $userdata->dealerid;
                     $changeplan->sub_dealer_id = $userdata->sub_dealer_id;
