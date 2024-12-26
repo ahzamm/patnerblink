@@ -59,23 +59,24 @@ class AboController extends Controller
             0 => 'radcheck.username',
             1 => 'radcheck.username',
             2 => 'radacct.acctstoptime',
-            3 => 'session_time',
+            // 3 => 'session_time',
             4 => 'radcheck.sub_dealer_id',
         ];
 
         $orderColumn = $columnMap[$orderColumnIndex] ?? 'radcheck.username';
 
         $query = RadCheck::where('radcheck.status', 'user')
-            ->where('radcheck.attribute', 'Cleartext-Password')
-            ->where($whereArray)
-            ->whereNotIn('radcheck.username', function ($query) {
-                $query->select('radacct.username')->from('radacct')->whereNull('radacct.acctstoptime');
-            })
-            ->join('radusergroup', 'radcheck.username', '=', 'radusergroup.username')
-            ->whereNotIn('radusergroup.groupname', ['NEW', 'DISABLED', 'EXPIRED', 'TERMINATE'])
-            ->select('radcheck.username')
-            ->skip($start)
-            ->take($length);
+                ->where('radcheck.attribute', 'Cleartext-Password')
+                ->where($whereArray)
+                ->whereNotIn('radcheck.username', function ($query) {
+                    $query->select('radacct.username')->from('radacct')->whereNull('radacct.acctstoptime');
+                })
+                ->join('radusergroup', 'radcheck.username', '=', 'radusergroup.username')
+                ->leftJoin('radacct', 'radcheck.username', '=', 'radacct.username') // Join radacct table
+                ->whereNotIn('radusergroup.groupname', ['NEW', 'DISABLED', 'EXPIRED', 'TERMINATE'])
+                ->select('radcheck.username', 'radacct.acctstoptime') // Select radacct.acctstoptime
+                ->skip($start)
+                ->take($length);
 
         if ($searchValue) {
             $query->where('radcheck.username', 'like', '%' . $searchValue . '%');
