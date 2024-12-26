@@ -59,7 +59,6 @@ class AboController extends Controller
             0 => 'radcheck.username',
             1 => 'radcheck.username',
             2 => 'radacct.acctstoptime',
-            // 3 => 'session_time',
             4 => 'radcheck.sub_dealer_id',
         ];
 
