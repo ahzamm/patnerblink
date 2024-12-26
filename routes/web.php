@@ -866,6 +866,7 @@ Route::group(['prefix'=>'users'],function(){
     Route::post('/reset','Users\UpdatePasswordController@reSetPass')->name('users.billing.reset');
 
     Route::get('/error_log','Users\LoginErrorController@index')->name('users.billing.error_log')->middleware('useraccessallow');
+   Route::get('/get_error_log','Users\LoginErrorController@getErrorLogs')->name('admin.users.get_error_log');
 
     Route::get('/upcomingexpiry','Users\UpComingExpiryController@index')->name('users.billing.upcoming_expiry')->middleware('useraccessallow');
     Route::post('ajax/search','Users\SearchEngineController@index')->name('users.search.ajax.post');
