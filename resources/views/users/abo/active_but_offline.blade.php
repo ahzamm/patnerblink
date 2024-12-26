@@ -41,9 +41,9 @@
             <th>Consumer (ID)</th>
             <th>Last Login (Date & Time)</th>
             <th>Last Login Duration</th>
-            @php if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support'){ @endphp
-            <th>Contrator & Trader</th>
-            @php } @endphp
+            @if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support')
+                <th>Contractor & Trader</th>
+            @endif
             <th>Action</th>
           </tr>
           <tr>
@@ -57,53 +57,6 @@
             <td class="hideSelect"></td>
           </tr>
         </thead>
-        <tbody>
-          <?php
-          $count=1;
-          foreach($users as $data){
-            $session_time = '';
-            $lastLogin_datetime = 'Not login yet';
-            $hourdiff = '';
-            $lastLoginDetail = App\model\Users\RadAcct::where('username',$data->username)->orderBy('radacctid','DESC')->first();
-            if($lastLoginDetail){
-              $datetime1=new DateTime($lastLoginDetail->acctstoptime);
-              $datetime2=new DateTime("now");
-              $interval=$datetime1->diff($datetime2);
-              $Day=$interval->format('%dD' );
-              if($Day>1)
-              {
-                $session_time = $interval->format('%d Days');
-              }
-              $lastLogin_datetime = $lastLoginDetail->acctstoptime;
-              $now = date('Y-m-d H:i:s');
-              $hourdiff = round((strtotime($now) - strtotime($lastLoginDetail->acctstoptime))/3600, 1);
-            }
-            if( $hourdiff > 24 || empty($lastLoginDetail)){
-              $userDetail = App\model\Users\UserInfo::where(['username' => $data->username])->select('sub_dealer_id')->first();
-              $sub_dealer_id = $userDetail->sub_dealer_id;
-              if($sub_dealer_id == ''){
-                $sub_dealer_id='My Users';
-              }
-              ?>
-              <tr>
-                <td>{{$count++}}</td>
-                <td class="td__profileName">{{$data->username}}</td>
-                <?php if($lastLogin_datetime == 'Not login yet'){?>
-                  <td>{{$lastLogin_datetime}}</td>
-                <?php }else{?>
-                  <td>{{date('M d,Y H:i:s',strtotime($lastLogin_datetime))}}</td>
-                <?php }?>
-                <td><span style="color:red">{{(empty($session_time)) ? 'N/A' : $session_time }}</span></td>
-                @php if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support'){ @endphp
-                <td>{{$sub_dealer_id}}</td>
-                @php } @endphp
-                <td><button class="btn btn-sm btn-primary" onclick="showDetails('{{$data->username}}')"><i class="fa fa-eye"></i> Check Detail</button></td>
-              </tr>
-              <?php 
-            } 
-          } 
-          ?>
-        </tbody>
       </table>
     </section>
   </section>
@@ -169,8 +122,29 @@ $('#susDetails').modal('show');
 </script>
 <script type="text/javascript">
   $(document).ready(function() {
-    var table = $('#example-2').DataTable({
-      orderCellsTop: true
+    // var table = $('#example-2').DataTable({
+    //   orderCellsTop: true
+    // });
+
+    $('#example-2').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('fetch.abo.user') }}", // URL to the fetch_users method
+            type: 'GET',
+            data: function(d) {
+                d._token = "{{ csrf_token() }}"; // CSRF token if required
+            }
+        },
+        columns: [
+            { data: 'count' },
+            { data: 'username' },
+            { data: 'last_login' },
+            { data: 'session_time' },
+            { data: 'sub_dealer_id' },
+            { data: 'action', orderable: false, searchable: false }
+        ],
+        order: [[1, 'asc']], // Default sorting on the Username column
     });
 // if($(window).width() > 1024){
   $("#example-2 thead td").each( function ( i ) {

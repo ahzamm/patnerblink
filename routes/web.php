@@ -1101,6 +1101,7 @@ Route::group(['prefix'=>'users'],function(){
 
      /// ABO Route ///
     Route::get('/abo', 'Users\AboController@index')->name('users.abo')->middleware('useraccessallow');
+    Route::get('/fetch-abo-user', 'Users\AboController@fetchABOUsers')->name('fetch.abo.user')->middleware('useraccessallow');
     Route::get('/susUserDetails', 'Users\AboController@susUserDetails')->name('users.susUserDetails');
 
      ///  ApprovedNewUserController Code Route ///

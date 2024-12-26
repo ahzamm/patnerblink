@@ -22,37 +22,125 @@ class AboController extends Controller
 public function __construct()
 {}
 public function index(){
-	$status = Auth::user()->status;
-	//
-	$manager_id = (empty(Auth::user()->manager_id)) ? null : Auth::user()->manager_id;
-	$resellerid = (empty(Auth::user()->resellerid)) ? null : Auth::user()->resellerid;
-	$dealerid = (empty(Auth::user()->dealerid)) ? null : Auth::user()->dealerid;
-	$sub_dealer_id = (empty(Auth::user()->sub_dealer_id)) ? null : Auth::user()->sub_dealer_id;
-	$trader_id = (empty(Auth::user()->trader_id)) ? null : Auth::user()->trader_id;
-        //
-        //
-	$whereArray = array();
-    //
-	if(!empty($manager_id)){
-		array_push($whereArray,array('radcheck.manager_id' , $manager_id));
-	}if(!empty($resellerid)){
-		array_push($whereArray,array('radcheck.resellerid' , $resellerid));
-	}if(!empty($dealerid)){
-		array_push($whereArray,array('radcheck.dealerid' , $dealerid));
-	}if(!empty($sub_dealer_id)){
-		array_push($whereArray,array('radcheck.sub_dealer_id' , $sub_dealer_id)); 
-	}
-    //
+	return view('users.abo.active_but_offline');
+}
 
-	$users = RadCheck::where('status','user')->where('attribute','Cleartext-Password')->where($whereArray)->whereNotIn('radcheck.username', function($query){
-		$query->select('radacct.username')
-		->from('radacct')
-		->where('radacct.acctstoptime',NULL);
-	})
-	->join('radusergroup','radcheck.username','radusergroup.username')->whereNotIn('radusergroup.groupname',['NEW','DISABLED','EXPIRED','TERMINATE'])
-	->select('radcheck.username')->get();
-    //
-	return view('users.abo.active_but_offline',compact('users'));
+public function fetchAboUsers(Request $request){
+    $status = Auth::user()->status;
+    $manager_id = Auth::user()->manager_id ?? null;
+    $resellerid = Auth::user()->resellerid ?? null;
+    $dealerid = Auth::user()->dealerid ?? null;
+    $sub_dealer_id = Auth::user()->sub_dealer_id ?? null;
+    $trader_id = Auth::user()->trader_id ?? null;
+
+    // Build the dynamic where condition
+    $whereArray = [];
+
+    if (!empty($manager_id)) {
+        $whereArray[] = ['radcheck.manager_id', $manager_id];
+    }
+    if (!empty($resellerid)) {
+        $whereArray[] = ['radcheck.resellerid', $resellerid];
+    }
+    if (!empty($dealerid)) {
+        $whereArray[] = ['radcheck.dealerid', $dealerid];
+    }
+    if (!empty($sub_dealer_id)) {
+        $whereArray[] = ['radcheck.sub_dealer_id', $sub_dealer_id];
+    }
+
+    $draw = $request->input('draw');
+    $start = $request->input('start');
+    $length = $request->input('length');
+    $searchValue = $request->input('search.value', '');
+    $orderColumnIndex = $request->input('order.0.column', 0);
+    $orderDir = $request->input('order.0.dir', 'asc');
+
+    $columnMap = [
+        0 => 'radcheck.username',
+        1 => 'radcheck.username',
+        2 => 'radacct.acctstoptime',
+        3 => 'session_time',
+        4 => 'radcheck.sub_dealer_id',
+    ];
+
+    $orderColumn = $columnMap[$orderColumnIndex] ?? 'radcheck.username';
+
+    // Query to fetch user data
+    $query = RadCheck::where('radcheck.status', 'user')
+        ->where('radcheck.attribute', 'Cleartext-Password')
+        ->where($whereArray)
+        ->whereNotIn('radcheck.username', function($query) {
+            $query->select('radacct.username')
+                ->from('radacct')
+                ->whereNull('radacct.acctstoptime');
+        })
+        ->join('radusergroup', 'radcheck.username', '=', 'radusergroup.username')
+        ->whereNotIn('radusergroup.groupname', ['NEW', 'DISABLED', 'EXPIRED', 'TERMINATE'])
+        ->select('radcheck.username')
+        ->skip($start)
+        ->take($length);
+
+    if ($searchValue) {
+        $query->where('radcheck.username', 'like', '%' . $searchValue . '%');
+    }
+
+    if ($orderColumn) {
+        $query->orderBy($orderColumn, $orderDir);
+    }
+
+    // Get total records count
+    $totalRecords = RadCheck::where('radcheck.status', 'user')->count();
+
+    // Get filtered records count
+    $totalFilteredRecords = $query->count();
+
+    // Get the users
+    $users = $query->get();
+
+    $data = [];
+    $count = $start + 1;
+
+    foreach ($users as $user) {
+        $lastLoginDetail = RadAcct::where('username', $user->username)->orderBy('radacctid', 'DESC')->first();
+        $lastLogin_datetime = 'Not logged in yet';
+        $session_time = '';
+        $hourdiff = '';
+
+        if ($lastLoginDetail) {
+            $datetime1 = new DateTime($lastLoginDetail->acctstoptime);
+            $datetime2 = new DateTime("now");
+            $interval = $datetime1->diff($datetime2);
+            $Day = $interval->format('%dD');
+            if ($Day > 1) {
+                $session_time = $interval->format('%d Days');
+            }
+            $lastLogin_datetime = $lastLoginDetail->acctstoptime;
+            $hourdiff = round((strtotime('now') - strtotime($lastLoginDetail->acctstoptime)) / 3600, 1);
+        }
+
+        if ($hourdiff > 24 || empty($lastLoginDetail)) {
+            $userDetail = UserInfo::where('username', $user->username)->first();
+            $sub_dealer_id = $userDetail->sub_dealer_id ?? 'My Users';
+
+            $data[] = [
+                'DT_RowId' => 'row_' . $user->username,
+                'count' => $count++,
+                'username' => $user->username,
+                'last_login' => ($lastLogin_datetime == 'Not logged in yet') ? $lastLogin_datetime : date('M d,Y H:i:s', strtotime($lastLogin_datetime)),
+                'session_time' => $session_time ?: 'N/A',
+                'sub_dealer_id' => $sub_dealer_id,
+                'action' => '<button class="btn btn-sm btn-primary" onclick="showDetails(\'' . $user->username . '\')"><i class="fa fa-eye"></i> Check Detail</button>'
+            ];
+        }
+    }
+
+    return response()->json([
+        'draw' => intval($draw),
+        'recordsTotal' => $totalRecords,
+        'recordsFiltered' => $totalFilteredRecords,
+        'data' => $data
+    ]);
 }
 public function susUserDetails(Request $request)
 {
@@ -75,7 +163,7 @@ public function mytestfunction(){
     dd($User);
 
 
-} 
+}
 
 
 }
