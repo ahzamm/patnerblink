@@ -782,37 +782,53 @@ public function expireServerSideUser(Request $request)
 public function terminateServerSideUser(Request $request)
 {
 // -----------------------------------------------------------------------------
-	$dealerid = Auth::user()->dealerid;
-	$sub_dealer_id = Auth::user()->sub_dealer_id;
 	$status = Auth::user()->status;
-	$dealerid = Auth::user()->dealerid;
-	$sub_dealer_id = Auth::user()->sub_dealer_id;
 	$trader_id = Auth::user()->trader_id;
 	$status = Auth::user()->status;
 	$date = date("Y-m-d");
+    $manager_id = Auth::user()->manager_id ?? null;
+    $resellerid = Auth::user()->resellerid ?? null;
+    $dealerid = Auth::user()->dealerid ?? $request->contractor;
+    $sub_dealer_id = Auth::user()->sub_dealer_id ?? $request->trader;
+    $searchFilter = $request->searchFilter;
+    $dateFilter = $request->dateFilter;
+
+    $whereArray = [];
+    if ($manager_id) {
+        $whereArray[] = ['user_info.manager_id', $manager_id];
+    }
+    if ($resellerid) {
+        $whereArray[] = ['user_info.resellerid', $resellerid];
+    }
+    if ($dealerid) {
+        $whereArray[] = ['user_info.dealerid', $dealerid];
+    }
+    if ($sub_dealer_id) {
+        $whereArray[] = ['user_info.sub_dealer_id', $sub_dealer_id];
+    }
+
+
 	if ($status == "dealer") {
+
 		$allusers = UserInfo::Join("user_status_info", function ($join) {
-			$join->on(
-				"user_status_info.username",
-				"=",
-				"user_info.username"
-			);
+			$join->on("user_status_info.username","=","user_info.username");
 		})
 		->leftJoin("user_verification", function ($join) {
-			$join->on(
-				"user_verification.username",
-				"=",
-				"user_info.username"
-			);
+			$join->on("user_verification.username","=","user_info.username");
 		})
+        ->where($whereArray)
+        ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
+            $query->where(function ($subQuery) use ($searchFilter) {
+                $subQuery->where('user_info.username', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.firstname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.lastname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.address', 'LIKE', '%' . $searchFilter . '%');
+            });
+        })
 		->where("user_info.dealerid", "=", $dealerid)
 		->where("user_info.status", "=", "user")
 		->where([
-			[
-				"user_status_info.card_expire_on",
-				"<",
-				date("Y-m-d", strtotime("-7 day")),
-			],
+			["user_status_info.card_expire_on","<",date("Y-m-d", strtotime("-7 day")),],
 			["user_status_info.card_expire_on", "!=", "1990-01-01"],
 		])
 		->get([
@@ -830,29 +846,28 @@ public function terminateServerSideUser(Request $request)
 			"user_verification.cnic",
 			"mobile_status",
 		]);
+
 	} elseif ($status == "subdealer") {
+
 		$allusers = UserInfo::Join("user_status_info", function ($join) {
-			$join->on(
-				"user_status_info.username",
-				"=",
-				"user_info.username"
-			);
+			$join->on("user_status_info.username","=","user_info.username");
 		})
 		->leftJoin("user_verification", function ($join) {
-			$join->on(
-				"user_verification.username",
-				"=",
-				"user_info.username"
-			);
+			$join->on("user_verification.username","=","user_info.username");
 		})
+        ->where($whereArray)
+        ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
+            $query->where(function ($subQuery) use ($searchFilter) {
+                $subQuery->where('user_info.username', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.firstname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.lastname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.address', 'LIKE', '%' . $searchFilter . '%');
+            });
+        })
 		->where("user_info.status", "=", "user")
 		->where("user_info.sub_dealer_id", "=", $sub_dealer_id)
 		->where([
-			[
-				"user_status_info.card_expire_on",
-				"<",
-				date("Y-m-d", strtotime("-7 day")),
-			],
+			["user_status_info.card_expire_on","<",date("Y-m-d", strtotime("-7 day")),],
 			["user_status_info.card_expire_on", "!=", "1990-01-01"],
 		])
 		->get([
@@ -871,28 +886,26 @@ public function terminateServerSideUser(Request $request)
 			"mobile_status",
 		]);
 	} elseif ($status == "trader") {
+
 		$allusers = UserInfo::Join("user_status_info", function ($join) {
-			$join->on(
-				"user_status_info.username",
-				"=",
-				"user_info.username"
-			);
+			$join->on("user_status_info.username","=","user_info.username");
 		})
 		->leftJoin("user_verification", function ($join) {
-			$join->on(
-				"user_verification.username",
-				"=",
-				"user_info.username"
-			);
+			$join->on("user_verification.username","=","user_info.username");
 		})
+        ->where($whereArray)
+        ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
+            $query->where(function ($subQuery) use ($searchFilter) {
+                $subQuery->where('user_info.username', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.firstname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.lastname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.address', 'LIKE', '%' . $searchFilter . '%');
+            });
+        })
 		->where("user_info.status", "=", "user")
 		->where("user_info.trader_id", "=", $trader_id)
 		->where([
-			[
-				"user_status_info.card_expire_on",
-				"<",
-				date("Y-m-d", strtotime("-7 day")),
-			],
+			["user_status_info.card_expire_on","<",date("Y-m-d", strtotime("-7 day")),],
 			["user_status_info.card_expire_on", "!=", "1990-01-01"],
 		])
 		->get([
@@ -911,28 +924,26 @@ public function terminateServerSideUser(Request $request)
 			"mobile_status",
 		]);
 	} elseif ($status == "inhouse" && $sub_dealer_id != "") {
+
 		$allusers = UserInfo::Join("user_status_info", function ($join) {
-			$join->on(
-				"user_status_info.username",
-				"=",
-				"user_info.username"
-			);
+			$join->on("user_status_info.username","=","user_info.username");
 		})
 		->leftJoin("user_verification", function ($join) {
-			$join->on(
-				"user_verification.username",
-				"=",
-				"user_info.username"
-			);
+			$join->on("user_verification.username","=","user_info.username");
 		})
+        ->where($whereArray)
+        ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
+            $query->where(function ($subQuery) use ($searchFilter) {
+                $subQuery->where('user_info.username', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.firstname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.lastname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.address', 'LIKE', '%' . $searchFilter . '%');
+            });
+        })
 		->where("user_info.status", "=", "user")
 		->where("user_info.sub_dealer_id", "=", $sub_dealer_id)
 		->where([
-			[
-				"user_status_info.card_expire_on",
-				"<",
-				date("Y-m-d", strtotime("-7 day")),
-			],
+			["user_status_info.card_expire_on","<",date("Y-m-d", strtotime("-7 day")),],
 			["user_status_info.card_expire_on", "!=", "1990-01-01"],
 		])
 		->get([
@@ -951,28 +962,26 @@ public function terminateServerSideUser(Request $request)
 			"mobile_status",
 		]);
 	} elseif ($status == "inhouse" && $dealerid == Auth::user()->dealerid) {
+
 		$allusers = UserInfo::Join("user_status_info", function ($join) {
-			$join->on(
-				"user_status_info.username",
-				"=",
-				"user_info.username"
-			);
+			$join->on("user_status_info.username","=","user_info.username");
 		})
 		->leftJoin("user_verification", function ($join) {
-			$join->on(
-				"user_verification.username",
-				"=",
-				"user_info.username"
-			);
+			$join->on("user_verification.username","=","user_info.username");
 		})
+        ->where($whereArray)
+        ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
+            $query->where(function ($subQuery) use ($searchFilter) {
+                $subQuery->where('user_info.username', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.firstname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.lastname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.address', 'LIKE', '%' . $searchFilter . '%');
+            });
+        })
 		->where("user_info.status", "=", "user")
 		->where("user_info.dealerid", "=", $dealerid)
 		->where([
-			[
-				"user_status_info.card_expire_on",
-				"<",
-				date("Y-m-d", strtotime("-7 day")),
-			],
+			["user_status_info.card_expire_on","<",date("Y-m-d", strtotime("-7 day")),],
 			["user_status_info.card_expire_on", "!=", "1990-01-01"],
 		])
 		->get([
@@ -1005,10 +1014,6 @@ public function terminateServerSideUser(Request $request)
 		'<a href="/users/user/user?id=' .
 		$row->id .
 		'" class="btn btn-primary btn-xs"><i class="fa fa-eye"></i> View</a> ';
-		// $html .=
-		// '<a href="/users/users/user/' .
-		// $row->id .
-		// '" class="btn btn-info mb1 bg-olive btn-xs"><i class="fa fa-edit"></i> Edit</a>';
 		if ($row->profile == "DISABLED") {
 			$html .=
 			'<a href="#" class="btn btn-danger btn-xs disabled mb1 bg-olive btn-xs" style="margin-right:4px"><i class="fa fa-ban"></i> DISABLED</a>';
@@ -1052,18 +1057,15 @@ public function terminateServerSideUser(Request $request)
 			<button type="submit"> <i class="las la-exclamation-triangle"></i> MOBILE <span style="color:red">(Not verified)</span></button>
 			</form></li>';
 		}
-        //
         if(MyFunctions::check_access('Never Expire Consumers',Auth::user()->id) ){
             $html .= '<li class="dropdown-item">
             <a href="#" class="nexpmodal" data-username="'.$row->username.'"><i class="la la-exclamation"></i> Never Expire</a>
             </li>';
         }
-        //
         $html .= '</ul></div></div>';
         return $html;
     })
     ->addColumn("new_expire", function ($row) {
-        //
         if(strtotime(date($row->card_expire_on)) < strtotime(date('2000-01-01')) ){
             return 'NEW';
         }else{
@@ -1082,7 +1084,6 @@ public function terminateServerSideUser(Request $request)
          $html =
          '<a href="#" class="btn btn-success btn-xs" style="margin:5px;" disabled><i class="fa fa-check"></i>  CNIC</a>';
      } else {
-// $html = "<a href='#' onclick=nicVerify('".$row->username."') class='btn btn-danger btn-xs' style='margin:5px;border-radius:7px;'><i class='fa fa-close'></i>CNIC</a>";
          $html =
          ' <form action="/users/nicVerify" method="POST" style="display:inline">
          <input type="hidden" name="_token" value="' .
@@ -1108,7 +1109,6 @@ public function terminateServerSideUser(Request $request)
          '">
          <button type="submit"  class="btn btn-danger btn-xs"><i class="las la-exclamation-triangle"></i> MOBILE</button>
          </form>';
-// $html .= '<a href="#" class="btn btn-danger btn-xs" style="border-radius:7px;"><i class="fa fa-close"></i>Mobile</a>';
      }
      return $html;
  })
