@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use App\model\Users\RadPostauth;
+use App\model\Users\RadCheck;
 use App\model\Users\UserInfo;
 use App\model\Users\userAccess;
 use Yajra\DataTables\Facades\DataTables;
@@ -20,30 +21,43 @@ class LoginErrorController extends Controller
     public function getErrorLogs(Request $request)
     {
         if ($request->ajax()) {
-            $dealerid = Auth::user()->dealerid;
-            $currentStatus = Auth::user()->status;
-            $sub_dealer_id = Auth::user()->sub_dealer_id;
-            $manager_id = empty(Auth::user()->manager_id) ? null : Auth::user()->manager_id;
-            $resellerid = empty(Auth::user()->resellerid) ? null : Auth::user()->resellerid;
-            $dealerid = empty(Auth::user()->dealerid) ? null : Auth::user()->dealerid;
-            $sub_dealer_id = empty(Auth::user()->sub_dealer_id) ? null : Auth::user()->sub_dealer_id;
-            $trader_id = empty(Auth::user()->trader_id) ? null : Auth::user()->trader_id;
+            $manager_id = Auth::user()->manager_id ?? null;
+            $resellerid = Auth::user()->resellerid ?? null;
+            $dealerid = Auth::user()->dealerid ?? $request->contractor;
+            $sub_dealer_id = Auth::user()->sub_dealer_id ?? $request->trader;
+            $searchFilter = $request->searchFilter;
+            $dateFilter = $request->dateFilter;
 
-            $whereRadiusArray = [];
-            if (!empty($manager_id)) {
-                array_push($whereRadiusArray, ['radcheck.manager_id', $manager_id]);
+            $whereArray = [];
+            if ($manager_id) {
+                $whereArray[] = ['user_info.manager_id', $manager_id];
             }
-            if (!empty($resellerid)) {
-                array_push($whereRadiusArray, ['radcheck.resellerid', $resellerid]);
+            if ($resellerid) {
+                $whereArray[] = ['user_info.resellerid', $resellerid];
             }
-            if (!empty($dealerid)) {
-                array_push($whereRadiusArray, ['radcheck.dealerid', $dealerid]);
+            if ($dealerid) {
+                $whereArray[] = ['user_info.dealerid', $dealerid];
             }
-            if (!empty($sub_dealer_id)) {
-                array_push($whereRadiusArray, ['radcheck.sub_dealer_id', $sub_dealer_id]);
+            if ($sub_dealer_id) {
+                $whereArray[] = ['user_info.sub_dealer_id', $sub_dealer_id];
             }
 
-            $query = RadPostauth::select('radcheck.username')->distinct()->where('reply', 'Access-Reject')->join('radcheck', 'radcheck.username', '=', 'radpostauth.username')->where($whereRadiusArray)->where('radcheck.status', 'user');
+            $Users = UserInfo::where($whereArray)
+                ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
+                    $query->where(function ($subQuery) use ($searchFilter) {
+                        $subQuery->where('username', 'LIKE', '%' . $searchFilter . '%')
+                            ->orWhere('user_info.firstname', 'LIKE', '%' . $searchFilter . '%')
+                            ->orWhere('user_info.lastname', 'LIKE', '%' . $searchFilter . '%')
+                            ->orWhere('user_info.address', 'LIKE', '%' . $searchFilter . '%');
+                    });
+                })
+                ->where('status','user')
+                ->pluck('username')->toArray();
+
+            $query = RadPostauth::select('radcheck.username')
+                    ->whereIn('radpostauth.username', $Users)
+                    ->distinct()->where('reply', 'Access-Reject')
+                    ->join('radcheck', 'radcheck.username', '=', 'radpostauth.username');
 
             return DataTables::of($query)
                 ->addColumn('serial', function ($row) {
@@ -88,7 +102,7 @@ class LoginErrorController extends Controller
                 ->addColumn('actions', function ($row) {
                     $user_data = UserInfo::where(['status' => 'user', 'username' => $row->username])->first();
                     $mac = RadCheck::where(['username' => $user_data->username, 'attribute' => 'Calling-Station-Id'])->first();
-                    $actions = '<a href="' . route('users.edit', $user_data->id) . '" class="btn btn-xs btn-info"><i class="fa fa-edit"></i> Edit</a>';
+                    $actions = '<a href="' .  '" class="btn btn-xs btn-info"><i class="fa fa-edit"></i> Edit</a>';
                     $actions .=
                         '<div class="dropdown action-dropdown">
                                 <button class="btn dropdown-toggle action-dropdown_toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
@@ -96,7 +110,7 @@ class LoginErrorController extends Controller
                                     <ul>
                                         <li class="dropdown-item">
                                             <a href="' .
-                        route('users.edit', $user_data->id) .
+
                         '"><i class="la la-edit"></i> Edit</a>
                                         </li>
                                         <hr style="margin-top: 0">

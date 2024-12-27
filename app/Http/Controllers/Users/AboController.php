@@ -47,7 +47,6 @@ class AboController extends Controller
         if ($sub_dealer_id) {
             $whereArray[] = ['user_info.sub_dealer_id', $sub_dealer_id];
         }
-        // dd($whereArray);
 
         $draw             = $request->input('draw');
         $start            = $request->input('start');
