@@ -27,26 +27,27 @@ class AboController extends Controller
 
     public function fetchAboUsers(Request $request)
     {
-        $status        = Auth::user()->status;
-        $manager_id    = Auth::user()->manager_id ?? null;
-        $resellerid    = Auth::user()->resellerid ?? null;
-        $dealerid      = Auth::user()->dealerid ?? null;
-        $sub_dealer_id = Auth::user()->sub_dealer_id ?? null;
-        $trader_id     = Auth::user()->trader_id ?? null;
+        $manager_id = Auth::user()->manager_id ?? null;
+        $resellerid = Auth::user()->resellerid ?? null;
+        $dealerid = Auth::user()->dealerid ?? $request->contractor;
+        $sub_dealer_id = Auth::user()->sub_dealer_id ?? $request->trader;
+        $searchFilter = $request->searchFilter;
+        $dateFilter = $request->dateFilter;
 
         $whereArray = [];
-        if (!empty($manager_id)) {
-            $whereArray[] = ['radcheck.manager_id', $manager_id];
+        if ($manager_id) {
+            $whereArray[] = ['user_info.manager_id', $manager_id];
         }
-        if (!empty($resellerid)) {
-            $whereArray[] = ['radcheck.resellerid', $resellerid];
+        if ($resellerid) {
+            $whereArray[] = ['user_info.resellerid', $resellerid];
         }
-        if (!empty($dealerid)) {
-            $whereArray[] = ['radcheck.dealerid', $dealerid];
+        if ($dealerid) {
+            $whereArray[] = ['user_info.dealerid', $dealerid];
         }
-        if (!empty($sub_dealer_id)) {
-            $whereArray[] = ['radcheck.sub_dealer_id', $sub_dealer_id];
+        if ($sub_dealer_id) {
+            $whereArray[] = ['user_info.sub_dealer_id', $sub_dealer_id];
         }
+        // dd($whereArray);
 
         $draw             = $request->input('draw');
         $start            = $request->input('start');
@@ -64,16 +65,28 @@ class AboController extends Controller
 
         $orderColumn = $columnMap[$orderColumnIndex] ?? 'radcheck.username';
 
+        $Users = UserInfo::where($whereArray)
+        ->when(!empty($searchFilter), function ($query) use ($searchFilter) {
+            $query->where(function ($subQuery) use ($searchFilter) {
+                $subQuery->where('username', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.firstname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.lastname', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('user_info.address', 'LIKE', '%' . $searchFilter . '%');
+            });
+        })
+        ->where('status','user')
+        ->pluck('username')->toArray();
+
         $query = RadCheck::where('radcheck.status', 'user')
+                ->whereIn('radcheck.username', $Users)
                 ->where('radcheck.attribute', 'Cleartext-Password')
-                ->where($whereArray)
                 ->whereNotIn('radcheck.username', function ($query) {
                     $query->select('radacct.username')->from('radacct')->whereNull('radacct.acctstoptime');
                 })
                 ->join('radusergroup', 'radcheck.username', '=', 'radusergroup.username')
-                ->leftJoin('radacct', 'radcheck.username', '=', 'radacct.username') // Join radacct table
+                ->leftJoin('radacct', 'radcheck.username', '=', 'radacct.username')
                 ->whereNotIn('radusergroup.groupname', ['NEW', 'DISABLED', 'EXPIRED', 'TERMINATE'])
-                ->select('radcheck.username', 'radacct.acctstoptime') // Select radacct.acctstoptime
+                ->select('radcheck.username', 'radacct.acctstoptime')
                 ->skip($start)
                 ->take($length);
 
