@@ -98,7 +98,7 @@
               ->where('user_info.status','=','user')
               ->count();
 //
-              ?> 
+              ?>
               <tr>
                 <td>{{$count++}}</td>
                 <td class="td__profileName">{{$data->username}}<br>
@@ -119,7 +119,12 @@
                     </a>
                     <a href="{{route('users.user.edit',['status' => 'subdealer','id' => $data->id])}}">
                       <button class="btn btn-info mb1 bg-olive btn-xs"><i class="fa fa-edit"> </i> Edit</button>
-                    </a> 
+                    </a>
+                    <a href="{{ route('users.user.previewlogin', ['username' => $data->username]) }}" target="_blank">
+                        <button class="btn btn-danger mb1 bg-olive btn-xs">
+                            <i class="fa fa-shield"></i> Login
+                        </button>
+                    </a>
                     <div class="dropdown action-dropdown">
                       <button class="btn dropdown-toggle action-dropdown_toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
                       <div class="dropdown-menu action-dropdown_menu">
@@ -128,7 +133,7 @@
                             <a href="{{route('users.user.show',['status' => 'subdealer','id' => $data->id])}}" ><i class="la la-eye"></i> View</a>
                           </li>
                           <li class="dropdown-item">
-                            <a href="{{route('users.user.edit',['status' => 'subdealer','id' => $data->id])}}"><i class="la la-edit"> </i> Edit</a> 
+                            <a href="{{route('users.user.edit',['status' => 'subdealer','id' => $data->id])}}"><i class="la la-edit"> </i> Edit</a>
                           </li>
                           <hr style="margin-top:0">
                           <li class="dropdown-item">
@@ -151,7 +156,7 @@
                               </form>
                             <?php }else{?>
                               <button disabled> <i class="la la-check"></i>  Mobile <span style="color:darkgreen">(Verified)</span> </button>
-                            <?php } ?> 
+                            <?php } ?>
                           </li>
                           <li class="dropdown-item">
                             @php
@@ -161,15 +166,15 @@
                             <button class="freeze-trader"   data-id ="{{$data->id}}" data-username ="{{$data->username}}" data-check ="{{$freezeCheck['freeze']}}"><i class="la la-check"> </i> Unfreeze </button>
                             @else
                             <button class="freeze-trader" data-id ="{{$data->id}}" data-username ="{{$data->username}}" data-check ="{{isset($freezeCheck) ? $freezeCheck['freeze'] :'no'}}"><i class="la la-check"> </i> Freeze </button>
-                            @endif 
+                            @endif
                           </li>
                           <li class="dropdown-item">
                             <button class="agent-account" data-id="{{$data->id}}" data-username="{{$data->username}}" data-status="{{$data->account_disabled}}">
                               @if($data->account_disabled==1)
-                              <i class="las la-user-check"> </i> Active 
-                              @else 
-                              <i class="las la-user-alt-slash"> </i> Deactive 
-                            @endif</button> 
+                              <i class="las la-user-check"> </i> Active
+                              @else
+                              <i class="las la-user-alt-slash"> </i> Deactive
+                            @endif</button>
                           </li>
                         </ul>
                       </div>
@@ -209,7 +214,7 @@
 </script>
 <script>
   $(document).ready(function(){
-    setTimeout(function(){ 
+    setTimeout(function(){
       $('.alert').fadeOut(); }, 3000);
   });
 </script>
@@ -287,7 +292,7 @@ $('#subcheck').html(data);
   }
 </script>
 <script>
-  $(document).on('click','.freeze-trader',function(){ 
+  $(document).on('click','.freeze-trader',function(){
     status =0;
     id = $(this).attr('data-id');
     username = $(this).attr('data-username');
@@ -337,6 +342,14 @@ $('#subcheck').html(data);
       }
     })
   })
+
+  document.querySelectorAll('a[target="_blank"]').forEach(link => {
+    link.addEventListener('click', () => {
+        const uniqueSessionId = 'tab_' + Math.random().toString(36).substring(2);
+        localStorage.setItem('sessionId', uniqueSessionId);
+    });
+});
+
 </script>
 @endsection
 @include('users.dealer.TraderFreeze')

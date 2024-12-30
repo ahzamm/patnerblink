@@ -157,6 +157,7 @@ public function index1($status, Request $request)
    break;
 
    case "subdealer":
+    // dd("Subdealer");
     //
    $manager_id = (empty(Auth::user()->manager_id)) ? null : Auth::user()->manager_id;
    $resellerid = (empty(Auth::user()->resellerid)) ? null : Auth::user()->resellerid;

@@ -236,6 +236,24 @@ Route::get('/view-clear', function() {
   $CatchallError = Artisan::call('view:clear');
   return '<h4>View cache cleared</h4>';
 });
+Route::get('/clear-cache', function () {
+    try {
+        // Clear application cache
+        Artisan::call('cache:clear');
+        // Clear config cache
+        Artisan::call('config:clear');
+        // Clear route cache
+        Artisan::call('route:clear');
+        // Clear view cache
+        Artisan::call('view:clear');
+        // Optional: Clear compiled files
+        Artisan::call('clear-compiled');
+
+        return response()->json(['message' => 'Caches cleared successfully.']);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Failed to clear caches: ' . $e->getMessage()], 500);
+    }
+});
 //
 Route::get('/401', function () {
  return view('users.errors.401');
@@ -1187,6 +1205,7 @@ Route::group(['prefix'=>'users'],function(){
     Route::get('/receipt_bill',function(){
      return view('users.billing.cash_reciept');
    });
+   Route::get('/preview-login/{username}', 'Users\Auth\LoginController@previewLogin')->name('users.user.previewlogin');
 
   });
 

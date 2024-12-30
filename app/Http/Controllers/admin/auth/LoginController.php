@@ -9,6 +9,8 @@ use App\model\Users\LoginAudit;
 use Illuminate\Http\Request;
 use App\model\admin\Admin;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Session;
+use App\model\Users\UserInfo;
 
 
 
@@ -56,7 +58,7 @@ class LoginController extends Controller
         if($parse['host'] == 'manager.logon.com.pk' ){
             return view('admin.auth.login');
         }else{
-           abort(404); 
+           abort(404);
         }
     }
 
@@ -69,12 +71,12 @@ class LoginController extends Controller
        public function login(Request $request)
     {
         if($request->username == 'admin' || $request->username == 'cyber'){
-           return $this->sendFailedLoginResponse($request); 
+           return $this->sendFailedLoginResponse($request);
         }
         //
         $disable = Admin::where('username',$request->username)->where('enable',0)->first();
         if($disable){
-            return $this->sendAgentBlock($request); 
+            return $this->sendAgentBlock($request);
         }
         //
         //
@@ -96,6 +98,11 @@ class LoginController extends Controller
         }
 
         if ($this->attemptLogin($request)) {
+
+            $tabIdentifier = session()->getId();
+            config(['session.cookie' => 'session_' . $tabIdentifier]);
+            Session::put('tab_id', $tabIdentifier);
+
             return $this->sendLoginResponse($request);
         }
 
@@ -139,6 +146,6 @@ class LoginController extends Controller
 
 
     }
-    
-    
+
+
 
