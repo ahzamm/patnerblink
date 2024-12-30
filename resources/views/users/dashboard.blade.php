@@ -26,7 +26,7 @@
 @section('content')
 <style>
     .verify_restricted{
-        position:absolute; 
+        position:absolute;
         top:22px;
         right: 0;
         margin-bottom: 0;
@@ -81,7 +81,7 @@
         position:absolute;
         right:40px;
         bottom:10px;
-    } 
+    }
     .drawer_modal button{
         padding: 0;
         height: 40px;
@@ -172,24 +172,45 @@
                                     <h4 style="color: #000 !important;line-height:2;text-align:center"><?= $domainDetails->slogan;?></h4>
                                 </div>
                                 <h5 style="position:absolute;bottom:0;color:#000;font-weight:400;text-align:center;line-height:1.5">
-                                    <i class="la la-envelope"></i> {{$domainDetails->bm_invoice_email}} 
-                                    <span class="pipe">|</span> 
+                                    <i class="la la-envelope"></i> {{$domainDetails->bm_invoice_email}}
+                                    <span class="pipe">|</span>
                                     <span style="white-space:nowrap"><i class="la la-mobile"></i> UAN : {{$domainDetails->bm_helpline_number}} </span> </h5>
                                     <?php if(Auth::user()->status != 'manager'){
                                         if($wallet[0]->amount <= 1000){
-                                            $walletAlertClass = 'btn-danger'; 
+                                            $walletAlertClass = 'btn-danger';
                                         }
                                         ?>
                                         <div class="parttwo" >
                                             <div class="amount <?= @$walletAlertClass;?>">
                                                 <div>
-                                                    <svg id="Capa_1" enable-background="new 0 0 511.851 511.851" viewBox="0 0 511.851 511.851" xmlns="http://www.w3.org/2000/svg" style="width: 30px; display: inline-block; margin-right: 10px;"><g><g><path d="m458.42 52.716-91.054-43.628c-30.614-14.667-68.412-1.366-83.064 29.215l-20.569 42.231-21.467-45.297c-14.662-30.598-52.438-43.94-83.085-29.258l-91.055 43.627c-30.576 14.649-43.949 52.421-29.271 83.056l26.861 56.678c-13.999 9.137-23.277 24.929-23.277 42.856v47.988c-13.957 3.3-24.376 15.855-24.376 30.806v4.819c0 4.143 3.358 7.5 7.5 7.5 4.142 0 7.5-3.357 7.5-7.5v-4.819c0-9.187 7.474-16.661 16.662-16.661h87.26c28.738 0 52.119 23.38 52.119 52.118s-23.38 52.119-52.119 52.119h-87.26c-9.188 0-16.662-7.475-16.662-16.661v-35.458c0-4.143-3.358-7.5-7.5-7.5-4.142 0-7.5 3.357-7.5 7.5v35.458c0 14.951 10.42 27.505 24.376 30.806v47.988c0 28.205 22.947 51.152 51.152 51.152h338.075c28.206 0 51.152-22.947 51.152-51.152v-228.503c0-17.258-8.6-32.537-21.731-41.805l26.589-54.591c14.842-30.973 1.717-68.245-29.256-83.084zm15.751 76.559-26.474 54.355c-5.046-1.67-10.431-2.587-16.03-2.587h-35.672c.108-1.401.18-2.811.18-4.239 0-30.247-24.607-54.854-54.854-54.854s-54.854 24.607-54.854 54.854c0 1.428.072 2.839.18 4.239h-55.184l66.346-136.216c11.115-23.197 39.844-33.345 63.076-22.213l91.054 43.628c23.178 11.107 33.37 39.787 22.232 63.033zm-6.352 102.921v3.238h-410.38v-3.238c0-19.935 16.218-36.152 36.152-36.152h338.075c19.936 0 36.153 16.217 36.153 36.152zm-410.38 228.503v-3.434h410.38v3.434c0 19.935-16.218 36.152-36.152 36.152h-338.075c-19.935 0-36.153-16.217-36.153-36.152zm146.664-114.252c0-37.009-30.109-67.118-67.119-67.118h-79.545v-28.895h410.38v191.831h-410.38v-28.699h79.545c37.01 0 67.119-30.109 67.119-67.119zm-129.495-283.313 91.054-43.627c23.244-11.137 51.943-1.023 63.063 22.183l26.595 56.117-24.567 50.439c-9.648-15.758-27.023-26.296-46.814-26.296-31.511 0-57.087 27.707-54.675 59.094h-35.672c-4.943 0-9.719.719-14.245 2.033l-26.951-56.868c-11.266-23.514-1.302-51.809 22.212-63.075zm226.858 113.67c0-21.976 17.878-39.854 39.854-39.854s39.854 17.879 39.854 39.854c0 1.432-.08 2.846-.228 4.239h-79.253c-.147-1.393-.227-2.806-.227-4.239zm-86.688 4.24h-70.466c-2.464-23.185 16.292-44.094 39.627-44.094 18.143 0 33.482 12.191 38.285 28.808z" fill="#fff"/><path d="m254.676 336.945v11.799c0 4.143 3.358 7.5 7.5 7.5s7.5-3.357 7.5-7.5v-11.799c0-4.143-3.358-7.5-7.5-7.5s-7.5 3.357-7.5 7.5z" fill="#fff"/><path d="m403.517 329.445c-4.142 0-7.5 3.357-7.5 7.5v11.799c0 4.143 3.358 7.5 7.5 7.5s7.5-3.357 7.5-7.5v-11.799c0-4.143-3.358-7.5-7.5-7.5z" fill="#fff"/><path d="m315.693 342.5c-3.449-2.295-8.104-1.36-10.399 2.089-2.294 3.449-1.359 8.104 2.089 10.399 8.524 5.672 16.949 8.507 25.398 8.507 8.437 0 16.897-2.828 25.497-8.485 3.46-2.276 4.421-6.927 2.145-10.388-2.277-3.461-6.929-4.421-10.388-2.144-12.116 7.97-22.386 7.978-34.342.022z" fill="#fff"/><path d="m134.38 374.633c15.542 0 28.185-12.644 28.185-28.186 0-15.541-12.644-28.185-28.185-28.185s-28.185 12.644-28.185 28.185c0 15.542 12.644 28.186 28.185 28.186zm0-41.371c7.271 0 13.185 5.915 13.185 13.185 0 7.271-5.915 13.186-13.185 13.186s-13.185-5.915-13.185-13.186c0-7.27 5.915-13.185 13.185-13.185z" fill="#fff"/></g></g></svg>
+                                                    <svg id="Capa_1" enable-background="new 0 0 511.851 511.851" viewBox="0 0 511.851 511.851" xmlns="http://www.w3.org/2000/svg" style="width: 30px; display: inline-block; margin-right: 10px;">
+                                                        <g>
+                                                            <g>
+                                                                <path d="..." fill="#fff"></path>
+                                                            </g>
+                                                        </g>
+                                                    </svg>
                                                     <h4>Wallet</h4>
                                                 </div>
-                                                @if(count($wallet)>0)
-                                                <h3>  {{ $wallet[0]->amount }} <small style="color:#2aff2a">(PKR)</small></h3>
-                                                @else 
-                                                <h3>PKR 0 </h3>
+                                                @if(count($wallet) > 0)
+                                                <h3 id="wallet-amount">
+                                                    <span class="hidden-amount">****</span>
+                                                    <span class="visible-amount" style="display: none;">{{ $wallet[0]->amount }}</span>
+                                                    <span class="hidden-currency"> ****</span>
+                                                    <span class="visible-currency" style="display: none;"><small style="color:#2aff2a">(PKR)</small></span>
+                                                    <button id="toggle-visibility" style="border: none; background: transparent; cursor: pointer;">
+                                                        <!-- Eye icon starts as closed -->
+                                                        <svg id="closed-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: #fff;">
+                                                            <path d="M12 4.5c4.97 0 9.167 3.042 11 7.5-1.833 4.458-6.03 7.5-11 7.5S2.833 16.458 1 12c1.833-4.458 6.03-7.5 11-7.5zm0 2C8.672 6.5 5.332 8.53 3.825 12 5.332 15.47 8.672 17.5 12 17.5c3.328 0 6.668-2.03 8.175-5.5C18.668 8.53 15.328 6.5 12 6.5zm0 2a3.5 3.5 0 110 7 3.5 3.5 0 010-7zm0 1.5a2 2 0 100 4 2 2 0 000-4z"></path>
+                                                        </svg>
+                                                        <!-- Eye icon becomes open -->
+                                                        <svg id="open-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: #fff; display: none;">
+                                                            <path d="M12 4.5c4.97 0 9.167 3.042 11 7.5-1.833 4.458-6.03 7.5-11 7.5S2.833 16.458 1 12c1.833-4.458 6.03-7.5 11-7.5zm0 13a5.5 5.5 0 100-11 5.5 5.5 0 000 11zm0-3a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"></path>
+                                                        </svg>
+                                                    </button>
+                                                </h3>
+                                                @else
+                                                <h3>PKR 0</h3>
                                                 @endif
                                             </div>
                                         </div>
@@ -221,7 +242,7 @@
                             array_push($whereArray,array('resellerid' , $resellerid));
                             $col = 12/3; $profileCol = 12; $hideUnhide = 'hidden';
                             if( !App\MyFunctions::check_access('Sub Trader',Auth::user()->id)  ){
-                                $col = 12/2;     
+                                $col = 12/2;
                             }if(!App\MyFunctions::check_access('Trader',Auth::user()->id)){
                                 $col = 12;
                             }
@@ -295,13 +316,13 @@
                                                         <i class="la la-users"></i>
                                                     </div>
                                                     <div class="text__part">
-                                                        <a href="<?= ($authStatus != 'manager' && $authStatus != 'reseller') ? route('users.user.onlineuser',['status' => 'user']) : "" ?>"><p><strong style="color:green" id="dashboardOnlinePercentage"><span class="dashboardLoader"></span> </strong> Online Consumers</p></a>
+                                                        <a href="<?= ($authStatus != 'manager' && $authStatus != 'reseller') ? '#' : "" ?>"><p><strong style="color:green" id="dashboardOnlinePercentage"><span class="dashboardLoader"></span> </strong> Online Consumers</p></a>
                                                     </div>
                                                     <div class="count__part">
                                                         <p id="dashboardOnlineConsumerCount"><span class="dashboardLoader">loading...</span></p>
                                                     </div>
                                                     <button type="button" class="btn get_online_consumer_count" style="position: absolute;right: 6px;top: 1px;background: transparent;"><i class="fa fa-refresh"></i></button>
-                                                </div>    
+                                                </div>
                                             </div>
                                         <?php } ?>
                                         <?php if(App\MyFunctions::check_access('Offline Consumers',Auth::user()->id)){ ?>
@@ -553,8 +574,8 @@
                             <section class="slider2">
                                 <div class="container">
                                     <div class="marquee-sec">
-                                        <?php  print_r($headline['urdu_content']); ?> 
-                                        <?php  print_r($headline['english_content']); ?> 
+                                        <?php  print_r($headline['urdu_content']); ?>
+                                        <?php  print_r($headline['english_content']); ?>
                                     </div>
                                 </div>
                             </section>
@@ -632,7 +653,7 @@ dataPoints: dataArray
                                     chart.render();
                                 },
                                 complete: function(){
-                                }   
+                                }
                             });
                         });
                     </script>
@@ -651,7 +672,7 @@ dataPoints: dataArray
                                 },
                                 complete: function(){
                                     $('#loading-image2').hide();
-                                }   
+                                }
                             })
                         })
                     </script>
@@ -667,7 +688,7 @@ dataPoints: dataArray
                                 },
                                 complete: function(){
                                     $('#loading-image1').hide();
-                                } 
+                                }
                             })
                         })
                     </script>
@@ -820,7 +841,7 @@ $(document).ready(function(){
             $('#dashboardConsumerCount').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -832,7 +853,7 @@ $(document).ready(function(){
             $('#dashboardActiveConsumerCount').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -845,7 +866,7 @@ $(document).ready(function(){
             $('#dashboardOnlinePercentage').html(data.percentage+'%');
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -857,7 +878,7 @@ $(document).ready(function(){
             $('#dashboardUpComingExpiry').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -869,7 +890,7 @@ $(document).ready(function(){
             $('#dashboardVerifiedMobile').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -881,7 +902,7 @@ $(document).ready(function(){
             $('#dashboardVerifiedCNIC').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -893,7 +914,7 @@ $(document).ready(function(){
             $('#dashboardInvalidLogins').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -905,7 +926,7 @@ $(document).ready(function(){
             $('#dashboardResellerCount').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -917,7 +938,7 @@ $(document).ready(function(){
             $('#dashboardContractorCount').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -929,7 +950,7 @@ $(document).ready(function(){
             $('#dashboardTraderCount').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -941,7 +962,7 @@ $(document).ready(function(){
             $('#dashboardSubTraderCount').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -953,7 +974,7 @@ $(document).ready(function(){
             $('#dashboardDisabledConsumer').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -965,7 +986,7 @@ $(document).ready(function(){
             $('#dashboardOfflineConsumer').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -977,7 +998,7 @@ $(document).ready(function(){
             $('#dashboardExpiredConsumer').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -989,7 +1010,7 @@ $(document).ready(function(){
             $('#dashboardSuspiciousConsumer').html(data);
         },
         complete: function(){
-        }   
+        }
     });
     $.ajax({
         method: 'POST',
@@ -1001,7 +1022,41 @@ $(document).ready(function(){
             $('#dashboardNewConsumer').html(data);
         },
         complete: function(){
-        }   
+        }
+    });
+
+    const toggleButton = document.getElementById('toggle-visibility');
+    const hiddenAmount = document.querySelector('.hidden-amount');
+    const visibleAmount = document.querySelector('.visible-amount');
+    const hiddenCurrency = document.querySelector('.hidden-currency');
+    const visibleCurrency = document.querySelector('.visible-currency');
+    const closedEyeIcon = document.getElementById('closed-eye');
+    const openEyeIcon = document.getElementById('open-eye');
+
+    toggleButton.addEventListener('click', function () {
+        const isHidden = hiddenAmount.style.display !== 'none';
+
+        if (isHidden) {
+            // Show amount and currency
+            hiddenAmount.style.display = 'none';
+            visibleAmount.style.display = 'inline';
+            hiddenCurrency.style.display = 'none';
+            visibleCurrency.style.display = 'inline';
+
+            // Show open eye icon
+            closedEyeIcon.style.display = 'none';
+            openEyeIcon.style.display = 'inline';
+        } else {
+            // Hide amount and currency
+            hiddenAmount.style.display = 'inline';
+            visibleAmount.style.display = 'none';
+            hiddenCurrency.style.display = 'inline';
+            visibleCurrency.style.display = 'none';
+
+            // Show closed eye icon
+            closedEyeIcon.style.display = 'inline';
+            openEyeIcon.style.display = 'none';
+        }
     });
 });
 </script>
