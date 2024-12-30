@@ -257,8 +257,13 @@
 <script>
 $(document).ready(function() {
 	let table
+    getErrorLogs();
     // Initialize the DataTable on button click
     $('#loadData').on('click', function() {
+        getErrorLogs();
+    });
+
+    function getErrorLogs(){
         let selectedContractor = $('#dealer-dropdown').val();
         let selectedTrader = $('#trader-dropdown').val();
 		let searchFilter = $('#searchFilter').val();
@@ -298,7 +303,7 @@ $(document).ready(function() {
 
         // Reload the DataTable with new data based on selected filters
         table.ajax.reload();
-    });
+    }
 
     // Handle the change in the dealer dropdown
     $('#dealer-dropdown').change(function() {

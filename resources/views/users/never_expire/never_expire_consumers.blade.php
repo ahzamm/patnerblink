@@ -252,8 +252,13 @@
     <script>
         $(document).ready(function() {
             let table
+            getNeverExpiredConsumers();
             // Initialize the DataTable on button click
             $('#loadData').on('click', function() {
+                getNeverExpiredConsumers();
+            });
+
+            function getNeverExpiredConsumers(){
                 let selectedContractor = $('#dealer-dropdown').val();
                 let selectedTrader = $('#trader-dropdown').val();
                 let searchFilter = $('#searchFilter').val();
@@ -319,7 +324,7 @@
 
                 // Reload the DataTable with new data based on selected filters
                 table.ajax.reload();
-            });
+            }
 
             // Handle the change in the dealer dropdown
             $('#dealer-dropdown').change(function() {

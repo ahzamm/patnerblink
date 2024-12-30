@@ -155,27 +155,20 @@
 					<table id="example12" class="table table-bordered dt-responsive display" style="width:100%">
 						<thead>
 							<tr>
-								<!-- <th>Serial#</th> -->
 								<th>Consumer (ID)</th>
 								<th>Consumer Name</th>
 								<th class="desktop">Address</th>
 								<th class="desktop">Last Login</th>
 								<th class="desktop">Logout</th>
-								{{-- <th>Login Date & Time</th>
-								<th>Session Time</th> --}}
 								@if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support')
 								<th>Contractor & Trader</th>
 								@endif
-								{{-- <th>Assign (CGN) IPs</th>
-								<th>Download/Upload (Data)</th>
-								<th>Dynamic (LOCAL)IPs</th> --}}
 							</tr>
 						</thead>
 						<tbody>
 							<tr>
 								<td colspan="9">No Data Found</td>
 							</tr>
-							<!-- Table body will be populated via AJAX -->
 						</tbody>
 					</table>
 					</div>
@@ -259,8 +252,14 @@
 <script>
 $(document).ready(function() {
 	let table
-    // Initialize the DataTable on button click
+    get_offline_users();
+
     $('#loadData').on('click', function() {
+        get_offline_users();
+    });
+
+    function get_offline_users() {
+
         let selectedContractor = $('#dealer-dropdown').val();
         let selectedTrader = $('#trader-dropdown').val();
 		let searchFilter = $('#searchFilter').val();
@@ -284,27 +283,20 @@ $(document).ready(function() {
                 }
             },
             columns: [
-				// { data: 'id', orderable: false },  // Serial#
-				{ data: 'username' , name: 'RadAcct.username' },              // Consumer (ID)
-				{ data: 'firstname' },             // Consumer Name
-				{ data: 'address' },               // Address
-				// { data: 'login_time', name: 'acctstarttime' },            // Login Date & Time
-				// { data: 'session_time' },          // Session Time
+				{ data: 'username' , name: 'RadAcct.username' },
+				{ data: 'firstname' },
+				{ data: 'address' },
 				@if(Auth::user()->status == 'dealer' || Auth::user()->status == 'support')
-				{ data: 'sub_dealer_id' },         // Contractor & Trader (only for dealers and support)
+				{ data: 'sub_dealer_id' },
 				@endif
-				{ data: 'lastlogin'},       // Assign (CGN) IPs
-				{ data: 'logout'},       // Assign (CGN) IPs
-				// { data: 'framedipaddress'},       // Assign (CGN) IPs
-				// { data: 'data_usage'},            // Download/Upload (Data)
-				// { data: 'dynamic_ips' },           // Dynamic (LOCAL)IPs
+				{ data: 'lastlogin'},
+				{ data: 'logout'},
             ],
             order: [[1, 'asc']]
         });
 
-        // Reload the DataTable with new data based on selected filters
         table.ajax.reload();
-    });
+    }
 
     // Handle the change in the dealer dropdown
     $('#dealer-dropdown').change(function() {
