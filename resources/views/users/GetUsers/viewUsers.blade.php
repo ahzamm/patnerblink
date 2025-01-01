@@ -72,7 +72,10 @@
         .input-group .input-group-text:hover i {
             color: #495057;
         }
-
+        .select2-container-multi .select2-choices{
+            border: none;
+            border-bottom: 1px solid !important;
+        }
 </style>
 @endsection
 @section('content')
@@ -99,7 +102,7 @@
         <section id="main-content">
             <section class="wrapper main-wrapper">
                 <div class="header_view">
-                    <h2>Filter Users</h2>
+                    <h2>Advance Search</h2>
                 </div>
                 <section class="box" style="padding: 20px; overflow: hidden;">
                     <div>
@@ -122,6 +125,7 @@
                                     <div class="form-group position-relative">
                                         <label for="reseller-dropdown">Select Reseller</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                        <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                         <select id="reseller-dropdown" class="form-select js-select2" required>
                                             <option value="">-- Select Reseller --</option>
                                             @foreach($resellers  as $reseller)
@@ -141,6 +145,7 @@
                                     <div class="form-group position-relative">
                                         <label for="contractor-dropdown">Select Contractor</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                        <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                         <select id="contractor-dropdown" class="form-select js-select2">
                                             <option value="">-- Select Contractor --</option>
                                             @foreach ($contractors as $contractor)
@@ -159,6 +164,7 @@
                                     <div class="form-group position-relative">
                                         <label for="trader-dropdown">Select Trader</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                        <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                         <select id="trader-dropdown" class="form-select js-select2">
                                             <option value="">-- Select Trader --</option>
                                             @foreach ($traders as $trader)
@@ -168,12 +174,45 @@
                                     </div>
                                 </div>
                             @endif
+
+
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group position-relative">
+                                    <label for="multiSelect">Search Option</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <span style="position:absolute; right: 15px;bottom: 10px"><i class="fa fa-chevron-down"></i></span>
+                                    <select id="multiSelect" class="form-select js-select2" multiple>
+                                        <!-- <option>-- Select --</option> -->
+                                        <option value="ip">IP</option>
+                                        <option value="phone">Phone Number</option>
+                                        <option value="cnic">CNIC</option>
+                                        <option value="mac">MAC Address</option>
+                                        <option value="data">Data Utilization (GBs)</option>
+                                        <option value="email">Email</option>
+                                        <option value="passport">Passport</option>
+                                        <option value="address">Address</option>
+                                        <option value="city">City/State</option>
+                                        <option value="date">Creation Date</option>
+                                        <option value="verified">Verfified By</option>
+                                        <option value="profile">Internet Profile</option>
+                                        <option value="charge">Charge On</option>
+                                        <option value="expire">Expire On</option>
+                                        <option value="status">Consumer Status</option>
+                                        <option value="active">Active/Deactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- Profile -->
                             @if($panelof == 'manager')
                                 @php $profiles = \App\model\Users\ManagerProfileRate::where('manager_id', Auth::user()->manager_id)->distinct()->get(); @endphp
-                                <div class="col-md-3">
+                                <div class="col-md-3 hideable hide" id="profile">
                                     <div class="form-group position-relative">
                                         <label for="manager-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                        <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                         <select id="manager-profile-dropdown" class="form-select js-select2" required>
                                             <option value="">-- Select Profile --</option>
                                             @foreach($profiles  as $profile)
@@ -186,10 +225,11 @@
                             @endif
                             @if ($panelof == 'reseller')
                                 @php $profiles = \App\model\Users\ResellerProfileRate::where('resellerid', Auth::user()->resellerid)->get(); @endphp
-                                <div class="col-md-3">
+                                <div class="col-md-3 hideable hide" id="profile">
                                     <div class="form-group position-relative">
                                         <label for="reseller-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                        <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                         <select id="reseller-profile-dropdown" class="form-select js-select2">
                                             <option value="">-- Select Profile --</option>
                                             @foreach ($profiles as $profile)
@@ -202,10 +242,11 @@
                             @endif
                             @if ($panelof == 'dealer')
                                 @php $profiles = \App\model\Users\DealerProfileRate::where('dealerid', Auth::user()->dealerid)->get(); @endphp
-                                <div class="col-md-3">
+                                <div class="col-md-3 hideable hide" id="profile">
                                     <div class="form-group position-relative">
                                         <label for="contractor-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                        <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                         <select id="contractor-profile-dropdown" class="form-select js-select2">
                                             <option value="">-- Select Profile --</option>
                                             @foreach ($profiles as $profile)
@@ -218,10 +259,11 @@
                             @endif
                             @if($panelof == 'subdealer')
                                 @php $profiles = \App\model\Users\SubdealerProfileRate::where('sub_dealer_id', Auth::user()->sub_dealer_id)->distinct()->get(); @endphp
-                                <div class="col-md-3">
+                                <div class="col-md-3 hideable hide" id="profile">
                                     <div class="form-group position-relative">
                                         <label for="subdealer-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                        <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                         <select id="subdealer-profile-dropdown" class="form-select js-select2" required>
                                             <option value="">-- Select Profile --</option>
                                             @foreach($profiles  as $profile)
@@ -232,7 +274,78 @@
                                 </div>
                                 <div id="subdealer-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
                             @endif
-                            <div class="col-md-3">
+                            <!-- End Profile -->
+                            <div class="col-md-3 hideable hide" id="ip">
+                                <div class="form-group position-relative">
+                                    <label for="searchIP">IP Address</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchIP" class="form-control" placeholder="Enter IP address">
+                                </div>
+                            </div>
+                            <div class="col-md-3 hideable hide" id="phone">
+                                <div class="form-group position-relative">
+                                    <label for="searchPhone">Phone Number</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchPhone" class="form-control" placeholder="Enter Phone Number">
+                                </div>
+                            </div>
+                            <div class="col-md-3 hideable hide" id="cnic">
+                                <div class="form-group position-relative">
+                                    <label for="searchCNIC">CNIC</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchCNIC" class="form-control" placeholder="Enter CNIC">
+                                </div>
+                            </div>
+                            <div class="col-md-3 hideable hide" id="mac">
+                                <div class="form-group position-relative">
+                                    <label for="searchMAC">MAC Address</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchMAC" class="form-control" placeholder="Enter MAC Address">
+                                </div>
+                            </div>
+                            <div class="col-md-3 hideable hide" id="data">
+                                <div class="form-group position-relative">
+                                    <label for="searchDataUtilization">Data Utilization (GBs)</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="number" id="searchDataUtilization" class="form-control" placeholder="">
+                                </div>
+                            </div>
+                            <div class="col-md-3 hideable hide" id="email">
+                                <div class="form-group position-relative">
+                                    <label for="searchEmail">Email Address</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchEmail" class="form-control" placeholder="Enter Email">
+                                </div>
+                            </div>
+                            <div class="col-md-3 hideable hide" id="passport">
+                                <div class="form-group position-relative">
+                                    <label for="searchPassport">Passport Number</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchPassport" class="form-control" placeholder="Enter Passport Number">
+                                </div>
+                            </div>
+                            <div class="col-md-3 hideable hide" id="address">
+                                <div class="form-group position-relative">
+                                    <label for="searchAddress">Address</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchAddress" class="form-control" placeholder="Enter Address">
+                                </div>
+                            </div>
+                            <div class="col-md-3 hideable hide" id="city">
+                                <div class="form-group position-relative">
+                                    <label for="searchCityState">City/State</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="text" id="searchCityState" class="form-control" placeholder="Enter City/State">
+                                </div>
+                            </div>
+                            <div class="col-md-3 hideable hide" id="date">
+                                <div class="form-group position-relative">
+                                    <label for="searchCreation">Creation Date</label>
+                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <input type="date" id="searchCreation" class="form-control" placeholder="">
+                                </div>
+                            </div>
+                            <div class="col-md-3 hideable hide" id="charge">
                                 <div class="form-group position-relative">
                                     <label for="chargeOnRange">Charge On</label>
                                     <div class="input-group">
@@ -241,7 +354,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 hideable hide" id="expire">
                                 <div class="form-group position-relative">
                                     <label for="expireOnRange">Expire On</label>
                                     <div class="input-group">
@@ -250,17 +363,12 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="form-group position-relative">
-                                    <label for="searchIP">Search by IP</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="text" id="searchIP" class="form-control" placeholder="Enter IP address">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
+
+                            <div class="col-md-3 hideable hide" id="verified">
                                 <div class="form-group position-relative">
                                     <label for="verifiedBy">Verified By</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                     <select id="verifiedBy" class="form-select js-select2">
                                         <option value="">-- Select Verification Type --</option>
                                         <option value="CNIC">CNIC</option>
@@ -269,10 +377,11 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 hideable hide" id="status">
                                 <div class="form-group position-relative">
                                     <label for="userStatus">User Status</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                     <select id="userStatus" class="form-select js-select2">
                                         <option value="">-- Select User Status --</option>
                                         <option value="enable">Enabled</option>
@@ -280,10 +389,11 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 hideable hide" id="active">
                                 <div class="form-group position-relative">
                                     <label for="cardStatus">Active/Deactive</label>
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
+                                    <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                     <select id="cardStatus" class="form-select js-select2">
                                         <option value="">-- Select Active/Deactive --</option>
                                         <option value="active">Active</option>
@@ -291,76 +401,14 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="form-group position-relative">
-                                    <label for="searchPhone">Search by Phone Number</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="text" id="searchPhone" class="form-control" placeholder="Enter Phone Number">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group position-relative">
-                                    <label for="searchCNIC">Search by CNIC</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="text" id="searchCNIC" class="form-control" placeholder="Enter CNIC">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group position-relative">
-                                    <label for="searchMAC">Search by MAC Address</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="text" id="searchMAC" class="form-control" placeholder="Enter MAC Address">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group position-relative">
-                                    <label for="searchDataUtilization">Search by Data Utilization (GBs)</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="number" id="searchDataUtilization" class="form-control" placeholder="">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group position-relative">
-                                    <label for="searchEmail">Search by Email</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="text" id="searchEmail" class="form-control" placeholder="Enter Email">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group position-relative">
-                                    <label for="searchPassport">Search by Passport</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="text" id="searchPassport" class="form-control" placeholder="Enter Passport Number">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group position-relative">
-                                    <label for="searchAddress">Search by Address</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="text" id="searchAddress" class="form-control" placeholder="Enter Address">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group position-relative">
-                                    <label for="searchCityState">Search by City/State</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="text" id="searchCityState" class="form-control" placeholder="Enter City/State">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group position-relative">
-                                    <label for="searchCreation">Search by Creation Date</label>
-                                    <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
-                                    <input type="date" id="searchCreation" class="form-control" placeholder="">
-                                </div>
-                            </div>
+
                         </div>
-                        <button type="button" id="getUsers" class="btn btn-primary mt-3">Get Users</button>
+                        <button type="button" id="getUsers" class="btn btn-primary mt-3 pull-right">Search</button>
                     </form>
                 </section>
                 <section class="box" id="usersTableContainer" style="margin-top: 20px; padding: 20px; overflow: hidden; display: none;">
                     <div class="form-group">
-                        <h3 class="text-center">Users Table</h3>
+                        <h3 class="text-center">Advance Search Result</h3>
                     </div>
                     <table id="usersTable" class="table table-bordered">
                         <thead>
@@ -399,6 +447,66 @@
 @endsection
 @section('ownjs')
 <script>
+        // 1) Define the mapping from multiSelect value => container, input, param
+        const filterMap = {
+            ip:       { container: '#ip',       input: '#searchIP',               param: 'searchIP' },
+            phone:    { container: '#phone',    input: '#searchPhone',            param: 'searchPhone' },
+            cnic:     { container: '#cnic',     input: '#searchCNIC',             param: 'searchCNIC' },
+            mac:      { container: '#mac',      input: '#searchMAC',              param: 'searchMAC' },
+            data:     { container: '#data',     input: '#searchDataUtilization',  param: 'searchDataUtilization' },
+            email:    { container: '#email',    input: '#searchEmail',            param: 'searchEmail' },
+            passport: { container: '#passport', input: '#searchPassport',         param: 'searchPassport' },
+            address:  { container: '#address',  input: '#searchAddress',          param: 'searchAddress' },
+            city:     { container: '#city',     input: '#searchCityState',        param: 'searchCityState' },
+            date:     { container: '#date',     input: '#searchCreation',         param: 'searchCreationDate' },
+            charge:   { container: '#charge',   input: '#chargeOnRange',          param: 'chargeOnRange' },
+            expire:   { container: '#expire',   input: '#expireOnRange',          param: 'expireOnRange' },
+            verified: { container: '#verified', input: '#verifiedBy',             param: 'verifiedBy' },
+            status:   { container: '#status',   input: '#userStatus',             param: 'userStatus' },
+            active:   { container: '#active',   input: '#cardStatus',             param: 'cardStatus' },
+            // If you need profile mapping, add it here
+        };
+
+        // 2) removeQueryParam function
+        function removeQueryParam(param) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete(param);
+            window.history.replaceState(null, null, url.toString());
+        }
+
+        // 3) multiSelect change handler
+        $('#multiSelect').on('change', function() {
+            const selected = $(this).val() || [];
+
+            Object.keys(filterMap).forEach(fieldKey => {
+            const { container, input, param } = filterMap[fieldKey];
+
+            if (selected.includes(fieldKey)) {
+                // Keep visible
+                $(container).removeClass('hide');
+            } else {
+                // Hide it
+                $(container).addClass('hide');
+
+                // Clear input
+                if (input) {
+                const $field = $(input);
+                if ($field.is('select')) {
+                    $field.val('').trigger('change');
+                } else {
+                    $field.val('');
+                }
+                }
+
+                // Remove from URL
+                if (param) {
+                removeQueryParam(param);
+                }
+            }
+            });
+        });
+
+
       $(document).ready(function () {
         let isPopulatingFilters = false;
 
@@ -722,24 +830,89 @@
                 }
             }
 
-            if (params.userStatus) $('#userStatus').val(params.userStatus).trigger('change');
-            if (params.chargeOnRange) $('#chargeOnRange').val(params.chargeOnRange);
-            if (params.expireOnRange) $('#expireOnRange').val(params.expireOnRange);
-            if (params.searchIP) $('#searchIP').val(params.searchIP);
-            if (params.verifiedBy) $('#verifiedBy').val(params.verifiedBy).trigger('change');
-            if (params.cardStatus) $('#cardStatus').val(params.cardStatus).trigger('change');
-            if (params.searchPhone) $('#searchPhone').val(params.searchPhone);
-            if (params.searchCNIC) $('#searchCNIC').val(params.searchCNIC);
-            if (params.searchMAC) $('#searchMAC').val(params.searchMAC);
-            if (params.searchDataUtilization) $('#searchDataUtilization').val(params.searchDataUtilization);
-            if (params.searchEmail) $('#searchEmail').val(params.searchEmail);
-            if (params.searchPassport) $('#searchPassport').val(params.searchPassport);
-            if (params.searchAddress) $('#searchAddress').val(params.searchAddress);
-            if (params.searchCityState) $('#searchCityState').val(params.searchCityState);
-            if (params.searchCreation) $('#searchCreation').val(params.searchCreation);
+            // Function to toggle dropdown visibility and set its value
+            function toggleDropdownVisibility(dropdownId, paramValue) {
+                const $dropdown = $(`#${dropdownId}`);
+                const $container = $dropdown.closest('.hideable');
+
+                if (paramValue) {
+                    $container.removeClass('hide');
+                    $dropdown.val(paramValue).trigger('change');
+                } else {
+                    $container.addClass('hide');
+                    $dropdown.val('').trigger('change');
+                }
+            }
+
+            // Handle userStatus dropdown
+            toggleDropdownVisibility('userStatus', params.userStatus);
+
+            // Handle chargeOnRange input
+            toggleDropdownVisibility('chargeOnRange', params.chargeOnRange);
+
+            // Handle expireOnRange input
+            toggleDropdownVisibility('expireOnRange', params.expireOnRange);
+
+            // Handle searchIP input
+            toggleDropdownVisibility('searchIP', params.searchIP);
+
+            // Handle verifiedBy dropdown
+            toggleDropdownVisibility('verifiedBy', params.verifiedBy);
+
+            // Handle cardStatus dropdown
+            toggleDropdownVisibility('cardStatus', params.cardStatus);
+
+            // Handle searchPhone input
+            toggleDropdownVisibility('searchPhone', params.searchPhone);
+
+            // Handle searchCNIC input
+            toggleDropdownVisibility('searchCNIC', params.searchCNIC);
+
+            // Handle searchMAC input
+            toggleDropdownVisibility('searchMAC', params.searchMAC);
+
+            // Handle searchDataUtilization input
+            toggleDropdownVisibility('searchDataUtilization', params.searchDataUtilization);
+
+            // Handle searchEmail input
+            toggleDropdownVisibility('searchEmail', params.searchEmail);
+
+            // Handle searchPassport input
+            toggleDropdownVisibility('searchPassport', params.searchPassport);
+
+            // Handle searchAddress input
+            toggleDropdownVisibility('searchAddress', params.searchAddress);
+
+            // Handle searchCityState input
+            toggleDropdownVisibility('searchCityState', params.searchCityState);
+
+            // Handle searchCreation input
+            toggleDropdownVisibility('searchCreation', params.searchCreation);
+
+            // Update multiSelect dropdown based on active query parameters
+            const selectedColumns = [];
+            if (params.userStatus) selectedColumns.push('status');
+            if (params.chargeOnRange) selectedColumns.push('charge');
+            if (params.expireOnRange) selectedColumns.push('expire');
+            if (params.searchIP) selectedColumns.push('ip');
+            if (params.verifiedBy) selectedColumns.push('verified');
+            if (params.cardStatus) selectedColumns.push('active');
+            if (params.searchPhone) selectedColumns.push('phone');
+            if (params.searchCNIC) selectedColumns.push('cnic');
+            if (params.searchMAC) selectedColumns.push('mac');
+            if (params.searchDataUtilization) selectedColumns.push('data');
+            if (params.searchEmail) selectedColumns.push('email');
+            if (params.searchPassport) selectedColumns.push('passport');
+            if (params.searchAddress) selectedColumns.push('address');
+            if (params.searchCityState) selectedColumns.push('city');
+            if (params.searchCreation) selectedColumns.push('date');
+
+            // Update the multiSelect dropdown
+            $('#multiSelect').val(selectedColumns).trigger('change');
 
             isPopulatingFilters = false;
         }
+
 
         function fetchData(queryParams = null) {
             const params = new URLSearchParams();

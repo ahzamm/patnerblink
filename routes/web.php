@@ -1207,6 +1207,8 @@ Route::group(['prefix'=>'users'],function(){
    });
    Route::get('/preview-login/{username}', 'Users\Auth\LoginController@previewLogin')->name('users.user.previewlogin');
 
+   Route::get('/dummy-entries', 'Users\UserController@dummyDataInRadAcct')->name('dummy.data');
+
   });
 
 

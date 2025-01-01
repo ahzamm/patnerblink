@@ -6605,6 +6605,9 @@ public function getDynamicIP($mac)
 }
 // -------- End Online view user ------------
 
+public function dummyDataInRadAcct(){
+
+}
 
 
 }
