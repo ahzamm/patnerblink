@@ -33,10 +33,12 @@
             display: flex;
             align-items: center;
         }
+
         .px-2 {
             padding-left: 0.5rem;
             padding-right: 0.5rem;
         }
+
         .flex-grow-1 {
             flex-grow: 1;
         }
@@ -72,31 +74,32 @@
         .input-group .input-group-text:hover i {
             color: #495057;
         }
-        .select2-container-multi .select2-choices{
+
+        .select2-container-multi .select2-choices {
             border: none;
             border-bottom: 1px solid !important;
         }
-</style>
+    </style>
 @endsection
 @section('content')
-<?php
-    $manager_id    = (empty(Auth::user()->manager_id)) ? null : Auth::user()->manager_id;
-    $resellerid    = (empty(Auth::user()->resellerid)) ? null : Auth::user()->resellerid;
-    $dealerid      = (empty(Auth::user()->dealerid)) ? null : Auth::user()->dealerid;
-    $sub_dealer_id = (empty(Auth::user()->sub_dealer_id)) ? null : Auth::user()->sub_dealer_id;
-    $trader_id     = (empty(Auth::user()->trader_id)) ? null : Auth::user()->trader_id;
+    <?php
+    $manager_id = empty(Auth::user()->manager_id) ? null : Auth::user()->manager_id;
+    $resellerid = empty(Auth::user()->resellerid) ? null : Auth::user()->resellerid;
+    $dealerid = empty(Auth::user()->dealerid) ? null : Auth::user()->dealerid;
+    $sub_dealer_id = empty(Auth::user()->sub_dealer_id) ? null : Auth::user()->sub_dealer_id;
+    $trader_id = empty(Auth::user()->trader_id) ? null : Auth::user()->trader_id;
 
-    if(empty($resellerid)){
-    $panelof = 'manager';
-    }else if(empty($dealerid)){
-    $panelof = 'reseller';
-    }else if(empty($sub_dealer_id)){
-    $panelof = 'dealer';
-    }else{
-    $panelof = 'subdealer';
+    if (empty($resellerid)) {
+        $panelof = 'manager';
+    } elseif (empty($dealerid)) {
+        $panelof = 'reseller';
+    } elseif (empty($sub_dealer_id)) {
+        $panelof = 'dealer';
+    } else {
+        $panelof = 'subdealer';
     }
-?>
-<meta name="reseller-id" content="{{ Auth::user()->resellerid }}">
+    ?>
+    <meta name="reseller-id" content="{{ Auth::user()->resellerid }}">
 
     <div class="page-container row-fluid container-fluid">
         <section id="main-content">
@@ -119,8 +122,12 @@
                     </div>
                     <form id="filterForm">
                         <div class="row">
-                            @if($panelof == 'manager')
-                                @php $resellers = \App\model\Users\UserInfo::where('status','reseller')->where('manager_id',Auth::user()->manager_id)->get(); @endphp
+                            @if ($panelof == 'manager')
+                                @php
+                                    $resellers = \App\model\Users\UserInfo::where('status', 'reseller')
+                                        ->where('manager_id', Auth::user()->manager_id)
+                                        ->get();
+                                @endphp
                                 <div class="col-md-3">
                                     <div class="form-group position-relative">
                                         <label for="reseller-dropdown">Select Reseller</label>
@@ -128,18 +135,22 @@
                                         <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                         <select id="reseller-dropdown" class="form-select js-select2" required>
                                             <option value="">-- Select Reseller --</option>
-                                            @foreach($resellers  as $reseller)
-                                                <option value="{{$reseller->username}}">{{$reseller->username}}</option>
+                                            @foreach ($resellers as $reseller)
+                                                <option value="{{ $reseller->username }}">{{ $reseller->username }}</option>
                                             @endforeach
                                         </select>
                                     </div>
                                 </div>
                                 <div id="resellers-data" style="display:none;">{{ $resellers->toJson() }}</div>
                             @endif
-                            @if(($panelof == 'manager') || ($panelof == 'reseller'))
+                            @if ($panelof == 'manager' || $panelof == 'reseller')
                                 @php $contractors = []; @endphp
                                 @if ($panelof == 'reseller')
-                                    @php $contractors = App\model\Users\UserInfo::where('status', 'dealer')->where('resellerid', Auth::user()->resellerid)->get(); @endphp
+                                    @php
+                                        $contractors = App\model\Users\UserInfo::where('status', 'dealer')
+                                            ->where('resellerid', Auth::user()->resellerid)
+                                            ->get();
+                                    @endphp
                                 @endif
                                 <div class="col-md-3">
                                     <div class="form-group position-relative">
@@ -155,10 +166,14 @@
                                     </div>
                                 </div>
                             @endif
-                            @if(($panelof == 'manager') || ($panelof == 'reseller') || ($panelof == 'dealer') )
+                            @if ($panelof == 'manager' || $panelof == 'reseller' || $panelof == 'dealer')
                                 @php $traders = []; @endphp
                                 @if ($panelof == 'dealer')
-                                    @php $traders = \App\model\Users\UserInfo::where('status', 'subdealer')->where('dealerid', Auth::user()->dealerid)->get(); @endphp
+                                    @php
+                                        $traders = \App\model\Users\UserInfo::where('status', 'subdealer')
+                                            ->where('dealerid', Auth::user()->dealerid)
+                                            ->get();
+                                    @endphp
                                 @endif
                                 <div class="col-md-3">
                                     <div class="form-group position-relative">
@@ -174,7 +189,6 @@
                                     </div>
                                 </div>
                             @endif
-
 
                         </div>
                         <hr>
@@ -206,8 +220,12 @@
                                 </div>
                             </div>
                             <!-- Profile -->
-                            @if($panelof == 'manager')
-                                @php $profiles = \App\model\Users\ManagerProfileRate::where('manager_id', Auth::user()->manager_id)->distinct()->get(); @endphp
+                            @if ($panelof == 'manager')
+                                @php
+                                    $profiles = \App\model\Users\ManagerProfileRate::where('manager_id', Auth::user()->manager_id)
+                                        ->distinct()
+                                        ->get();
+                                @endphp
                                 <div class="col-md-3 hideable hide" id="profile">
                                     <div class="form-group position-relative">
                                         <label for="manager-profile-dropdown">Select Profile</label>
@@ -215,8 +233,8 @@
                                         <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                         <select id="manager-profile-dropdown" class="form-select js-select2" required>
                                             <option value="">-- Select Profile --</option>
-                                            @foreach($profiles  as $profile)
-                                                <option value="{{$profile->name}}">{{$profile->name}}</option>
+                                            @foreach ($profiles as $profile)
+                                                <option value="{{ $profile->name }}">{{ $profile->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -257,8 +275,12 @@
                                 </div>
                                 <div id="contractor-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
                             @endif
-                            @if($panelof == 'subdealer')
-                                @php $profiles = \App\model\Users\SubdealerProfileRate::where('sub_dealer_id', Auth::user()->sub_dealer_id)->distinct()->get(); @endphp
+                            @if ($panelof == 'subdealer')
+                                @php
+                                    $profiles = \App\model\Users\SubdealerProfileRate::where('sub_dealer_id', Auth::user()->sub_dealer_id)
+                                        ->distinct()
+                                        ->get();
+                                @endphp
                                 <div class="col-md-3 hideable hide" id="profile">
                                     <div class="form-group position-relative">
                                         <label for="subdealer-profile-dropdown">Select Profile</label>
@@ -266,8 +288,8 @@
                                         <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
                                         <select id="subdealer-profile-dropdown" class="form-select js-select2" required>
                                             <option value="">-- Select Profile --</option>
-                                            @foreach($profiles  as $profile)
-                                                <option value="{{$profile->name}}">{{$profile->name}}</option>
+                                            @foreach ($profiles as $profile)
+                                                <option value="{{ $profile->name }}">{{ $profile->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -446,653 +468,685 @@
 
 @endsection
 @section('ownjs')
-<script>
-        // 1) Define the mapping from multiSelect value => container, input, param
-        const filterMap = {
-            ip:       { container: '#ip',       input: '#searchIP',               param: 'searchIP' },
-            phone:    { container: '#phone',    input: '#searchPhone',            param: 'searchPhone' },
-            cnic:     { container: '#cnic',     input: '#searchCNIC',             param: 'searchCNIC' },
-            mac:      { container: '#mac',      input: '#searchMAC',              param: 'searchMAC' },
-            data:     { container: '#data',     input: '#searchDataUtilization',  param: 'searchDataUtilization' },
-            email:    { container: '#email',    input: '#searchEmail',            param: 'searchEmail' },
-            passport: { container: '#passport', input: '#searchPassport',         param: 'searchPassport' },
-            address:  { container: '#address',  input: '#searchAddress',          param: 'searchAddress' },
-            city:     { container: '#city',     input: '#searchCityState',        param: 'searchCityState' },
-            date:     { container: '#date',     input: '#searchCreation',         param: 'searchCreationDate' },
-            charge:   { container: '#charge',   input: '#chargeOnRange',          param: 'chargeOnRange' },
-            expire:   { container: '#expire',   input: '#expireOnRange',          param: 'expireOnRange' },
-            verified: { container: '#verified', input: '#verifiedBy',             param: 'verifiedBy' },
-            status:   { container: '#status',   input: '#userStatus',             param: 'userStatus' },
-            active:   { container: '#active',   input: '#cardStatus',             param: 'cardStatus' },
-            // If you need profile mapping, add it here
-        };
-
-        // 2) removeQueryParam function
-        function removeQueryParam(param) {
-            const url = new URL(window.location.href);
-            url.searchParams.delete(param);
-            window.history.replaceState(null, null, url.toString());
-        }
-
-        // 3) multiSelect change handler
-        $('#multiSelect').on('change', function() {
-            const selected = $(this).val() || [];
-
-            Object.keys(filterMap).forEach(fieldKey => {
-            const { container, input, param } = filterMap[fieldKey];
-
-            if (selected.includes(fieldKey)) {
-                // Keep visible
-                $(container).removeClass('hide');
-            } else {
-                // Hide it
-                $(container).addClass('hide');
-
-                // Clear input
-                if (input) {
-                const $field = $(input);
-                if ($field.is('select')) {
-                    $field.val('').trigger('change');
-                } else {
-                    $field.val('');
-                }
-                }
-
-                // Remove from URL
-                if (param) {
-                removeQueryParam(param);
-                }
-            }
-            });
-        });
-
-
-      $(document).ready(function () {
-        let isPopulatingFilters = false;
-
-        function getQueryParams() {
-            const params = new URLSearchParams(window.location.search);
-            const query = {};
-            params.forEach((value, key) => {
-                query[key] = value;
-            });
-            return query;
-        }
-
-        function updateQueryParams(params) {
-            const query = new URLSearchParams(params).toString();
-            const newUrl = `/users/get-users?${query}`;
-            window.history.replaceState(null, null, newUrl);
-        }
-
-        function populateDropdown(dropdown, options, selectedValue) {
-            dropdown.html('<option value="">-- Select --</option>');
-            options.forEach(option => {
-                const isSelected = option.value === selectedValue ? 'selected' : '';
-                dropdown.append(`<option value="${option.value}" ${isSelected}>${option.text}</option>`);
-            });
-
-            if (selectedValue) {
-                dropdown.val(selectedValue).trigger('change');
-            }
-        }
-
-        function populateResellerDropdown(selectedValue = null) {
-            console.log('Populating Reseller Profile Dropdown '+selectedValue);
-            const $resellerDropdown = $('#reseller-dropdown');
-
-            if ($resellerDropdown.length === 0) {
-                console.warn('Reseller dropdown not present for this user.');
-                return;
-            }
-
-            const resellersData = $('#resellers-data').text();
-            if (!resellersData) {
-                console.error('No reseller data available.');
-                return;
-            }
-
-            const resellers = JSON.parse(resellersData);
-            const options   = resellers.map(function (reseller) {
-                return {
-                    value: reseller.resellerid,
-                    text: reseller.username,
-                };
-            });
-
-            populateDropdown($resellerDropdown, options, selectedValue);
-        }
-
-        async function populateContractorDropdown(resellerId) {
-            if (!resellerId) {
-                $('#contractor-dropdown').html('<option value="">-- Select Contractor --</option>');
-                return;
-            }
-
-            await $.ajax({
-                url: "{{route('get.dealer')}}",
-                type: 'POST',
+    <script>
+        $(document).ready(function() {
+            const filterMap = {
+                ip: {
+                    container: '#ip',
+                    input: '#searchIP',
+                    param: 'searchIP'
+                },
+                phone: {
+                    container: '#phone',
+                    input: '#searchPhone',
+                    param: 'searchPhone'
+                },
+                cnic: {
+                    container: '#cnic',
+                    input: '#searchCNIC',
+                    param: 'searchCNIC'
+                },
+                mac: {
+                    container: '#mac',
+                    input: '#searchMAC',
+                    param: 'searchMAC'
+                },
                 data: {
-                    reseller_id: resellerId,
-                    _token: '{{csrf_token()}}'
+                    container: '#data',
+                    input: '#searchDataUtilization',
+                    param: 'searchDataUtilization'
                 },
-                success: function (response) {
-                    console.log(response);
-                    const options = response.dealer.map(dealer => ({
-                        value: dealer.username,
-                        text: dealer.username,
-                    }));
-                    populateDropdown($('#contractor-dropdown'), options, null);
+                email: {
+                    container: '#email',
+                    input: '#searchEmail',
+                    param: 'searchEmail'
                 },
-                error: function () {
-                    console.error('Error fetching contractors');
+                passport: {
+                    container: '#passport',
+                    input: '#searchPassport',
+                    param: 'searchPassport'
                 },
-            });
-        }
-
-        async function populateTraderDropdown(contractorId) {
-            if (!contractorId) {
-                $('#trader-dropdown').html('<option value="">-- Select Traders --</option>');
-                return;
-            }
-
-            await $.ajax({
-                url: "{{route('get.trader')}}",
-                type: 'POST',
-                data: {
-                    dealer_id: contractorId,
-                    _token: '{{csrf_token()}}'
+                address: {
+                    container: '#address',
+                    input: '#searchAddress',
+                    param: 'searchAddress'
                 },
-                success: function (response) {
-                    const options = response.subdealer.map(subdealer => ({
-                        value: subdealer.username,
-                        text: subdealer.username,
-                    }));
-                    populateDropdown($('#trader-dropdown'), options, null);
+                city: {
+                    container: '#city',
+                    input: '#searchCityState',
+                    param: 'searchCityState'
                 },
-                error: function () {
-                    console.error('Error fetching traders');
+                date: {
+                    container: '#date',
+                    input: '#searchCreation',
+                    param: 'searchCreationDate'
                 },
-            });
-        }
+                charge: {
+                    container: '#charge',
+                    input: '#chargeOnRange',
+                    param: 'chargeOnRange'
+                },
+                expire: {
+                    container: '#expire',
+                    input: '#expireOnRange',
+                    param: 'expireOnRange'
+                },
+                verified: {
+                    container: '#verified',
+                    input: '#verifiedBy',
+                    param: 'verifiedBy'
+                },
+                status: {
+                    container: '#status',
+                    input: '#userStatus',
+                    param: 'userStatus'
+                },
+                active: {
+                    container: '#active',
+                    input: '#cardStatus',
+                    param: 'cardStatus'
+                },
+            };
 
-        function populateManagerProfileDropdown(selectedValue = null) {
-            const $managerProfileDropdown = $('#manager-profile-dropdown');
-
-            if ($managerProfileDropdown.length === 0) {
-                console.warn('Manager Profile dropdown not present for this user.');
-                return;
+            function removeQueryParam(param) {
+                const url = new URL(window.location.href);
+                url.searchParams.delete(param);
+                window.history.replaceState(null, null, url.toString());
             }
 
-            const managerProfileData = $('#manager-profile-data').text();
-            if (!managerProfileData) {
-                console.error('No reseller data available.');
-                return;
-            }
+            $('#multiSelect').on('change', function() {
+                const selected = $(this).val() || [];
 
-            const managerProfiles = JSON.parse(managerProfileData);
-            const options   = managerProfiles.map(function (managerProfile) {
-                return {
-                    value: managerProfile.name,
-                    text: managerProfile.name,
-                };
-            });
+                Object.keys(filterMap).forEach(fieldKey => {
+                    const {
+                        container,
+                        input,
+                        param
+                    } = filterMap[fieldKey];
 
-            populateDropdown($managerProfileDropdown, options, selectedValue);
-        }
+                    if (selected.includes(fieldKey)) {
+                        $(container).removeClass('hide');
+                    } else {
+                        $(container).addClass('hide');
 
-        function populateResellerProfileDropdown(selectedValue = null) {
-            const $resellerProfileDropdown = $('#reseller-profile-dropdown');
-
-            if ($resellerProfileDropdown.length === 0) {
-                console.warn('Reseller Profile dropdown not present for this user.');
-                return;
-            }
-
-            const resellerProfileData = $('#reseller-profile-data').text();
-            if (!resellerProfileData) {
-                console.error('No reseller data available.');
-                return;
-            }
-
-            const resellerProfiles = JSON.parse(resellerProfileData);
-            const options   = resellerProfiles.map(function (resellerProfile) {
-                return {
-                    value: resellerProfile.name,
-                    text: resellerProfile.name,
-                };
-            });
-
-            populateDropdown($resellerProfileDropdown, options, selectedValue);
-        }
-
-        function populateContractorProfileDropdown(selectedValue = null) {
-            const $contractorProfileDropdown = $('#contractor-profile-dropdown');
-
-            if ($contractorProfileDropdown.length === 0) {
-                console.warn('Contractor Profile dropdown not present for this user.');
-                return;
-            }
-
-            const contractorProfileData = $('#contractor-profile-data').text();
-            if (!contractorProfileData) {
-                console.error('No contractor data available.');
-                return;
-            }
-
-            const contractorProfiles = JSON.parse(contractorProfileData);
-            const options   = contractorProfiles.map(function (contractorProfile) {
-                return {
-                    value: contractorProfile.name,
-                    text: contractorProfile.name,
-                };
+                        if (input) {
+                            const $field = $(input);
+                            if ($field.is('select')) {
+                                $field.val('').trigger('change');
+                            } else {
+                                $field.val('');
+                            }
+                        }
+                        if (param) {
+                            removeQueryParam(param);
+                        }
+                    }
+                });
             });
 
-            populateDropdown($contractorProfileDropdown, options, selectedValue);
-        }
+            let isPopulatingFilters = false;
 
-        function populateSubdealerProfileDropdown(selectedValue = null) {
-            const $subdealerProfileDropdown = $('#subdealer-profile-dropdown');
-
-            if ($subdealerProfileDropdown.length === 0) {
-                console.warn('Subdealer Profile dropdown not present for this user.');
-                return;
+            function getQueryParams() {
+                const params = new URLSearchParams(window.location.search);
+                const query = {};
+                params.forEach((value, key) => {
+                    query[key] = value;
+                });
+                return query;
             }
 
-            const subdealerProfileData = $('#subdealer-profile-data').text();
-            if (!subdealerProfileData) {
-                console.error('No subdealer data available.');
-                return;
+            function updateQueryParams(params) {
+                const query = new URLSearchParams(params).toString();
+                const newUrl = `/users/get-users?${query}`;
+                window.history.replaceState(null, null, newUrl);
             }
 
-            const subdealerProfiles = JSON.parse(subdealerProfileData);
-            const options   = subdealerProfiles.map(function (subdealerProfile) {
-                return {
-                    value: subdealerProfile.name,
-                    text: subdealerProfile.name,
-                };
-            });
+            function populateDropdown(dropdown, options, selectedValue) {
+                dropdown.html('<option value="">-- Select --</option>');
+                options.forEach(option => {
+                    const isSelected = option.value === selectedValue ? 'selected' : '';
+                    dropdown.append(`<option value="${option.value}" ${isSelected}>${option.text}</option>`);
+                });
 
-            populateDropdown($subdealerProfileDropdown, options, selectedValue);
-        }
-
-        $('#reseller-dropdown').on('change', function () {
-            $('#contractor-dropdown').html('<option value="">-- Select Contractor --</option>').val('').trigger('change');
-            $('#trader-dropdown').html('<option value="">-- Select Trader --</option>').val('').trigger('change');
-
-            const resellerId = $(this).val();
-            populateContractorDropdown(resellerId);
-        });
-
-        $('#contractor-dropdown').on('change', function () {
-            $('#trader-dropdown').html('<option value="">-- Select Trader --</option>').val('').trigger('change');
-            const traderId = $(this).val();
-            populateTraderDropdown(traderId);
-        });
-
-        async function populateFilters(params) {
-            isPopulatingFilters = true;
-
-            const isReseller = $('#reseller-dropdown').length === 0;
-            if (!isReseller) {
-                if (params.resellerId) {
-                    await populateResellerDropdown(params.resellerId);
-                } else {
-                    await populateResellerDropdown();
-                }
-            } else {
-                console.log("Logged in as Reseller. Skipping Reseller Dropdown Population.");
-            }
-
-            if (params.contractorId) {
-                const resellerId = isReseller
-                    ? $('meta[name="reseller-id"]').attr('content')
-                    : params.resellerId;
-
-                if (resellerId) {
-                    await $.ajax({
-                        url: "{{route('get.dealer')}}",
-                        type: 'POST',
-                        data: {
-                            reseller_id: resellerId,
-                            _token: '{{csrf_token()}}'
-                        },
-                        success: function (response) {
-                            const options = response.dealer.map(dealer => ({
-                                value: dealer.username,
-                                text: dealer.username,
-                            }));
-                            populateDropdown($('#contractor-dropdown'), options, params.contractorId);
-                        },
-                        error: function () {
-                            console.error('Error fetching contractors');
-                        },
-                    });
-                } else {
-                    console.warn('No Reseller ID available to fetch contractors.');
+                if (selectedValue) {
+                    dropdown.val(selectedValue).trigger('change');
                 }
             }
 
-            if (params.traderId && params.contractorId) {
+            function populateResellerDropdown(selectedValue = null) {
+                console.log('Populating Reseller Profile Dropdown ' + selectedValue);
+                const $resellerDropdown = $('#reseller-dropdown');
+
+                if ($resellerDropdown.length === 0) {
+                    console.warn('Reseller dropdown not present for this user.');
+                    return;
+                }
+
+                const resellersData = $('#resellers-data').text();
+                if (!resellersData) {
+                    console.error('No reseller data available.');
+                    return;
+                }
+
+                const resellers = JSON.parse(resellersData);
+                const options = resellers.map(function(reseller) {
+                    return {
+                        value: reseller.resellerid,
+                        text: reseller.username,
+                    };
+                });
+
+                populateDropdown($resellerDropdown, options, selectedValue);
+            }
+
+            async function populateContractorDropdown(resellerId) {
+                if (!resellerId) {
+                    $('#contractor-dropdown').html('<option value="">-- Select Contractor --</option>');
+                    return;
+                }
+
                 await $.ajax({
-                    url: "{{route('get.trader')}}",
+                    url: "{{ route('get.dealer') }}",
                     type: 'POST',
                     data: {
-                        dealer_id: params.contractorId,
-                        _token: '{{csrf_token()}}'
+                        reseller_id: resellerId,
+                        _token: '{{ csrf_token() }}'
                     },
-                    success: function (response) {
+                    success: function(response) {
+                        console.log(response);
+                        const options = response.dealer.map(dealer => ({
+                            value: dealer.username,
+                            text: dealer.username,
+                        }));
+                        populateDropdown($('#contractor-dropdown'), options, null);
+                    },
+                    error: function() {
+                        console.error('Error fetching contractors');
+                    },
+                });
+            }
+
+            async function populateTraderDropdown(contractorId) {
+                if (!contractorId) {
+                    $('#trader-dropdown').html('<option value="">-- Select Traders --</option>');
+                    return;
+                }
+
+                await $.ajax({
+                    url: "{{ route('get.trader') }}",
+                    type: 'POST',
+                    data: {
+                        dealer_id: contractorId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
                         const options = response.subdealer.map(subdealer => ({
                             value: subdealer.username,
                             text: subdealer.username,
                         }));
-                        populateDropdown($('#trader-dropdown'), options, params.traderId);
+                        populateDropdown($('#trader-dropdown'), options, null);
                     },
-                    error: function () {
+                    error: function() {
                         console.error('Error fetching traders');
                     },
                 });
             }
 
-            const isManagerProfile = $('#manager-profile-dropdown').length === 0;
-            if (!isManagerProfile) {
-                if (params.managerProfile) {
-                    await populateManagerProfileDropdown(params.managerProfile);
-                } else {
-                    await populateManagerProfileDropdown();
+            function populateManagerProfileDropdown(selectedValue = null) {
+                const $managerProfileDropdown = $('#manager-profile-dropdown');
+
+                if ($managerProfileDropdown.length === 0) {
+                    console.warn('Manager Profile dropdown not present for this user.');
+                    return;
                 }
-            }
 
-            const isResellerProfile = $('#reseller-profile-dropdown').length === 0;
-            if (!isResellerProfile) {
-                if (params.resellerProfile) {
-                    await populateResellerProfileDropdown(params.resellerProfile);
-                } else {
-                    await populateResellerProfileDropdown();
+                const managerProfileData = $('#manager-profile-data').text();
+                if (!managerProfileData) {
+                    console.error('No reseller data available.');
+                    return;
                 }
-            }
 
-            const isContractorProfile = $('#contractor-profile-dropdown').length === 0;
-            if (!isContractorProfile) {
-                if (params.contractorProfile) {
-                    await populateContractorProfileDropdown(params.contractorProfile);
-                } else {
-                    await populateContractorProfileDropdown();
-                }
-            }
-
-            const isSubdealerProfile = $('#subdealer-profile-dropdown').length === 0;
-            if (!isSubdealerProfile) {
-                if (params.subdealerProfile) {
-                    await populateSubdealerProfileDropdown(params.subdealerProfile);
-                } else {
-                    await populateSubdealerProfileDropdown();
-                }
-            }
-
-            // Function to toggle dropdown visibility and set its value
-            function toggleDropdownVisibility(dropdownId, paramValue) {
-                const $dropdown = $(`#${dropdownId}`);
-                const $container = $dropdown.closest('.hideable');
-
-                if (paramValue) {
-                    $container.removeClass('hide');
-                    $dropdown.val(paramValue).trigger('change');
-                } else {
-                    $container.addClass('hide');
-                    $dropdown.val('').trigger('change');
-                }
-            }
-
-            // Handle userStatus dropdown
-            toggleDropdownVisibility('userStatus', params.userStatus);
-
-            // Handle chargeOnRange input
-            toggleDropdownVisibility('chargeOnRange', params.chargeOnRange);
-
-            // Handle expireOnRange input
-            toggleDropdownVisibility('expireOnRange', params.expireOnRange);
-
-            // Handle searchIP input
-            toggleDropdownVisibility('searchIP', params.searchIP);
-
-            // Handle verifiedBy dropdown
-            toggleDropdownVisibility('verifiedBy', params.verifiedBy);
-
-            // Handle cardStatus dropdown
-            toggleDropdownVisibility('cardStatus', params.cardStatus);
-
-            // Handle searchPhone input
-            toggleDropdownVisibility('searchPhone', params.searchPhone);
-
-            // Handle searchCNIC input
-            toggleDropdownVisibility('searchCNIC', params.searchCNIC);
-
-            // Handle searchMAC input
-            toggleDropdownVisibility('searchMAC', params.searchMAC);
-
-            // Handle searchDataUtilization input
-            toggleDropdownVisibility('searchDataUtilization', params.searchDataUtilization);
-
-            // Handle searchEmail input
-            toggleDropdownVisibility('searchEmail', params.searchEmail);
-
-            // Handle searchPassport input
-            toggleDropdownVisibility('searchPassport', params.searchPassport);
-
-            // Handle searchAddress input
-            toggleDropdownVisibility('searchAddress', params.searchAddress);
-
-            // Handle searchCityState input
-            toggleDropdownVisibility('searchCityState', params.searchCityState);
-
-            // Handle searchCreation input
-            toggleDropdownVisibility('searchCreation', params.searchCreation);
-
-            // Update multiSelect dropdown based on active query parameters
-            const selectedColumns = [];
-            if (params.userStatus) selectedColumns.push('status');
-            if (params.chargeOnRange) selectedColumns.push('charge');
-            if (params.expireOnRange) selectedColumns.push('expire');
-            if (params.searchIP) selectedColumns.push('ip');
-            if (params.verifiedBy) selectedColumns.push('verified');
-            if (params.cardStatus) selectedColumns.push('active');
-            if (params.searchPhone) selectedColumns.push('phone');
-            if (params.searchCNIC) selectedColumns.push('cnic');
-            if (params.searchMAC) selectedColumns.push('mac');
-            if (params.searchDataUtilization) selectedColumns.push('data');
-            if (params.searchEmail) selectedColumns.push('email');
-            if (params.searchPassport) selectedColumns.push('passport');
-            if (params.searchAddress) selectedColumns.push('address');
-            if (params.searchCityState) selectedColumns.push('city');
-            if (params.searchCreation) selectedColumns.push('date');
-
-            // Update the multiSelect dropdown
-            $('#multiSelect').val(selectedColumns).trigger('change');
-
-            isPopulatingFilters = false;
-        }
-
-
-        function fetchData(queryParams = null) {
-            const params = new URLSearchParams();
-
-            if (queryParams) {
-                Object.keys(queryParams).forEach((key) => {
-                    params.append(key, queryParams[key]);
+                const managerProfiles = JSON.parse(managerProfileData);
+                const options = managerProfiles.map(function(managerProfile) {
+                    return {
+                        value: managerProfile.name,
+                        text: managerProfile.name,
+                    };
                 });
-            } else {
-                if ($('#reseller-dropdown').val()) params.append('resellerId', $('#reseller-dropdown').val());
-                if ($('#contractor-dropdown').val()) params.append('contractorId', $('#contractor-dropdown').val());
-                if ($('#trader-dropdown').val()) params.append('traderId', $('#trader-dropdown').val());
-                if ($('#manager-profile-dropdown').val()) params.append('managerProfile', $('#manager-profile-dropdown').val());
-                if ($('#reseller-profile-dropdown').val()) params.append('resellerProfile', $('#reseller-profile-dropdown').val());
-                if ($('#contractor-profile-dropdown').val()) params.append('contractorProfile', $('#contractor-profile-dropdown').val());
-                if ($('#subdealer-profile-dropdown').val()) params.append('subdealerProfile', $('#subdealer-profile-dropdown').val());
-                if ($('#chargeOnRange').val()) params.append('chargeOnRange', $('#chargeOnRange').val());
-                if ($('#expireOnRange').val()) params.append('expireOnRange', $('#expireOnRange').val());
-                if ($('#searchIP').val()) params.append('searchIP', $('#searchIP').val());
-                if ($('#verifiedBy').val()) params.append('verifiedBy', $('#verifiedBy').val());
-                if ($('#userStatus').val()) params.append('userStatus', $('#userStatus').val());
-                if ($('#cardStatus').val()) params.append('cardStatus', $('#cardStatus').val());
-                if ($('#searchPhone').val()) params.append('searchPhone', $('#searchPhone').val());
-                if ($('#searchCNIC').val()) params.append('searchCNIC', $('#searchCNIC').val());
-                if ($('#searchMAC').val()) params.append('searchMAC', $('#searchMAC').val());
-                if ($('#searchDataUtilization').val()) params.append('searchDataUtilization', $('#searchDataUtilization').val());
-                if ($('#searchEmail').val()) params.append('searchEmail', $('#searchEmail').val());
-                if ($('#searchPassport').val()) params.append('searchPassport', $('#searchPassport').val());
-                if ($('#searchAddress').val()) params.append('searchAddress', $('#searchAddress').val());
-                if ($('#searchCityState').val()) params.append('searchCityState', $('#searchCityState').val());
-                if ($('#searchCreationDate').val()) params.append('searchCreationDate', $('#searchCreationDate').val());
+
+                populateDropdown($managerProfileDropdown, options, selectedValue);
             }
 
-            const newUrl = `/users/get-users?${params.toString()}`;
-            window.history.replaceState(null, null, newUrl);
+            function populateResellerProfileDropdown(selectedValue = null) {
+                const $resellerProfileDropdown = $('#reseller-profile-dropdown');
 
-            $('#usersTableContainer').show();
+                if ($resellerProfileDropdown.length === 0) {
+                    console.warn('Reseller Profile dropdown not present for this user.');
+                    return;
+                }
 
-            if (!$.fn.dataTable.isDataTable('#usersTable')) {
-                $('#usersTable').DataTable({
-                    processing: true,
-                    serverSide: true,
-                    ajax: {
-                        url: '/users/get-filtered-users',
-                        type: 'GET',
-                        data: function (d) {
-                            d.resellerId            = $('#reseller-dropdown').val();
-                            d.contractorId          = $('#contractor-dropdown').val();
-                            d.traderId              = $('#trader-dropdown').val();
-                            d.managerProfile        = $('#manager-profile-dropdown').val();
-                            d.resellerProfile       = $('#reseller-profile-dropdown').val();
-                            d.contractorProfile     = $('#contractor-profile-dropdown').val();
-                            d.subdealerProfile      = $('#subdealer-profile-dropdown').val();
-                            d.chargeOnRange         = $('#chargeOnRange').val();
-                            d.expireOnRange         = $('#expireOnRange').val();
-                            d.searchIP              = $('#searchIP').val();
-                            d.verifiedBy            = $('#verifiedBy').val();
-                            d.userStatus            = $('#userStatus').val();
-                            d.cardStatus            = $('#cardStatus').val();
-                            d.searchPhone           = $('#searchPhone').val();
-                            d.searchCNIC            = $('#searchCNIC').val();
-                            d.searchMAC             = $('#searchMAC').val();
-                            d.searchDataUtilization = $('#searchDataUtilization').val();
-                            d.searchEmail           = $('#searchEmail').val();
-                            d.searchAddress         = $('#searchAddress').val();
-                            d.searchCityState       = $('#searchCityState').val();
-                            d.searchCreation        = $('#searchCreation').val();
+                const resellerProfileData = $('#reseller-profile-data').text();
+                if (!resellerProfileData) {
+                    console.error('No reseller data available.');
+                    return;
+                }
+
+                const resellerProfiles = JSON.parse(resellerProfileData);
+                const options = resellerProfiles.map(function(resellerProfile) {
+                    return {
+                        value: resellerProfile.name,
+                        text: resellerProfile.name,
+                    };
+                });
+
+                populateDropdown($resellerProfileDropdown, options, selectedValue);
+            }
+
+            function populateContractorProfileDropdown(selectedValue = null) {
+                const $contractorProfileDropdown = $('#contractor-profile-dropdown');
+
+                if ($contractorProfileDropdown.length === 0) {
+                    console.warn('Contractor Profile dropdown not present for this user.');
+                    return;
+                }
+
+                const contractorProfileData = $('#contractor-profile-data').text();
+                if (!contractorProfileData) {
+                    console.error('No contractor data available.');
+                    return;
+                }
+
+                const contractorProfiles = JSON.parse(contractorProfileData);
+                const options = contractorProfiles.map(function(contractorProfile) {
+                    return {
+                        value: contractorProfile.name,
+                        text: contractorProfile.name,
+                    };
+                });
+
+                populateDropdown($contractorProfileDropdown, options, selectedValue);
+            }
+
+            function populateSubdealerProfileDropdown(selectedValue = null) {
+                const $subdealerProfileDropdown = $('#subdealer-profile-dropdown');
+
+                if ($subdealerProfileDropdown.length === 0) {
+                    console.warn('Subdealer Profile dropdown not present for this user.');
+                    return;
+                }
+
+                const subdealerProfileData = $('#subdealer-profile-data').text();
+                if (!subdealerProfileData) {
+                    console.error('No subdealer data available.');
+                    return;
+                }
+
+                const subdealerProfiles = JSON.parse(subdealerProfileData);
+                const options = subdealerProfiles.map(function(subdealerProfile) {
+                    return {
+                        value: subdealerProfile.name,
+                        text: subdealerProfile.name,
+                    };
+                });
+
+                populateDropdown($subdealerProfileDropdown, options, selectedValue);
+            }
+
+            $('#reseller-dropdown').on('change', function() {
+                $('#contractor-dropdown').html('<option value="">-- Select Contractor --</option>').val('').trigger('change');
+                $('#trader-dropdown').html('<option value="">-- Select Trader --</option>').val('').trigger('change');
+
+                const resellerId = $(this).val();
+                populateContractorDropdown(resellerId);
+            });
+
+            $('#contractor-dropdown').on('change', function() {
+                $('#trader-dropdown').html('<option value="">-- Select Trader --</option>').val('').trigger('change');
+                const traderId = $(this).val();
+                populateTraderDropdown(traderId);
+            });
+
+            async function populateFilters(params) {
+                isPopulatingFilters = true;
+
+                const isReseller = $('#reseller-dropdown').length === 0;
+                if (!isReseller) {
+                    if (params.resellerId) {
+                        await populateResellerDropdown(params.resellerId);
+                    } else {
+                        await populateResellerDropdown();
+                    }
+                } else {
+                    console.log("Logged in as Reseller. Skipping Reseller Dropdown Population.");
+                }
+
+                if (params.contractorId) {
+                    const resellerId = isReseller ?
+                        $('meta[name="reseller-id"]').attr('content') :
+                        params.resellerId;
+
+                    if (resellerId) {
+                        await $.ajax({
+                            url: "{{ route('get.dealer') }}",
+                            type: 'POST',
+                            data: {
+                                reseller_id: resellerId,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                const options = response.dealer.map(dealer => ({
+                                    value: dealer.username,
+                                    text: dealer.username,
+                                }));
+                                populateDropdown($('#contractor-dropdown'), options, params.contractorId);
+                            },
+                            error: function() {
+                                console.error('Error fetching contractors');
+                            },
+                        });
+                    } else {
+                        console.warn('No Reseller ID available to fetch contractors.');
+                    }
+                }
+
+                if (params.traderId && params.contractorId) {
+                    await $.ajax({
+                        url: "{{ route('get.trader') }}",
+                        type: 'POST',
+                        data: {
+                            dealer_id: params.contractorId,
+                            _token: '{{ csrf_token() }}'
                         },
-                    },
-                    columns: [
-                        { data: 'id', name: 'id' },
-                        { data: 'username', name: 'username' },
-                        { data: 'email', name: 'email' },
-                        { data: 'status', name: 'status' },
-                        {
-                            data: 'id', // Pass the user's ID to the button
-                            name: 'action',
-                            orderable: false,
-                            searchable: false,
-                            render: function (data, type, row) {
-                                return `
+                        success: function(response) {
+                            const options = response.subdealer.map(subdealer => ({
+                                value: subdealer.username,
+                                text: subdealer.username,
+                            }));
+                            populateDropdown($('#trader-dropdown'), options, params.traderId);
+                        },
+                        error: function() {
+                            console.error('Error fetching traders');
+                        },
+                    });
+                }
+
+                const isManagerProfile = $('#manager-profile-dropdown').length === 0;
+                if (!isManagerProfile) {
+                    if (params.managerProfile) {
+                        await populateManagerProfileDropdown(params.managerProfile);
+                    } else {
+                        await populateManagerProfileDropdown();
+                    }
+                }
+
+                const isResellerProfile = $('#reseller-profile-dropdown').length === 0;
+                if (!isResellerProfile) {
+                    if (params.resellerProfile) {
+                        await populateResellerProfileDropdown(params.resellerProfile);
+                    } else {
+                        await populateResellerProfileDropdown();
+                    }
+                }
+
+                const isContractorProfile = $('#contractor-profile-dropdown').length === 0;
+                if (!isContractorProfile) {
+                    if (params.contractorProfile) {
+                        await populateContractorProfileDropdown(params.contractorProfile);
+                    } else {
+                        await populateContractorProfileDropdown();
+                    }
+                }
+
+                const isSubdealerProfile = $('#subdealer-profile-dropdown').length === 0;
+                if (!isSubdealerProfile) {
+                    if (params.subdealerProfile) {
+                        await populateSubdealerProfileDropdown(params.subdealerProfile);
+                    } else {
+                        await populateSubdealerProfileDropdown();
+                    }
+                }
+
+                function toggleDropdownVisibility(dropdownId, paramValue) {
+                    const $dropdown = $(`#${dropdownId}`);
+                    const $container = $dropdown.closest('.hideable');
+
+                    if (paramValue) {
+                        $container.removeClass('hide');
+                        $dropdown.val(paramValue).trigger('change');
+                    } else {
+                        $container.addClass('hide');
+                        $dropdown.val('').trigger('change');
+                    }
+                }
+
+                toggleDropdownVisibility('userStatus', params.userStatus);
+                toggleDropdownVisibility('chargeOnRange', params.chargeOnRange);
+                toggleDropdownVisibility('expireOnRange', params.expireOnRange);
+                toggleDropdownVisibility('searchIP', params.searchIP);
+                toggleDropdownVisibility('verifiedBy', params.verifiedBy);
+                toggleDropdownVisibility('cardStatus', params.cardStatus);
+                toggleDropdownVisibility('searchPhone', params.searchPhone);
+                toggleDropdownVisibility('searchCNIC', params.searchCNIC);
+                toggleDropdownVisibility('searchMAC', params.searchMAC);
+                toggleDropdownVisibility('searchDataUtilization', params.searchDataUtilization);
+                toggleDropdownVisibility('searchEmail', params.searchEmail);
+                toggleDropdownVisibility('searchPassport', params.searchPassport);
+                toggleDropdownVisibility('searchAddress', params.searchAddress);
+                toggleDropdownVisibility('searchCityState', params.searchCityState);
+                toggleDropdownVisibility('searchCreation', params.searchCreation);
+
+                const selectedColumns = [];
+                if (params.userStatus) selectedColumns.push('status');
+                if (params.chargeOnRange) selectedColumns.push('charge');
+                if (params.expireOnRange) selectedColumns.push('expire');
+                if (params.searchIP) selectedColumns.push('ip');
+                if (params.verifiedBy) selectedColumns.push('verified');
+                if (params.cardStatus) selectedColumns.push('active');
+                if (params.searchPhone) selectedColumns.push('phone');
+                if (params.searchCNIC) selectedColumns.push('cnic');
+                if (params.searchMAC) selectedColumns.push('mac');
+                if (params.searchDataUtilization) selectedColumns.push('data');
+                if (params.searchEmail) selectedColumns.push('email');
+                if (params.searchPassport) selectedColumns.push('passport');
+                if (params.searchAddress) selectedColumns.push('address');
+                if (params.searchCityState) selectedColumns.push('city');
+                if (params.searchCreation) selectedColumns.push('date');
+
+                $('#multiSelect').val(selectedColumns).trigger('change');
+
+                isPopulatingFilters = false;
+            }
+
+
+            function fetchData(queryParams = null) {
+                const params = new URLSearchParams();
+
+                if (queryParams) {
+                    Object.keys(queryParams).forEach((key) => {
+                        params.append(key, queryParams[key]);
+                    });
+                } else {
+                    if ($('#reseller-dropdown').val()) params.append('resellerId', $('#reseller-dropdown').val());
+                    if ($('#contractor-dropdown').val()) params.append('contractorId', $('#contractor-dropdown').val());
+                    if ($('#trader-dropdown').val()) params.append('traderId', $('#trader-dropdown').val());
+                    if ($('#manager-profile-dropdown').val()) params.append('managerProfile', $('#manager-profile-dropdown').val());
+                    if ($('#reseller-profile-dropdown').val()) params.append('resellerProfile', $('#reseller-profile-dropdown').val());
+                    if ($('#contractor-profile-dropdown').val()) params.append('contractorProfile', $('#contractor-profile-dropdown').val());
+                    if ($('#subdealer-profile-dropdown').val()) params.append('subdealerProfile', $('#subdealer-profile-dropdown').val());
+                    if ($('#chargeOnRange').val()) params.append('chargeOnRange', $('#chargeOnRange').val());
+                    if ($('#expireOnRange').val()) params.append('expireOnRange', $('#expireOnRange').val());
+                    if ($('#searchIP').val()) params.append('searchIP', $('#searchIP').val());
+                    if ($('#verifiedBy').val()) params.append('verifiedBy', $('#verifiedBy').val());
+                    if ($('#userStatus').val()) params.append('userStatus', $('#userStatus').val());
+                    if ($('#cardStatus').val()) params.append('cardStatus', $('#cardStatus').val());
+                    if ($('#searchPhone').val()) params.append('searchPhone', $('#searchPhone').val());
+                    if ($('#searchCNIC').val()) params.append('searchCNIC', $('#searchCNIC').val());
+                    if ($('#searchMAC').val()) params.append('searchMAC', $('#searchMAC').val());
+                    if ($('#searchDataUtilization').val()) params.append('searchDataUtilization', $('#searchDataUtilization').val());
+                    if ($('#searchEmail').val()) params.append('searchEmail', $('#searchEmail').val());
+                    if ($('#searchPassport').val()) params.append('searchPassport', $('#searchPassport').val());
+                    if ($('#searchAddress').val()) params.append('searchAddress', $('#searchAddress').val());
+                    if ($('#searchCityState').val()) params.append('searchCityState', $('#searchCityState').val());
+                    if ($('#searchCreationDate').val()) params.append('searchCreationDate', $('#searchCreationDate').val());
+                }
+
+                const newUrl = `/users/get-users?${params.toString()}`;
+                window.history.replaceState(null, null, newUrl);
+
+                $('#usersTableContainer').show();
+
+                if (!$.fn.dataTable.isDataTable('#usersTable')) {
+                    $('#usersTable').DataTable({
+                        processing: true,
+                        serverSide: true,
+                        ajax: {
+                            url: '/users/get-filtered-users',
+                            type: 'GET',
+                            data: function(d) {
+                                d.resellerId = $('#reseller-dropdown').val();
+                                d.contractorId = $('#contractor-dropdown').val();
+                                d.traderId = $('#trader-dropdown').val();
+                                d.managerProfile = $('#manager-profile-dropdown').val();
+                                d.resellerProfile = $('#reseller-profile-dropdown').val();
+                                d.contractorProfile = $('#contractor-profile-dropdown').val();
+                                d.subdealerProfile = $('#subdealer-profile-dropdown').val();
+                                d.chargeOnRange = $('#chargeOnRange').val();
+                                d.expireOnRange = $('#expireOnRange').val();
+                                d.searchIP = $('#searchIP').val();
+                                d.verifiedBy = $('#verifiedBy').val();
+                                d.userStatus = $('#userStatus').val();
+                                d.cardStatus = $('#cardStatus').val();
+                                d.searchPhone = $('#searchPhone').val();
+                                d.searchCNIC = $('#searchCNIC').val();
+                                d.searchMAC = $('#searchMAC').val();
+                                d.searchDataUtilization = $('#searchDataUtilization').val();
+                                d.searchEmail = $('#searchEmail').val();
+                                d.searchAddress = $('#searchAddress').val();
+                                d.searchCityState = $('#searchCityState').val();
+                                d.searchCreation = $('#searchCreation').val();
+                            },
+                        },
+                        columns: [{
+                                data: 'id',
+                                name: 'id'
+                            },
+                            {
+                                data: 'username',
+                                name: 'username'
+                            },
+                            {
+                                data: 'email',
+                                name: 'email'
+                            },
+                            {
+                                data: 'status',
+                                name: 'status'
+                            },
+                            {
+                                data: 'id',
+                                name: 'action',
+                                orderable: false,
+                                searchable: false,
+                                render: function(data, type, row) {
+                                    return `
                                 <button class="btn btn-sm view-user-details" data-id="${data}" style="background-color: #17a2b8; border-color: #17a2b8; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
                                     <i class="fa fa-eye" style="font-size: 18px;"></i>
                                 </button>
 
                                 `;
-                            }
-                        },
-                    ],
-                });
-            } else {
-                $('#usersTable').DataTable().ajax.reload();
-            }
-        }
-
-        (async function () {
-            const queryParams = getQueryParams();
-
-            if (Object.keys(queryParams).length > 0) {
-                await populateFilters(queryParams);
-                fetchData(queryParams);
-            } else {
-                console.log('No query parameters present. Skipping fetchData.');
-            }
-        })();
-
-        $('#getUsers').on('click', function () {
-            let isSelectFilter = false;
-            if (
-                !$('#reseller-dropdown').val() &&
-                !$('#contractor-dropdown').val() &&
-                !$('#trader-dropdown').val() &&
-                !$('#manager-profile-dropdown').val() &&
-                !$('#reseller-profile-dropdown').val() &&
-                !$('#contractor-profile-dropdown').val() &&
-                !$('#subdealer-profile-dropdown').val() &&
-                !$('#chargeOnRange').val() &&
-                !$('#expireOnRange').val() &&
-                !$('#searchIP').val() &&
-                !$('#verifiedBy').val() &&
-                !$('#userStatus').val() &&
-                !$('#cardStatus').val() &&
-                !$('#searchPhone').val() &&
-                !$('#searchCNIC').val() &&
-                !$('#searchMAC').val() &&
-                !$('#searchDataUtilization').val() &&
-                !$('#searchEmail').val() &&
-                !$('#searchPassport').val() &&
-                !$('#searchAddress').val() &&
-                !$('#searchCityState').val() &&
-                !$('#searchCreation').val()
-            ) {
-                alert('Please select atleast one filter');
-                return;
+                                }
+                            },
+                        ],
+                    });
+                } else {
+                    $('#usersTable').DataTable().ajax.reload();
+                }
             }
 
-            fetchData();
-        });
+            (async function() {
+                const queryParams = getQueryParams();
 
-        $('#chargeOnRange').daterangepicker({
-            autoUpdateInput: false,
-            locale: {
-                cancelLabel: 'Clear',
-                format: 'YYYY-MM-DD'
-            }
-        });
+                if (Object.keys(queryParams).length > 0) {
+                    await populateFilters(queryParams);
+                    fetchData(queryParams);
+                } else {
+                    console.log('No query parameters present. Skipping fetchData.');
+                }
+            })();
 
-        $('#chargeOnRange').on('apply.daterangepicker', function (ev, picker) {
-            $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-        });
+            $('#getUsers').on('click', function() {
+                let isSelectFilter = false;
+                if (
+                    !$('#reseller-dropdown').val() &&
+                    !$('#contractor-dropdown').val() &&
+                    !$('#trader-dropdown').val() &&
+                    !$('#manager-profile-dropdown').val() &&
+                    !$('#reseller-profile-dropdown').val() &&
+                    !$('#contractor-profile-dropdown').val() &&
+                    !$('#subdealer-profile-dropdown').val() &&
+                    !$('#chargeOnRange').val() &&
+                    !$('#expireOnRange').val() &&
+                    !$('#searchIP').val() &&
+                    !$('#verifiedBy').val() &&
+                    !$('#userStatus').val() &&
+                    !$('#cardStatus').val() &&
+                    !$('#searchPhone').val() &&
+                    !$('#searchCNIC').val() &&
+                    !$('#searchMAC').val() &&
+                    !$('#searchDataUtilization').val() &&
+                    !$('#searchEmail').val() &&
+                    !$('#searchPassport').val() &&
+                    !$('#searchAddress').val() &&
+                    !$('#searchCityState').val() &&
+                    !$('#searchCreation').val()
+                ) {
+                    alert('Please select atleast one filter');
+                    return;
+                }
 
-        $('#chargeOnRange').on('cancel.daterangepicker', function (ev, picker) {
-            $(this).val('');
-        });
+                fetchData();
+            });
 
-        $('#expireOnRange').daterangepicker({
-            autoUpdateInput: false,
-            locale: {
-                cancelLabel: 'Clear',
-                format: 'YYYY-MM-DD'
-            }
-        });
+            $('#chargeOnRange').daterangepicker({
+                autoUpdateInput: false,
+                locale: {
+                    cancelLabel: 'Clear',
+                    format: 'YYYY-MM-DD'
+                }
+            });
 
-        $('#expireOnRange').on('apply.daterangepicker', function (ev, picker) {
-            $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-        });
+            $('#chargeOnRange').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+            });
 
-        $('#expireOnRange').on('cancel.daterangepicker', function (ev, picker) {
-            $(this).val('');
-        });
+            $('#chargeOnRange').on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+            });
 
-        $(document).on('click', '.view-user-details', function () {
-            const userId = $(this).data('id');
+            $('#expireOnRange').daterangepicker({
+                autoUpdateInput: false,
+                locale: {
+                    cancelLabel: 'Clear',
+                    format: 'YYYY-MM-DD'
+                }
+            });
 
-            // Make an AJAX call to fetch user details
-            $.ajax({
-                url: `/users/details/${userId}`, // API endpoint to fetch user details
-                type: 'GET',
-                success: function (response) {
-                    $('#userDetailsContent').html(`
+            $('#expireOnRange').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+            });
+
+            $('#expireOnRange').on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+            });
+
+            $(document).on('click', '.view-user-details', function() {
+                const userId = $(this).data('id');
+
+                $.ajax({
+                    url: `/users/details/${userId}`,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#userDetailsContent').html(`
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
@@ -1122,17 +1176,14 @@
                             </tbody>
                         </table>
                     `);
-                    $('#userDetailsModal').modal('show');
-                },
-                error: function (error) {
-                    console.error('Error fetching user details:', error);
-                    alert('Failed to fetch user details.');
-                }
+                        $('#userDetailsModal').modal('show');
+                    },
+                    error: function(error) {
+                        console.error('Error fetching user details:', error);
+                        alert('Failed to fetch user details.');
+                    }
+                });
             });
         });
-
-
-    });
-</script>
-
+    </script>
 @endsection
