@@ -24,13 +24,13 @@ class GetUserController extends Controller
                         'user_info.username',
                         'user_info.email',
                         'user_info.status',
-                        'user_info.mobilephone',       // phone
-                        'user_info.nic',              // CNIC
-                        'user_info.mac_address',      // MAC
-                        'user_info.address',          // Address
-                        'user_info.city',             // City
-                        'user_info.state',            // State
-                        'user_info.passport',         // Passport
+                        'user_info.mobilephone',
+                        'user_info.nic',
+                        'user_info.mac_address',
+                        'user_info.address',
+                        'user_info.city',
+                        'user_info.state',
+                        'user_info.passport',
                         'user_ip_status.ip as ip_address',
                         'user_status_info.card_charge_on',
                         'user_status_info.card_expire_on',

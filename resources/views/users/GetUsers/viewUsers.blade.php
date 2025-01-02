@@ -199,7 +199,6 @@
                                     <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                     <span style="position:absolute; right: 15px;bottom: 10px"><i class="fa fa-chevron-down"></i></span>
                                     <select id="multiSelect" class="form-select js-select2" multiple>
-                                        <!-- <option>-- Select --</option> -->
                                         <option value="ip">IP</option>
                                         <option value="phone">Phone Number</option>
                                         <option value="cnic">CNIC</option>
@@ -219,7 +218,6 @@
                                     </select>
                                 </div>
                             </div>
-                            <!-- Profile -->
                             @if ($panelof == 'manager')
                                 @php
                                     $profiles = \App\model\Users\ManagerProfileRate::where('manager_id', Auth::user()->manager_id)
@@ -296,7 +294,6 @@
                                 </div>
                                 <div id="subdealer-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
                             @endif
-                            <!-- End Profile -->
                             <div class="col-md-3 hideable hide" id="ip">
                                 <div class="form-group position-relative">
                                     <label for="searchIP">IP Address</label>
@@ -447,7 +444,6 @@
                 </div>
                 <div class="modal-body">
                     <div id="userDetailsContent">
-                        <!-- User details will be dynamically loaded here -->
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -986,27 +982,19 @@
 
                 $('#usersTableContainer').show();
 
-                // 1) Destroy existing DataTable (if any) so we can rebuild columns.
                 if ($.fn.DataTable.isDataTable('#usersTable')) {
                     $('#usersTable').DataTable().clear().destroy();
                     $('#usersTable thead').remove();
                     $('#usersTable tbody').remove();
                 }
 
-                // 2) Gather which filters are currently selected
                 const selectedFilters = $('#multiSelect').val() || [];
 
-                // 3) Start building columns array:
-                //    Always show "Username" first.
                 let columns = [{
                     data: 'username',
                     name: 'username',
-                    title: 'Username' // optional to set your own column header text
+                    title: 'Username'
                 }, ];
-
-                // 4) Conditionally add columns if that filter is selected.
-                //    For each filter, add the correct `data` property that
-                //    matches the field name coming from the server.
 
                 if (selectedFilters.includes('email')) {
                     columns.push({
@@ -1067,72 +1055,67 @@
                 }
                 if (selectedFilters.includes('data')) {
                     columns.push({
-                        data: 'data_utilization',  // must match the field name from the server
+                        data: 'data_utilization',
                         name: 'data_utilization',
                         title: 'Data (GBs)',
                     });
                 }
                 if (selectedFilters.includes('status')) {
                     columns.push({
-                        data: 'status',    // must exist in the server's SELECT, e.g. 'user_info.status'
+                        data: 'status',
                         name: 'status',
                         title: 'Consumer Status'
                     });
-                    }
+                }
 
-                    if (selectedFilters.includes('active')) {
+                if (selectedFilters.includes('active')) {
                     columns.push({
-                        data: 'card_active', // or whatever field indicates active/deactive
+                        data: 'card_active',
                         name: 'card_active',
                         title: 'Active/Deactive'
                     });
-                    }
+                }
 
-                    if (selectedFilters.includes('verified')) {
+                if (selectedFilters.includes('verified')) {
                     columns.push({
-                        // maybe you want to show user_verification info,
-                        // or combine verified_cnic + verified_mobile into one column, etc.
                         data: 'verified_cnic',
                         name: 'verified_cnic',
                         title: 'Verified By (CNIC)'
                     });
-                    // Or use a custom render function to show more
-                    }
+                }
 
-                    if (selectedFilters.includes('charge')) {
+                if (selectedFilters.includes('charge')) {
                     columns.push({
                         data: 'card_charge_on',
                         name: 'card_charge_on',
                         title: 'Charge On'
                     });
-                    }
+                }
 
-                    if (selectedFilters.includes('expire')) {
+                if (selectedFilters.includes('expire')) {
                     columns.push({
                         data: 'card_expire_on',
                         name: 'card_expire_on',
                         title: 'Expire On'
                     });
-                    }
+                }
 
-                    if (selectedFilters.includes('date')) {
+                if (selectedFilters.includes('date')) {
                     columns.push({
-                        data: 'creationdate',  // from user_info.creationdate
+                        data: 'creationdate',
                         name: 'creationdate',
                         title: 'Creation Date'
                     });
-                    }
+                }
 
-                    if (selectedFilters.includes('profile')) {
+                if (selectedFilters.includes('profile')) {
                     columns.push({
-                        data: 'name', // or your actual field for the internet profile name
+                        data: 'name',
                         name: 'name',
                         title: 'Internet Profile'
                     });
-                    }
+                }
 
-
-                // 5) We *always* want an action column at the end
                 columns.push({
                     data: 'id',
                     name: 'action',
@@ -1149,7 +1132,6 @@
                     },
                 });
 
-                // 6) Now re-initialize DataTables with this dynamic columns array:
                 $('#usersTable').append(`
                     <thead><tr></tr></thead>
                     <tbody></tbody>
@@ -1161,7 +1143,6 @@
                         url: '/users/get-filtered-users',
                         type: 'GET',
                         data: function(d) {
-                            // Pass along your filter params
                             d.resellerId = $('#reseller-dropdown').val();
                             d.contractorId = $('#contractor-dropdown').val();
                             d.traderId = $('#trader-dropdown').val();
@@ -1186,7 +1167,6 @@
                             d.searchCreation = $('#searchCreation').val();
                         },
                     },
-                    // The new dynamic columns array
                     columns: columns,
                 });
             }
