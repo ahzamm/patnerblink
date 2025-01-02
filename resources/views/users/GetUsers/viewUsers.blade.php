@@ -433,15 +433,6 @@
                         <h3 class="text-center">Advance Search Result</h3>
                     </div>
                     <table id="usersTable" class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
                     </table>
                 </section>
             </section>
@@ -995,72 +986,209 @@
 
                 $('#usersTableContainer').show();
 
-                if (!$.fn.dataTable.isDataTable('#usersTable')) {
-                    $('#usersTable').DataTable({
-                        processing: true,
-                        serverSide: true,
-                        ajax: {
-                            url: '/users/get-filtered-users',
-                            type: 'GET',
-                            data: function(d) {
-                                d.resellerId = $('#reseller-dropdown').val();
-                                d.contractorId = $('#contractor-dropdown').val();
-                                d.traderId = $('#trader-dropdown').val();
-                                d.managerProfile = $('#manager-profile-dropdown').val();
-                                d.resellerProfile = $('#reseller-profile-dropdown').val();
-                                d.contractorProfile = $('#contractor-profile-dropdown').val();
-                                d.subdealerProfile = $('#subdealer-profile-dropdown').val();
-                                d.chargeOnRange = $('#chargeOnRange').val();
-                                d.expireOnRange = $('#expireOnRange').val();
-                                d.searchIP = $('#searchIP').val();
-                                d.verifiedBy = $('#verifiedBy').val();
-                                d.userStatus = $('#userStatus').val();
-                                d.cardStatus = $('#cardStatus').val();
-                                d.searchPhone = $('#searchPhone').val();
-                                d.searchCNIC = $('#searchCNIC').val();
-                                d.searchMAC = $('#searchMAC').val();
-                                d.searchDataUtilization = $('#searchDataUtilization').val();
-                                d.searchEmail = $('#searchEmail').val();
-                                d.searchAddress = $('#searchAddress').val();
-                                d.searchCityState = $('#searchCityState').val();
-                                d.searchCreation = $('#searchCreation').val();
-                            },
-                        },
-                        columns: [{
-                                data: 'id',
-                                name: 'id'
-                            },
-                            {
-                                data: 'username',
-                                name: 'username'
-                            },
-                            {
-                                data: 'email',
-                                name: 'email'
-                            },
-                            {
-                                data: 'status',
-                                name: 'status'
-                            },
-                            {
-                                data: 'id',
-                                name: 'action',
-                                orderable: false,
-                                searchable: false,
-                                render: function(data, type, row) {
-                                    return `
-                                <button class="btn btn-sm view-user-details" data-id="${data}" style="background-color: #17a2b8; border-color: #17a2b8; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fa fa-eye" style="font-size: 18px;"></i>
-                                </button>
-
-                                `;
-                                }
-                            },
-                        ],
-                    });
-                } else {
-                    $('#usersTable').DataTable().ajax.reload();
+                // 1) Destroy existing DataTable (if any) so we can rebuild columns.
+                if ($.fn.DataTable.isDataTable('#usersTable')) {
+                    $('#usersTable').DataTable().clear().destroy();
+                    $('#usersTable thead').remove();
+                    $('#usersTable tbody').remove();
                 }
+
+                // 2) Gather which filters are currently selected
+                const selectedFilters = $('#multiSelect').val() || [];
+
+                // 3) Start building columns array:
+                //    Always show "Username" first.
+                let columns = [{
+                    data: 'username',
+                    name: 'username',
+                    title: 'Username' // optional to set your own column header text
+                }, ];
+
+                // 4) Conditionally add columns if that filter is selected.
+                //    For each filter, add the correct `data` property that
+                //    matches the field name coming from the server.
+
+                if (selectedFilters.includes('email')) {
+                    columns.push({
+                        data: 'email',
+                        name: 'email',
+                        title: 'Email'
+                    });
+                }
+                if (selectedFilters.includes('phone')) {
+                    columns.push({
+                        data: 'mobilephone',
+                        name: 'mobilephone',
+                        title: 'Phone'
+                    });
+                }
+                if (selectedFilters.includes('cnic')) {
+                    columns.push({
+                        data: 'nic',
+                        name: 'nic',
+                        title: 'CNIC'
+                    });
+                }
+                if (selectedFilters.includes('mac')) {
+                    columns.push({
+                        data: 'mac_address',
+                        name: 'mac_address',
+                        title: 'MAC Address'
+                    });
+                }
+                if (selectedFilters.includes('address')) {
+                    columns.push({
+                        data: 'address',
+                        name: 'address',
+                        title: 'Address'
+                    });
+                }
+                if (selectedFilters.includes('city')) {
+                    columns.push({
+                        data: 'city',
+                        name: 'city',
+                        title: 'City'
+                    });
+                }
+                if (selectedFilters.includes('passport')) {
+                    columns.push({
+                        data: 'passport',
+                        name: 'passport',
+                        title: 'Passport'
+                    });
+                }
+                if (selectedFilters.includes('ip')) {
+                    console.log("IP filter is selected");
+                    columns.push({
+                        data: 'ip_address',
+                        name: 'ip',
+                        title: 'IP Address'
+                    });
+                }
+                if (selectedFilters.includes('data')) {
+                    columns.push({
+                        data: 'data_utilization',  // must match the field name from the server
+                        name: 'data_utilization',
+                        title: 'Data (GBs)',
+                    });
+                }
+                if (selectedFilters.includes('status')) {
+                    columns.push({
+                        data: 'status',    // must exist in the server's SELECT, e.g. 'user_info.status'
+                        name: 'status',
+                        title: 'Consumer Status'
+                    });
+                    }
+
+                    if (selectedFilters.includes('active')) {
+                    columns.push({
+                        data: 'card_active', // or whatever field indicates active/deactive
+                        name: 'card_active',
+                        title: 'Active/Deactive'
+                    });
+                    }
+
+                    if (selectedFilters.includes('verified')) {
+                    columns.push({
+                        // maybe you want to show user_verification info,
+                        // or combine verified_cnic + verified_mobile into one column, etc.
+                        data: 'verified_cnic',
+                        name: 'verified_cnic',
+                        title: 'Verified By (CNIC)'
+                    });
+                    // Or use a custom render function to show more
+                    }
+
+                    if (selectedFilters.includes('charge')) {
+                    columns.push({
+                        data: 'card_charge_on',
+                        name: 'card_charge_on',
+                        title: 'Charge On'
+                    });
+                    }
+
+                    if (selectedFilters.includes('expire')) {
+                    columns.push({
+                        data: 'card_expire_on',
+                        name: 'card_expire_on',
+                        title: 'Expire On'
+                    });
+                    }
+
+                    if (selectedFilters.includes('date')) {
+                    columns.push({
+                        data: 'creationdate',  // from user_info.creationdate
+                        name: 'creationdate',
+                        title: 'Creation Date'
+                    });
+                    }
+
+                    if (selectedFilters.includes('profile')) {
+                    columns.push({
+                        data: 'name', // or your actual field for the internet profile name
+                        name: 'name',
+                        title: 'Internet Profile'
+                    });
+                    }
+
+
+                // 5) We *always* want an action column at the end
+                columns.push({
+                    data: 'id',
+                    name: 'action',
+                    title: 'Action',
+                    orderable: false,
+                    searchable: false,
+                    render: function(data, type, row) {
+                        return `
+                        <button class="btn btn-sm view-user-details" data-id="${data}"
+                            style="background-color: #17a2b8; border-color: #17a2b8; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa fa-eye" style="font-size: 18px;"></i>
+                        </button>
+                        `;
+                    },
+                });
+
+                // 6) Now re-initialize DataTables with this dynamic columns array:
+                $('#usersTable').append(`
+                    <thead><tr></tr></thead>
+                    <tbody></tbody>
+                `);
+                $('#usersTable').DataTable({
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: '/users/get-filtered-users',
+                        type: 'GET',
+                        data: function(d) {
+                            // Pass along your filter params
+                            d.resellerId = $('#reseller-dropdown').val();
+                            d.contractorId = $('#contractor-dropdown').val();
+                            d.traderId = $('#trader-dropdown').val();
+                            d.managerProfile = $('#manager-profile-dropdown').val();
+                            d.resellerProfile = $('#reseller-profile-dropdown').val();
+                            d.contractorProfile = $('#contractor-profile-dropdown').val();
+                            d.subdealerProfile = $('#subdealer-profile-dropdown').val();
+                            d.chargeOnRange = $('#chargeOnRange').val();
+                            d.expireOnRange = $('#expireOnRange').val();
+                            d.searchIP = $('#searchIP').val();
+                            d.verifiedBy = $('#verifiedBy').val();
+                            d.userStatus = $('#userStatus').val();
+                            d.cardStatus = $('#cardStatus').val();
+                            d.searchPhone = $('#searchPhone').val();
+                            d.searchCNIC = $('#searchCNIC').val();
+                            d.searchMAC = $('#searchMAC').val();
+                            d.searchDataUtilization = $('#searchDataUtilization').val();
+                            d.searchEmail = $('#searchEmail').val();
+                            d.searchPassport = $('#searchPassport').val();
+                            d.searchAddress = $('#searchAddress').val();
+                            d.searchCityState = $('#searchCityState').val();
+                            d.searchCreation = $('#searchCreation').val();
+                        },
+                    },
+                    // The new dynamic columns array
+                    columns: columns,
+                });
             }
 
             (async function() {

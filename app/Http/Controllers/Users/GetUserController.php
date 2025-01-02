@@ -19,19 +19,32 @@ class GetUserController extends Controller
     public function getFilterdUser(Request $request)
     {
         $query = UserInfo::query()
-            ->select([
-                'user_info.id',
-                'user_info.username',
-                'user_info.email',
-                'user_info.status',
-                'user_ip_status.ip as ip_address',
-            ])
-            ->distinct()
-            ->where('user_info.status', 'user')
-            ->leftJoin('user_status_info', 'user_info.username', '=', 'user_status_info.username')
-            ->leftJoin('user_ip_status', 'user_info.username', '=', 'user_ip_status.username')
-            ->leftJoin('user_verification', 'user_info.username', '=', 'user_verification.username')
-            ->leftJoin('disabled_users', 'user_info.username', '=', 'disabled_users.username');
+                    ->select([
+                        'user_info.id',
+                        'user_info.username',
+                        'user_info.email',
+                        'user_info.status',
+                        'user_info.mobilephone',       // phone
+                        'user_info.nic',              // CNIC
+                        'user_info.mac_address',      // MAC
+                        'user_info.address',          // Address
+                        'user_info.city',             // City
+                        'user_info.state',            // State
+                        'user_info.passport',         // Passport
+                        'user_ip_status.ip as ip_address',
+                        'user_status_info.card_charge_on',
+                        'user_status_info.card_expire_on',
+                        'user_verification.cnic as verified_cnic',
+                        'user_verification.mobile as verified_mobile',
+                        'disabled_users.status as disabled_status',
+                    ])
+                    ->distinct()
+                    ->where('user_info.status', 'user')
+                    ->leftJoin('user_status_info', 'user_info.username', '=', 'user_status_info.username')
+                    ->leftJoin('user_ip_status', 'user_info.username', '=', 'user_ip_status.username')
+                    ->leftJoin('user_verification', 'user_info.username', '=', 'user_verification.username')
+                    ->leftJoin('disabled_users', 'user_info.username', '=', 'disabled_users.username');
+
 
         $user = Auth::user();
         if ($user->status === 'reseller') {
