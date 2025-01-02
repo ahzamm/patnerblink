@@ -438,15 +438,14 @@
     <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="userDetailsModalLabel" style="color: #fff">User Details</h5>
+                <div class="modal-header" style="background-color: #007bff;">
+                    <h5 class="modal-title" id="userDetailsModalLabel" style="color: #fff; font-weight: bold;">User Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div id="userDetailsContent">
-                    </div>
+                <div class="modal-body" style="padding: 20px; background-color: #f8f9fa;">
+                    <div id="userDetailsContent" style="font-size: 14px; line-height: 1.6;"></div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" style="background-color: #f1f1f1;">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -993,7 +992,15 @@
                 let columns = [{
                     data: 'username',
                     name: 'username',
-                    title: 'Username'
+                    title: 'Username',
+                    render: function (data, type, row) {
+                        return `
+                            <div>
+                                <strong>${row.username}</strong><br>
+                                <small>${row.firstname || ''} ${row.lastname || ''}</small>
+                            </div>
+                        `;
+                    },
                 }, ];
 
                 if (selectedFilters.includes('email')) {
@@ -1122,12 +1129,15 @@
                     title: 'Action',
                     orderable: false,
                     searchable: false,
+                    className: 'text-center',
                     render: function(data, type, row) {
                         return `
-                        <button class="btn btn-sm view-user-details" data-id="${data}"
-                            style="background-color: #17a2b8; border-color: #17a2b8; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa fa-eye" style="font-size: 18px;"></i>
-                        </button>
+                        <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                            <button class="btn btn-sm view-user-details" data-id="${data}"
+                                style="background-color: #17a2b8; border-color: #17a2b8; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa fa-eye" style="font-size: 18px;"></i>
+                            </button>
+                        </div>
                         `;
                     },
                 });
@@ -1255,35 +1265,25 @@
                     type: 'GET',
                     success: function(response) {
                         $('#userDetailsContent').html(`
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Field</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td><strong>ID</strong></td><td>${response.id}</td></tr>
-                                <tr><td><strong>Username</strong></td><td>${response.username}</td></tr>
-                                <tr><td><strong>Email</strong></td><td>${response.email}</td></tr>
-                                <tr><td><strong>Status</strong></td><td>${response.status}</td></tr>
-                                <tr><td><strong>Address</strong></td><td>${response.address || 'N/A'}</td></tr>
-                                <tr><td><strong>City</strong></td><td>${response.city || 'N/A'}</td></tr>
-                                <tr><td><strong>State</strong></td><td>${response.state || 'N/A'}</td></tr>
-                                <tr><td><strong>Phone</strong></td><td>${response.mobilephone || 'N/A'}</td></tr>
-                                <tr><td><strong>MAC Address</strong></td><td>${response.mac_address || 'N/A'}</td></tr>
-                                <tr><td><strong>NIC</strong></td><td>${response.nic || 'N/A'}</td></tr>
-                                <tr><td><strong>Passport</strong></td><td>${response.passport || 'N/A'}</td></tr>
-                                <tr><td><strong>Creation Date</strong></td><td>${response.creationdate || 'N/A'}</td></tr>
-                                <tr><td><strong>IP Address</strong></td><td>${response.ip_address || 'N/A'}</td></tr>
-                                <tr><td><strong>Card Charge On</strong></td><td>${response.card_charge_on || 'N/A'}</td></tr>
-                                <tr><td><strong>Card Expire On</strong></td><td>${response.card_expire_on || 'N/A'}</td></tr>
-                                <tr><td><strong>Verified CNIC</strong></td><td>${response.verified_cnic || 'N/A'}</td></tr>
-                                <tr><td><strong>Verified Mobile</strong></td><td>${response.verified_mobile || 'N/A'}</td></tr>
-                                <tr><td><strong>Disabled Status</strong></td><td>${response.disabled_status || 'N/A'}</td></tr>
-                            </tbody>
-                        </table>
-                    `);
+                            <table class="table table-striped table-hover">
+                                <tbody>
+                                    <tr><th>Username</th><td>${response.username}</td></tr>
+                                    <tr><th>First Name</th><td>${response.firstname || 'N/A'}</td></tr>
+                                    <tr><th>Last Name</th><td>${response.lastname || 'N/A'}</td></tr>
+                                    <tr><th>Email</th><td>${response.email}</td></tr>
+                                    <tr><th>Address</th><td>${response.address || 'N/A'}</td></tr>
+                                    <tr><th>City</th><td>${response.city || 'N/A'}</td></tr>
+                                    <tr><th>Phone</th><td>${response.mobilephone || 'N/A'}</td></tr>
+                                    <tr><th>MAC Address</th><td>${response.mac_address || 'N/A'}</td></tr>
+                                    <tr><th>CNIC</th><td>${response.nic || 'N/A'}</td></tr>
+                                    <tr><th>Passport</th><td>${response.passport || 'N/A'}</td></tr>
+                                    <tr><th>IP Address</th><td>${response.ip_address || 'N/A'}</td></tr>
+                                    <tr><th>Creation Date</th><td>${response.creationdate || 'N/A'}</td></tr>
+                                    <tr><th>Verified CNIC</th><td>${response.verified_cnic || 'N/A'}</td></tr>
+                                    <tr><th>Verified Mobile</th><td>${response.verified_mobile || 'N/A'}</td></tr>
+                                </tbody>
+                            </table>
+                        `);
                         $('#userDetailsModal').modal('show');
                     },
                     error: function(error) {

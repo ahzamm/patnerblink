@@ -22,6 +22,8 @@ class GetUserController extends Controller
                     ->select([
                         'user_info.id',
                         'user_info.username',
+                        'user_info.firstname',
+                        'user_info.lastname',
                         'user_info.email',
                         'user_info.status',
                         'user_info.mobilephone',
@@ -133,7 +135,7 @@ class GetUserController extends Controller
             $query->where('user_info.passport', $request->searchPassport);
         }
         if ($request->filled('searchAddress')) {
-            $query->where('user_info.address', $request->searchAddress);
+            $query->where('user_info.address', 'like', '%' . $request->searchAddress . '%');
         }
         if ($request->filled('searchCityState')) {
             $query->where('user_info.city', $request->searchCityState)->orWhere('user_info.state', $request->searchCityState);
@@ -178,6 +180,8 @@ class GetUserController extends Controller
             ->select([
                 'user_info.id',
                 'user_info.username',
+                'user_info.firstname',
+                'user_info.lastname',
                 'user_info.email',
                 'user_info.status',
                 'user_info.address',
