@@ -774,6 +774,8 @@ Route::group(['prefix'=>'users'],function(){
     Route::get('/getNumOfOnlineUsers','Users\DashboardController@getNumOfOnlineUsers')->name('users.getNumOfOnlineUsers');
     Route::get('/getDisabledUser','Users\DashboardController@getDisabledUser')->name('getDisabledUser');
     Route::get('/getErrorLog','Users\DashboardController@getErrorLog')->name('getErrorLog');
+    Route::get('/login-logs-data', 'Users\DashboardController@getLoginLogs')->name('login.logs.data');
+
 
     Route::get('/users/index','Users\UserController@index')->name('users.user.index');
     Route::get('/users/expires/{status}','Users\UserController@epiredUser')->name('users.user.epiredUser');
