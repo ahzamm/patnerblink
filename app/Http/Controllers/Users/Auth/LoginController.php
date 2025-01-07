@@ -85,10 +85,15 @@ class LoginController extends Controller
 
         config(['session.cookie' => 'session_' . $tabIdentifier]);
 
+        $userAgent = $request->header('User-Agent');
+        $platform = $this->getPlatform($userAgent);
+        $browser = $this->getBrowser($userAgent);
         $loginAudit = new LoginAudit();
-        $loginAudit->username = $user->username;
+        $loginAudit->username = $request->username;
         $loginAudit->login_time = now();
         $loginAudit->ip = $request->ip();
+        $loginAudit->platform = $platform;
+        $loginAudit->os = $browser;
         $loginAudit->save();
 
         return $this->sendLoginResponse($request);
@@ -133,11 +138,15 @@ class LoginController extends Controller
         session()->put('test', session()->getId());
         $session = session()->get('test');
 
+        $userAgent = $request->header('User-Agent');
+        $platform = $this->getPlatform($userAgent);
+        $browser = $this->getBrowser($userAgent);
         $loginAudit = new LoginAudit();
         $loginAudit->username = $request->username;
-        $loginAudit->login_time = Now();
+        $loginAudit->login_time = now();
         $loginAudit->ip = $request->ip();
-        $loginAudit->sessionid = $session;
+        $loginAudit->platform = $platform;
+        $loginAudit->os = $browser;
         $loginAudit->save();
 
         if ($this->hasTooManyLoginAttempts($request)) {
@@ -195,5 +204,44 @@ class LoginController extends Controller
         throw ValidationException::withMessages([
             $this->username() => "Suspended User! You Can't Access this Account",
         ]);
+    }
+
+    private function getPlatform($userAgent)
+    {
+        $platforms = [
+            'Windows' => 'Windows',
+            'Macintosh' => 'macOS',
+            'Linux' => 'Linux',
+            'iPhone' => 'iOS',
+            'Android' => 'Android',
+        ];
+
+        foreach ($platforms as $key => $value) {
+            if (stripos($userAgent, $key) !== false) {
+                return $value;
+            }
+        }
+
+        return 'Unknown';
+    }
+
+    private function getBrowser($userAgent)
+    {
+        $browsers = [
+            'Firefox' => 'Firefox',
+            'Chrome' => 'Chrome',
+            'Safari' => 'Safari',
+            'MSIE' => 'Internet Explorer',
+            'Trident/7.0' => 'Internet Explorer 11',
+            'Edge' => 'Edge',
+        ];
+
+        foreach ($browsers as $key => $value) {
+            if (stripos($userAgent, $key) !== false) {
+                return $value;
+            }
+        }
+
+        return 'Unknown';
     }
 }

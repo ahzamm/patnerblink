@@ -20,7 +20,7 @@ class LoginAudit extends Model
      * @var array
      */
     protected $fillable = [
-        'username', 'login_time', 'ip'
+        'username', 'login_time', 'ip', 'platform', 'os'
     ];
 
     /**

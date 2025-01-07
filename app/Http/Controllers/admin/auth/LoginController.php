@@ -12,8 +12,6 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Session;
 use App\model\Users\UserInfo;
 
-
-
 class LoginController extends Controller
 {
     /*
@@ -55,37 +53,43 @@ class LoginController extends Controller
     {
         $url = url()->current();
         $parse = parse_url($url);
-        if($parse['host'] == 'manager.logon.com.pk' ){
+        if ($parse['host'] == 'manager.logon.com.pk') {
             return view('admin.auth.login');
-        }else{
-           abort(404);
+        } else {
+            abort(404);
         }
     }
 
-
-     public function username()
+    public function username()
     {
         return 'username';
     }
 
-       public function login(Request $request)
+    public function login(Request $request)
     {
-        if($request->username == 'admin' || $request->username == 'cyber'){
-           return $this->sendFailedLoginResponse($request);
+        if ($request->username == 'admin' || $request->username == 'cyber') {
+            return $this->sendFailedLoginResponse($request);
         }
         //
-        $disable = Admin::where('username',$request->username)->where('enable',0)->first();
-        if($disable){
+        $disable = Admin::where('username', $request->username)
+            ->where('enable', 0)
+            ->first();
+        if ($disable) {
             return $this->sendAgentBlock($request);
         }
         //
         //
         $this->validateLogin($request);
 
+        $userAgent = $request->header('User-Agent');
+        $platform = $this->getPlatform($userAgent);
+        $browser = $this->getBrowser($userAgent);
         $loginAudit = new LoginAudit();
         $loginAudit->username = $request->username;
-        $loginAudit->login_time = Now();
+        $loginAudit->login_time = now();
         $loginAudit->ip = $request->ip();
+        $loginAudit->platform = $platform;
+        $loginAudit->os = $browser;
         $loginAudit->save();
 
         // If the class is using the ThrottlesLogins trait, we can automatically throttle
@@ -98,7 +102,6 @@ class LoginController extends Controller
         }
 
         if ($this->attemptLogin($request)) {
-
             $tabIdentifier = session()->getId();
             config(['session.cookie' => 'session_' . $tabIdentifier]);
             Session::put('tab_id', $tabIdentifier);
@@ -114,17 +117,16 @@ class LoginController extends Controller
         return $this->sendFailedLoginResponse($request);
     }
 
-
-     public function logout(Request $request)
+    public function logout(Request $request)
     {
         $this->guard()->logout();
 
-        if(Auth::guard('user')->check()){
+        if (Auth::guard('user')->check()) {
             $request->session()->invalidate();
             $request->session()->flush();
             $request->session()->regenerate();
             return redirect()->route('admin.login.show');
-        }else{
+        } else {
             $request->session()->invalidate();
             $request->session()->flush();
             $request->session()->regenerate();
@@ -134,18 +136,52 @@ class LoginController extends Controller
 
     protected function guard()
     {
-        return Auth::guard("admin");
+        return Auth::guard('admin');
     }
 
     protected function sendAgentBlock(Request $request)
-{
-    throw ValidationException::withMessages([
-        $this->username() => "Suspended User! You Can't Access this Account",
-    ]);
-}
-
-
+    {
+        throw ValidationException::withMessages([
+            $this->username() => "Suspended User! You Can't Access this Account",
+        ]);
     }
 
+    private function getPlatform($userAgent)
+    {
+        $platforms = [
+            'Windows' => 'Windows',
+            'Macintosh' => 'macOS',
+            'Linux' => 'Linux',
+            'iPhone' => 'iOS',
+            'Android' => 'Android',
+        ];
 
+        foreach ($platforms as $key => $value) {
+            if (stripos($userAgent, $key) !== false) {
+                return $value;
+            }
+        }
 
+        return 'Unknown';
+    }
+
+    private function getBrowser($userAgent)
+    {
+        $browsers = [
+            'Firefox' => 'Firefox',
+            'Chrome' => 'Chrome',
+            'Safari' => 'Safari',
+            'MSIE' => 'Internet Explorer',
+            'Trident/7.0' => 'Internet Explorer 11',
+            'Edge' => 'Edge',
+        ];
+
+        foreach ($browsers as $key => $value) {
+            if (stripos($userAgent, $key) !== false) {
+                return $value;
+            }
+        }
+
+        return 'Unknown';
+    }
+}
