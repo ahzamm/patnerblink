@@ -58,7 +58,6 @@
 @endsection
 @section('content')
     <div class="page-container row-fluid container-fluid">
-        <!-- CONTENT START -->
         <section id="main-content">
             <section class="wrapper main-wrapper row">
 
@@ -78,7 +77,7 @@
                         $dealerid = empty(Auth::user()->dealerid) ? null : Auth::user()->dealerid;
                         $sub_dealer_id = empty(Auth::user()->sub_dealer_id) ? null : Auth::user()->sub_dealer_id;
                         $trader_id = empty(Auth::user()->trader_id) ? null : Auth::user()->trader_id;
-                        //
+
                         if (empty($resellerid)) {
                             $panelof = 'manager';
                         } elseif (empty($dealerid)) {
@@ -214,7 +213,6 @@
         $(document).ready(function() {
             let table
             get_upcomming_expiry_users();
-            // Initialize the DataTable on button click
             $('#loadData').on('click', function() {
                 get_upcomming_expiry_users();
             });
@@ -225,10 +223,9 @@
                 let searchFilter = $('#searchFilter').val();
 
                 if (table) {
-                    table.destroy(); // Destroy existing table if it exists
+                    table.destroy();
                 }
 
-                // Initialize the DataTable
                 table = $('#example-2').DataTable({
                     processing: true,
                     serverSide: true,
@@ -287,7 +284,6 @@
                             name: 'sub_dealer_id'
                         }
                     ],
-                    // order: [[1, 'asc']],
                     createdRow: function(row, data, dataIndex) {
                         if (data.remaining_days < 1) {
                             $('td:eq(5)', row).html('<span class="blinkMe">to day(s)</span>');
@@ -297,20 +293,16 @@
                     }
                 });
 
-                // Reload the DataTable with new data based on selected filters
                 table.ajax.reload();
             }
-            // Handle the change in the dealer dropdown
             $('#dealer-dropdown').change(function() {
                 const tradersUsername = $(this).val();
 
-                // Clear the traders dropdown if no trader is selected
                 if (!tradersUsername) {
                     $('#trader-dropdown').html('<option value="">-- Select Trader --</option>');
                     return;
                 }
 
-                // Send AJAX request to fetch traders for the selected dealer
                 $.ajax({
                     url: "{{ route('get.trader') }}",
                     type: 'POST',
@@ -319,10 +311,9 @@
                     },
                     success: function(response) {
                         const traderDropdown = $('#trader-dropdown');
-                        traderDropdown.empty(); // Clear existing options
+                        traderDropdown.empty();
                         traderDropdown.append('<option value="">-- Select Trader --</option>');
 
-                        // Populate the trader options dynamically
                         $.each(response.subdealer, function(index, trader) {
                             traderDropdown.append(`<option value="${trader.sub_dealer_id}">${trader.sub_dealer_id}</option>`);
                         });
