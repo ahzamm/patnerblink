@@ -262,11 +262,11 @@
                 <a class="" href="{{('#changePass')}}" data-toggle="modal" ><i
                   class="fa fa-unlock-alt"> </i>Change Password</a>
                 </li>
-              <li>
-                <a class="" href="{{('#loginLogs')}}" data-toggle="modal" ><i
-                  class="fa fa-list"> </i>Login Logs</a>
+                <li>
+                    <a class="" href="#" data-toggle="modal" data-target="#loginLogs" id="openLoginLogs">
+                        <i class="fa fa-list"></i> Login Logs
+                    </a>
                 </li>
-
                 <li class="last">
                   <form id="logout-form" action="{{ route('users.logout') }}" method="POST" style="display: none;">
                     @csrf

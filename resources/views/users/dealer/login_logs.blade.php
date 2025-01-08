@@ -17,6 +17,8 @@
                                     <th>Login Time</th>
                                     <th>Status</th>
                                     <th>IP Address</th>
+                                    <th>Platform</th>
+                                    <th>Operating System</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -29,26 +31,41 @@
         </div>
     </div>
 </div>
-
-<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#loginLogsTable').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: "{{ route('login.logs.data') }}",
-                type: 'GET'
-            },
-            pageLength: 10, // Load 10 records at a time
-            columns: [
-                { data: 'username', name: 'username' },
-                { data: 'login_time', name: 'login_time' },
-                { data: 'status', name: 'status' },
-                { data: 'ip', name: 'ip' },
-            ],
-            lengthChange: false, // Disable length dropdown
-            paging: true, // Enable pagination
+        let isTableInitialized = false; // Flag to check if the table is already initialized
+
+        $('#openLoginLogs').on('click', function() {
+            if (!isTableInitialized) { // Initialize DataTable only if it hasn't been initialized
+                $('#loginLogsTable').DataTable({
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: "{{ route('login.logs.data') }}",
+                        type: 'GET'
+                    },
+                    pageLength: 10, // Load 10 records at a time
+                    columns: [
+                        { data: 'username', name: 'username' },
+                        { data: 'login_time', name: 'login_time' },
+                        { data: 'status', name: 'status' },
+                        { data: 'ip', name: 'ip' },
+                        { data: 'platform', name: 'platform' },
+                        { data: 'os', name: 'os' },
+                    ],
+                    lengthChange: false, // Disable length dropdown
+                    paging: true, // Enable pagination
+                });
+                isTableInitialized = true; // Set flag to true after initialization
+            }
+        });
+
+        // Optional: Destroy table if modal is hidden (to reload data each time modal is opened)
+        $('#loginLogs').on('hidden.bs.modal', function() {
+            if (isTableInitialized) {
+                $('#loginLogsTable').DataTable().destroy();
+                isTableInitialized = false;
+            }
         });
     });
 </script>

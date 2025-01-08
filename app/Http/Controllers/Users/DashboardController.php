@@ -463,16 +463,23 @@ class DashboardController extends Controller
             $whereArray[] = ['sub_dealer_id', '=', $sub_dealer_id];
         }
 
-        // Build the query
         $query = LoginAudit::join('user_info', 'login_audit.username', '=', 'user_info.username')
             ->where($whereArray)
             ->where('user_info.status', 'user')
-            ->select('login_audit.username', 'login_audit.login_time', 'login_audit.status', 'login_audit.ip');
+            ->select(
+                'login_audit.username',
+                'login_audit.login_time',
+                'login_audit.status',
+                'login_audit.ip',
+                'login_audit.platform',
+                'login_audit.os'
+            )
+            ->orderBy('login_audit.login_time', 'desc');
 
-        // Use DataTables for server-side processing
         return DataTables::of($query)
+            ->editColumn('login_time', function ($log) {
+                return \Carbon\Carbon::parse($log->login_time)->format('Y-m-d H:i:s');
+            })
             ->make(true);
     }
-
-
 }
