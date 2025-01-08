@@ -29,7 +29,7 @@ use Yajra\DataTables\Facades\DataTables;
 
 class DashboardController extends Controller
 {
-      /**
+    /**
      * Create a new controller instance.
      *
      * @return void
@@ -42,20 +42,20 @@ class DashboardController extends Controller
 
     public function index(Request $request)
     {
-        $cacti_id              = 0;
-        $status                = Auth::user()->status;
-        $id                    = Auth::user()->id;
-        $profileCollection     = '';
-        $currentUser           = '';
-        $activeUser            = '';
+        $cacti_id = 0;
+        $status = Auth::user()->status;
+        $id = Auth::user()->id;
+        $profileCollection = '';
+        $currentUser = '';
+        $activeUser = '';
         $upcoming_expiry_users = null;
-        $verified_users        = '';
-        $mobVerify             = '';
-        $verifyRestricted      = null;
-        $onlineUser            = null;
-        $diabledUser           = null;
-        $invalidLogins         = null;
-        $fewonlineUsers        = null;
+        $verified_users = '';
+        $mobVerify = '';
+        $verifyRestricted = null;
+        $onlineUser = null;
+        $diabledUser = null;
+        $invalidLogins = null;
+        $fewonlineUsers = null;
 
         $currentUser = UserInfo::find($id);
 
@@ -98,7 +98,7 @@ class DashboardController extends Controller
 
             $domainDetails = Domain::where('resellerid', Auth::user()->resellerid)->first();
         } elseif ($status == 'dealer') {
-            $currentUser     = UserInfo::find($id);
+            $currentUser = UserInfo::find($id);
             $currentdealerid = Auth::user()->dealerid;
 
             $profileCollection = DealerProfileRate::where(['dealerid' => Auth::user()->dealerid])
@@ -170,12 +170,12 @@ class DashboardController extends Controller
 
         $userStatus = DB::table('user_info')->where('disabled_expired', '!=', 'YES')->count();
 
-        $authStatus    = Auth::user()->status;
-        $manager_id    = empty(Auth::user()->manager_id) ? null : Auth::user()->manager_id;
-        $resellerid    = empty(Auth::user()->resellerid) ? null : Auth::user()->resellerid;
-        $dealerid      = empty(Auth::user()->dealerid) ? null : Auth::user()->dealerid;
+        $authStatus = Auth::user()->status;
+        $manager_id = empty(Auth::user()->manager_id) ? null : Auth::user()->manager_id;
+        $resellerid = empty(Auth::user()->resellerid) ? null : Auth::user()->resellerid;
+        $dealerid = empty(Auth::user()->dealerid) ? null : Auth::user()->dealerid;
         $sub_dealer_id = empty(Auth::user()->sub_dealer_id) ? null : Auth::user()->sub_dealer_id;
-        $trader_id     = empty(Auth::user()->trader_id) ? null : Auth::user()->trader_id;
+        $trader_id = empty(Auth::user()->trader_id) ? null : Auth::user()->trader_id;
 
         $whereArray = [];
         if (!empty($manager_id)) {
@@ -191,45 +191,45 @@ class DashboardController extends Controller
             array_push($whereArray, ['sub_dealer_id', $sub_dealer_id]);
         }
         $profileWiseUser = [];
-        $headline        = Ticker::first();
+        $headline = Ticker::first();
 
         if ($authStatus == 'user') {
             return view('users.dashboard-consumer', [
-                'userStatus'        => $userStatus,
-                'download'          => $download,
-                'upload'            => $upload,
-                'invoice'           => $invoice,
+                'userStatus' => $userStatus,
+                'download' => $download,
+                'upload' => $upload,
+                'invoice' => $invoice,
                 'user_status__data' => $user_status__data,
-                'get_parent_data'   => $get_parent_data,
+                'get_parent_data' => $get_parent_data,
             ]);
         } elseif ($authStatus == 'inhouse') {
             return view('users.dashboard-inhouse', [
-                'domainDetails'  => $domainDetails,
-                'currentUser'    => $currentUser,
-                'invalidLogins'  => $invalidLogins,
-                'diabledUser'    => $diabledUser,
-                'mobVerify'      => $mobVerify,
+                'domainDetails' => $domainDetails,
+                'currentUser' => $currentUser,
+                'invalidLogins' => $invalidLogins,
+                'diabledUser' => $diabledUser,
+                'mobVerify' => $mobVerify,
                 'verified_users' => $verified_users,
             ]);
         } else {
             return view('users.dashboard', [
-                'headline'              => $headline,
-                'fewonlineUser'         => $fewonlineUsers,
-                'onlineUser'            => $onlineUser,
-                'userStatus'            => $userStatus,
-                'wallet'                => $wallet,
-                'profileCollection'     => $profileCollection,
-                'currentUser'           => $currentUser,
-                'activeUser'            => $activeUser,
-                'cacti_id'              => $cacti_id,
+                'headline' => $headline,
+                'fewonlineUser' => $fewonlineUsers,
+                'onlineUser' => $onlineUser,
+                'userStatus' => $userStatus,
+                'wallet' => $wallet,
+                'profileCollection' => $profileCollection,
+                'currentUser' => $currentUser,
+                'activeUser' => $activeUser,
+                'cacti_id' => $cacti_id,
                 'upcoming_expiry_users' => $upcoming_expiry_users,
-                'verified_users'        => $verified_users,
-                'mobVerify'             => $mobVerify,
-                'profileWiseUser'       => $profileWiseUser,
-                'domainDetails'         => $domainDetails,
-                'verifyRestricted'      => $verifyRestricted,
-                'invalidLogins'         => $invalidLogins,
-                'diabledUser'           => $diabledUser,
+                'verified_users' => $verified_users,
+                'mobVerify' => $mobVerify,
+                'profileWiseUser' => $profileWiseUser,
+                'domainDetails' => $domainDetails,
+                'verifyRestricted' => $verifyRestricted,
+                'invalidLogins' => $invalidLogins,
+                'diabledUser' => $diabledUser,
             ]);
         }
     }
@@ -377,11 +377,11 @@ class DashboardController extends Controller
 
     public function getErrorLog()
     {
-        $manager_id    = empty(Auth::user()->manager_id) ? null : Auth::user()->manager_id;
-        $resellerid    = empty(Auth::user()->resellerid) ? null : Auth::user()->resellerid;
-        $dealerid      = empty(Auth::user()->dealerid) ? null : Auth::user()->dealerid;
+        $manager_id = empty(Auth::user()->manager_id) ? null : Auth::user()->manager_id;
+        $resellerid = empty(Auth::user()->resellerid) ? null : Auth::user()->resellerid;
+        $dealerid = empty(Auth::user()->dealerid) ? null : Auth::user()->dealerid;
         $sub_dealer_id = empty(Auth::user()->sub_dealer_id) ? null : Auth::user()->sub_dealer_id;
-        $trader_id     = empty(Auth::user()->trader_id) ? null : Auth::user()->trader_id;
+        $trader_id = empty(Auth::user()->trader_id) ? null : Auth::user()->trader_id;
 
         $whereRadiusArray = [];
 
@@ -416,11 +416,11 @@ class DashboardController extends Controller
 
         foreach ($getUser as $value) {
             $username = $value->username;
-            $profile  = $value->name;
+            $profile = $value->name;
 
             $username . $profile;
 
-            $ip   = $_SERVER['REMOTE_ADDR'];
+            $ip = $_SERVER['REMOTE_ADDR'];
             $data = ['username' => $username, 'profileGroupname' => $profile, 'ipaddress' => $ip];
 
             $request = new Request($data);
@@ -435,7 +435,7 @@ class DashboardController extends Controller
 
         foreach ($getExpiredDate as $key => $value) {
             $username = $value->username;
-            $user     = UserInfo::where('username', $username);
+            $user = UserInfo::where('username', $username);
             $user->update([
                 'never_expire' => null,
             ]);
@@ -444,9 +444,9 @@ class DashboardController extends Controller
 
     public function getLoginLogs(Request $request)
     {
-        $manager_id    = Auth::user()->manager_id ?? null;
-        $resellerid    = Auth::user()->resellerid ?? null;
-        $dealerid      = Auth::user()->dealerid ?? $request->contractor;
+        $manager_id = Auth::user()->manager_id ?? null;
+        $resellerid = Auth::user()->resellerid ?? null;
+        $dealerid = Auth::user()->dealerid ?? $request->contractor;
         $sub_dealer_id = Auth::user()->sub_dealer_id ?? $request->trader;
 
         $whereArray = [];
@@ -463,18 +463,13 @@ class DashboardController extends Controller
             $whereArray[] = ['sub_dealer_id', '=', $sub_dealer_id];
         }
 
-        $query = LoginAudit::join('user_info', 'login_audit.username', '=', 'user_info.username')
-            ->where($whereArray)
-            ->where('user_info.status', 'user')
-            ->select(
-                'login_audit.username',
-                'login_audit.login_time',
-                'login_audit.status',
-                'login_audit.ip',
-                'login_audit.platform',
-                'login_audit.os'
-            )
-            ->orderBy('login_audit.login_time', 'desc');
+        $query = LoginAudit::join('user_info', 'login_audit.username', '=', 'user_info.username')->where($whereArray)->where('user_info.status', 'user')->select('login_audit.username', 'login_audit.login_time', 'login_audit.status', 'login_audit.ip', 'login_audit.platform', 'login_audit.os');
+
+        if ($request->has('date') && !empty($request->date)) {
+            $query->whereDate('login_audit.login_time', $request->date); // Filter by the selected date
+        }
+
+        $query->orderBy('login_audit.login_time', 'desc');
 
         return DataTables::of($query)
             ->editColumn('login_time', function ($log) {
