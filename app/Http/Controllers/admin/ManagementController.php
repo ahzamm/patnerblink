@@ -425,11 +425,23 @@ class ManagementController extends Controller
 
     public function menu(Request $request)
     {
-        $menu_management = Menu::all();
+        $menu_management = Menu::orderBy('sort_id', 'asc')->get();
         $sub_menu_management = SubMenu::with('menu')->get();
 
         return view('admin.menu-management.menu', compact('menu_management', 'sub_menu_management'));
     }
+
+    public function updateMenuOrder(Request $request)
+    {
+        $menu_ids = $request->input('menu_id');
+        foreach ($menu_ids as $index => $menu_id) {
+            Menu::where('id', $menu_id)->update(['sort_id' => $index + 1]); // Update sort_id
+        }
+
+        return response()->json(['success' => true, 'message' => 'Menu order updated successfully']);
+    }
+
+
 
     public function store_menu(Request $request)
     {
