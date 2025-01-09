@@ -42,13 +42,13 @@
 		<section class="wrapper main-wrapper">
 			@if ($message = Session::get('success'))
 			<div class="alert alert-success alert-block">
-				<button type="button" class="close" data-dismiss="alert">×</button>	
+				<button type="button" class="close" data-dismiss="alert">×</button>
 				<strong>{{ $message }}</strong>
 			</div>
 			@endif
 			@if ($message = Session::get('error'))
 			<div class="alert alert-danger alert-block">
-				<button type="button" class="close" data-dismiss="alert">×</button>	
+				<button type="button" class="close" data-dismiss="alert">×</button>
 				<strong>{{ $message }}</strong>
 			</div>
 			@endif
@@ -75,32 +75,25 @@
 								<h2 style="font-size: 20px;">Admin - Main Menu</h2>
 							</div>
 							<a href="{{('#my-menu')}}" data-toggle="modal" class="btn  btn-primary" style="margin-bottom:10px;margin-left:15px"><i class="fa fa-plus"> </i> Add Main Menu</a>
+                            <button type="button" class="btn btn-info btn-icon float-end btn-sm" onclick="$('#sortModal').modal('show');">
+                                <span class="btn-icon-label"><i class="fa-solid fa-up-down-left-right"></i></span> Sort
+                            </button>
 							<table class="table table-bordered dt-responsive display w-100" id="menu-management">
-								<thead>
-									<tr>
-										<th>#</th>
-										<th>Menu</th>
-										<th>Has Sub-Menu</th>
-										<th>Icon</th>
-										<th>Order</th>
-										<th>Action</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php $count = 1;?>
-									@foreach($menu_management as $menu)
-									<tr>										
-										<td>{{$count}}</td>
-										<td id="main-menu">{{$menu->menu}}</td>
-										<td id="has_submenu">{{$menu->has_submenu}}</td>
-										<td id="icon">{{$menu->icon}}</td>
-										<td id="priority">{{$menu->priority}}</td>
-										<td><button class="btn btn-xs btn-info update-btn"  data-id="{{$menu->id}}" ><i class="fa fa-edit"></i> Edit</button></td>			
-									</tr>
-									<?php $count++;?>
-									@endforeach
-								</tbody>
-							</table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Menu</th>
+                                        <th>Has Sub-Menu</th>
+                                        <th>Icon</th>
+                                        <th>Order</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be loaded dynamically -->
+                                </tbody>
+                            </table>
+
 						</div>
 						<div class="table-responsive" style="flex:1 1 auto">
 							<div class="header_view">
@@ -116,7 +109,7 @@
 										<th>Route</th>
 										<th>Action</th>
 									</tr>
-								</thead>								
+								</thead>
 								<tbody>
 									<?php $count = 1;?>
 									@foreach($sub_menu_management as $s_menu)
@@ -125,7 +118,7 @@
 										<td id="submenu">{{$s_menu->submenu}}</td>
 										<td id="get-sub-menu">{{$s_menu->menu->menu}}</td>
 										<td id="route">{{$s_menu->route_name}}</td>
-										<td><button class="btn btn-xs btn-info update-s-btn" data-sub-id="{{$s_menu->id}}"><i class="fa fa-edit"></i> Edit</button></td>											
+										<td><button class="btn btn-xs btn-info update-s-btn" data-sub-id="{{$s_menu->id}}"><i class="fa fa-edit"></i> Edit</button></td>
 									</tr>
 									<?php $count++;?>
 									@endforeach
@@ -138,12 +131,38 @@
 		</section>
 	</section>
 </div>
+<div id="sortModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="sortModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sort Admin Menu</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul id="sortableMenu" class="list-group">
+                    @foreach ($menu_management as $menu)
+                        <li class="list-group-item" data-id="{{ $menu->id }}">
+                            <i class="fa fa-bars"></i> {{ $menu->menu }}
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 @include('admin.AdminRoles.model-menu')
 @include('admin.AdminRoles.model-edit-menu')
 @include('admin.AdminRoles.model-edit-sub-menu')
 @include('admin.AdminRoles.model-sub-menu')
 @section('ownjs')
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script>
 	$(document).ready(function(){
 		setTimeout(function(){
@@ -152,18 +171,15 @@
 </script>
 <script type="text/javascript">
 	$(document).ready(function() {
-		var table = $('#menu-management').DataTable({
-			responsive: true
-		});
 		var table = $('#sub-menu-management').DataTable({
 			responsive: true
-		});	
-	} );	
+		});
+	} );
 </script>
 <script type="text/javascript">
 	$(document).ready(function() {
 		$(document).on('click','.update-btn' ,function(e){
-			var get_id = $(this).attr('data-id');			
+			var get_id = $(this).attr('data-id');
 // alert(get_id);
 e.preventDefault();
 $.ajax({
@@ -180,7 +196,7 @@ $.ajax({
 		var has_submenu = data['has_submenu'];
 		var c = $(".modal-body #u-has_submenu").val(has_submenu);
 		if (has_submenu == 1) {
-			$('.submenu').prop("checked", true); 
+			$('.submenu').prop("checked", true);
 		} else {
 			$('.submenu').prop("checked", false);
 		}
@@ -196,7 +212,7 @@ $.ajax({
 </script>
 <!-- Sub Menu -->
 <script type="text/javascript">
-	$(document).ready(function() {  
+	$(document).ready(function() {
 		$(document).on( "click",".update-s-btn", function(e) {
 			var get_id = $(this).attr('data-sub-id');
 			$('#my-edit-sub-menu').modal('show');
@@ -239,12 +255,12 @@ $(".print-error-msg").css('display','none');
 $(".success-msg").css('display','block');
 $('.success-msg').html(data.success);
 location.reload(3000);
-}else{						
+}else{
 	printErrorMsg(data.error);
 }
 }
 });
-		}); 
+		});
 		function printErrorMsg (msg) {
 			$(".print-error-msg").find("ul").html('');
 			$(".success-msg").css('display','none');
@@ -277,7 +293,7 @@ location.reload(3000);
 }
 }
 });
-		}); 
+		});
 		function printErrorMsg (msg) {
 			$(".print-error-msg").find("ul").html('');
 			$(".success-msg").css('display','none');
@@ -287,6 +303,69 @@ location.reload(3000);
 			});
 		}
 	});
+</script>
+<script>
+    $(document).ready(function () {
+    var table = $('#menu-management').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('admin.AdminRoles.admin-menu') }}",
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'menu', name: 'menu' },
+            { data: 'has_submenu', name: 'has_submenu' },
+            { data: 'icon', name: 'icon' },
+            { data: 'sort_id', name: 'sort_id', visible: false }, // Use for ordering only
+            { data: 'action', name: 'action', orderable: false, searchable: false }
+        ],
+        order: [[4, 'asc']], // Use sort_id for initial ordering
+        responsive: true
+    });
+});
+</script>
+<script>
+    $(document).ready(function () {
+    $("#sortableMenu").sortable({
+        stop: function () {
+            const menuOrder = [];
+            $("#sortableMenu > li").each(function () {
+                menuOrder.push($(this).data("id"));
+            });
+
+            if (menuOrder.length === 0) {
+                toastr.error("No items to sort. Please reorder and try again.");
+                return;
+            }
+
+            // Send AJAX request to save the new order
+            $.ajax({
+                url: "{{ route('admin.Management.adminmenu.updateOrder') }}",
+                method: "POST",
+                data: {
+                    menu_id: menuOrder,
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success("Menu order updated successfully.");
+                        $('#menu-management').DataTable().ajax.reload(null, false); // Refresh DataTable
+                    } else {
+                        toastr.error("Failed to update menu order.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("An error occurred while updating the menu order.");
+                }
+            });
+        }
+    });
+
+    // Refresh DataTable on modal close
+    $("#sortModal").on("hidden.bs.modal", function () {
+        $('#menu-management').DataTable().ajax.reload(null, false);
+    });
+});
+
 </script>
 @endsection
 <!-- Code Finalize -->

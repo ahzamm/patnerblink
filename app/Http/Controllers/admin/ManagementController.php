@@ -283,10 +283,35 @@ class ManagementController extends Controller
 
     public function admin_menu(Request $request)
     {
-        $menu_management = AdminMenu::all();
+        if ($request->ajax()) {
+            $menu_management = AdminMenu::select(['id', 'menu', 'has_submenu', 'icon', 'priority', 'sort_id']);
+            return DataTables::of($menu_management)
+                ->addColumn('action', function ($menu) {
+                    return '<button class="btn btn-xs btn-info update-btn" data-id="' . $menu->id . '"><i class="fa fa-edit"></i> Edit</button>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        $menu_management = AdminMenu::orderBy('sort_id', 'asc')->get();
         $sub_menu_management = AdminSubMenu::with('menu')->get();
         return view('admin.AdminRoles.admin-menu', compact('menu_management', 'sub_menu_management'));
     }
+
+    public function updateOrder(Request $request)
+    {
+        $menuIds = $request->input('menu_id');
+
+        if (!is_array($menuIds)) {
+            return response()->json(['success' => false, 'message' => 'Invalid data provided.']);
+        }
+
+        foreach ($menuIds as $index => $id) {
+            AdminMenu::where('id', $id)->update(['sort_id' => $index + 1]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Menu order updated successfully.']);
+    }
+
     public function store_admin_menu(Request $request)
     {
         $validator = Validator::make($request->all(), [
