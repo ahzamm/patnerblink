@@ -97,21 +97,10 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php $count = 1; ?>
-                                        @foreach ($menu_management as $menu)
-                                            <tr>
-                                                <td>{{ $count }}</td>
-                                                <td id="main-menu">{{ $menu->menu }}</td>
-                                                <td id="has_submenu">{{ $menu->has_submenu }}</td>
-                                                <td id="icon">{{ $menu->icon }}</td>
-                                                <td id="priority">{{ $menu->priority }}</td>
-                                                <td><button class="btn btn-xs btn-info update-btn" data-id="{{ $menu->id }}"><i class="fa fa-edit"></i> Edit</button></td>
-
-                                            </tr>
-                                            <?php $count++; ?>
-                                        @endforeach
+                                        <!-- Data will be populated by DataTables -->
                                     </tbody>
                                 </table>
+
                             </div>
                             <div class="table-responsive" style="flex:1 1 auto">
                                 <div class="header_view">
@@ -200,9 +189,6 @@
     </script>
     <script type="text/javascript">
         $(document).ready(function() {
-            var table = $('#menu-management').DataTable({
-                responsive: true
-            });
             var table = $('#sub-menu-management').DataTable({
                 responsive: true
             });
@@ -378,6 +364,24 @@
                     toastr.error("An error occurred while updating menu order.");
                 }
             });
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#menu-management').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('admin.Management.menu') }}",
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'menu', name: 'menu' },
+                { data: 'has_submenu', name: 'has_submenu' },
+                { data: 'icon', name: 'icon' },
+                { data: 'priority', name: 'priority' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ],
+            responsive: true
         });
     });
 </script>

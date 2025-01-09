@@ -14,6 +14,7 @@ use App\model\admin\Admin;
 use App\model\admin\Access;
 use App\model\admin\Ticker;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
 
 use Session;
 use Validator;
@@ -423,13 +424,24 @@ class ManagementController extends Controller
     }
 
 
+
     public function menu(Request $request)
     {
+        if ($request->ajax()) {
+            $menu_management = Menu::orderBy('sort_id', 'asc')->select(['id', 'menu', 'has_submenu', 'icon', 'priority']);
+            return DataTables::of($menu_management)
+                ->addColumn('action', function ($menu) {
+                    return '<button class="btn btn-xs btn-info update-btn" data-id="' . $menu->id . '"><i class="fa fa-edit"></i> Edit</button>';
+                })
+                ->make(true);
+        }
+
         $menu_management = Menu::orderBy('sort_id', 'asc')->get();
         $sub_menu_management = SubMenu::with('menu')->get();
-
         return view('admin.menu-management.menu', compact('menu_management', 'sub_menu_management'));
     }
+
+
 
     public function updateMenuOrder(Request $request)
     {
