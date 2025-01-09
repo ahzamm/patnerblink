@@ -165,7 +165,6 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" id="saveSortOrder" class="btn btn-primary">Save Order</button>
                     </div>
                 </div>
             </div>
@@ -329,43 +328,54 @@
 
 <script>
     $(document).ready(function () {
+         // Initialize sortable
         $("#sortableMenu").sortable();
 
-        $("#saveSortOrder").on("click", function () {
-            const menuOrder = [];
-            $("#sortableMenu > li").each(function () {
-                menuOrder.push($(this).data("id"));
-            });
-            if (menuOrder.length === 0) {
-                toastr.error("No items to sort. Please reorder and try again.");
-                return;
-            }
-            $.ajax({
-                url: "{{ route('admin.menu.updateOrder') }}",
-                method: "POST",
-                data: {
-                    menu_id: menuOrder,
-                    _token: "{{ csrf_token() }}"
-                },
-                beforeSend: function () {
-                    console.log("Sending request to server...");
-                },
-                success: function (response) {
-                    console.log("Server Response:", response);
-                    if (response.success) {
-                        location.reload();
-                    } else {
-                        toastr.error(response.message || "Failed to update menu order");
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error("AJAX Error:", status, error);
-                    console.error("Response Text:", xhr.responseText);
-                    toastr.error("An error occurred while updating menu order.");
-                }
-            });
+        // Refresh DataTable on modal close
+        $("#sortModal").on("hidden.bs.modal", function () {
+            $('#menu-management').DataTable().ajax.reload(null, false); // Reload DataTable without resetting pagination
         });
-    });
+
+        $("#sortableMenu").sortable({
+            stop: function () {
+                const menuOrder = [];
+                $("#sortableMenu > li").each(function () {
+                    menuOrder.push($(this).data("id"));
+                });
+
+                if (menuOrder.length === 0) {
+                    toastr.error("No items to sort. Please reorder and try again.");
+                    return;
+                }
+
+                // Send AJAX request immediately on sort
+                $.ajax({
+                    url: "{{ route('admin.menu.updateOrder') }}",
+                    method: "POST",
+                    data: {
+                        menu_id: menuOrder,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    beforeSend: function () {
+                        console.log("Sending sort request to server...");
+                    },
+                    success: function (response) {
+                        console.log("Server Response:", response);
+                        if (response.success) {
+                            toastr.success(response.message || "Menu order updated successfully.");
+                        } else {
+                            toastr.error(response.message || "Failed to update menu order");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("AJAX Error:", status, error);
+                        console.error("Response Text:", xhr.responseText);
+                        toastr.error("An error occurred while updating menu order.");
+                    }
+                });
+            }
+        });
+});
 </script>
 <script>
     $(document).ready(function() {

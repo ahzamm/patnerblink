@@ -445,12 +445,17 @@ class ManagementController extends Controller
 
     public function updateMenuOrder(Request $request)
     {
-        $menu_ids = $request->input('menu_id');
-        foreach ($menu_ids as $index => $menu_id) {
-            Menu::where('id', $menu_id)->update(['sort_id' => $index + 1]); // Update sort_id
+        $menuIds = $request->input('menu_id');
+
+        if (!is_array($menuIds)) {
+            return response()->json(['success' => false, 'message' => 'Invalid data provided.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'Menu order updated successfully']);
+        foreach ($menuIds as $index => $id) {
+            Menu::where('id', $id)->update(['sort_id' => $index + 1]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Menu order updated successfully.']);
     }
 
 
