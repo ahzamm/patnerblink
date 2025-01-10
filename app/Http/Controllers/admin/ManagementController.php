@@ -293,8 +293,7 @@ class ManagementController extends Controller
                 ->make(true);
         }
         $menu_management = AdminMenu::orderBy('sort_id', 'asc')->get();
-        $sub_menu_management = AdminSubMenu::with('menu')->get();
-        return view('admin.AdminRoles.admin-menu', compact('menu_management', 'sub_menu_management'));
+        return view('admin.AdminRoles.admin-menu', compact('menu_management'));
     }
 
     public function updateOrder(Request $request)
@@ -311,6 +310,26 @@ class ManagementController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Menu order updated successfully.']);
     }
+
+    public function admin_submenu(Request $request)
+    {
+        if ($request->ajax()) {
+            $submenu_management = AdminSubMenu::with('menu')->select(['id', 'submenu', 'menu_id', 'route_name']);
+
+            return DataTables::of($submenu_management)
+                ->addColumn('menu', function ($submenu) {
+                    return $submenu->menu ? $submenu->menu->menu : 'N/A';
+                })
+                ->addColumn('action', function ($submenu) {
+                    return '<button class="btn btn-xs btn-info update-s-btn" data-sub-id="' . $submenu->id . '"><i class="fa fa-edit"></i> Edit</button>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return response()->json(['error' => 'Invalid request'], 400);
+    }
+
 
     public function store_admin_menu(Request $request)
     {

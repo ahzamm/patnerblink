@@ -111,17 +111,6 @@
 									</tr>
 								</thead>
 								<tbody>
-									<?php $count = 1;?>
-									@foreach($sub_menu_management as $s_menu)
-									<tr>
-										<td>{{$count}}</td>
-										<td id="submenu">{{$s_menu->submenu}}</td>
-										<td id="get-sub-menu">{{$s_menu->menu->menu}}</td>
-										<td id="route">{{$s_menu->route_name}}</td>
-										<td><button class="btn btn-xs btn-info update-s-btn" data-sub-id="{{$s_menu->id}}"><i class="fa fa-edit"></i> Edit</button></td>
-									</tr>
-									<?php $count++;?>
-									@endforeach
 								</tbody>
 							</table>
 						</div>
@@ -168,13 +157,6 @@
 		setTimeout(function(){
 			$('.alert').fadeOut(); }, 3000);
 	});
-</script>
-<script type="text/javascript">
-	$(document).ready(function() {
-		var table = $('#sub-menu-management').DataTable({
-			responsive: true
-		});
-	} );
 </script>
 <script type="text/javascript">
 	$(document).ready(function() {
@@ -367,5 +349,23 @@ location.reload(3000);
 });
 
 </script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var submenuTable = $('#sub-menu-management').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('admin.AdminRoles.admin-submenu') }}",
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'submenu', name: 'submenu' },
+                { data: 'menu', name: 'menu' },
+                { data: 'route_name', name: 'route_name' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ],
+            responsive: true
+        });
+    });
+</script>
+
 @endsection
 <!-- Code Finalize -->
