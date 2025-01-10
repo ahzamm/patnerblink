@@ -501,8 +501,6 @@ class ManagementController extends Controller
         return view('admin.menu-management.menu', compact('menu_management', 'sub_menu_management'));
     }
 
-
-
     public function updateMenuOrder(Request $request)
     {
         $menuIds = $request->input('menu_id');
@@ -517,6 +515,46 @@ class ManagementController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Menu order updated successfully.']);
     }
+
+    public function submenu(Request $request)
+    {
+        if ($request->ajax()) {
+            $submenu_management = SubMenu::with('menu')
+                ->orderBy('sort_id', 'asc')
+                ->select(['id', 'submenu', 'menu_id', 'route_name', 'sort_id']);
+
+            return DataTables::of($submenu_management)
+                ->addColumn('menu', function ($submenu) {
+                    return $submenu->menu ? $submenu->menu->menu : 'N/A';
+                })
+                ->addColumn('action', function ($submenu) {
+                    return '<button class="btn btn-xs btn-info update-s-btn" data-sub-id="' . $submenu->id . '">
+                                <i class="fa fa-edit"></i> Edit
+                            </button>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return response()->json(['error' => 'Invalid request'], 400);
+    }
+
+    public function updateUserSubmenuOrder(Request $request)
+    {
+        $submenuIds = $request->input('submenu_id');
+
+        if (!is_array($submenuIds)) {
+            return response()->json(['success' => false, 'message' => 'Invalid data provided.']);
+        }
+
+        foreach ($submenuIds as $index => $id) {
+            SubMenu::where('id', $id)->update(['sort_id' => $index + 1]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Submenu order updated successfully.']);
+    }
+
+
 
 
 

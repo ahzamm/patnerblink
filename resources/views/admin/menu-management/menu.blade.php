@@ -108,6 +108,9 @@
                                 </div>
                                 <a href="{{ '#my-sub-menu' }}" data-toggle="modal" class="btn btn-primary" style="margin-bottom:10px;margin-left:15px"><i
                                        class="fa fa-plus"> </i> Add Sub-Menu</a>
+                                       <button type="button" class="btn btn-info btn-icon float-end btn-sm" onclick="$('#sortSubmenuModal').modal('show');">
+                                        <span class="btn-icon-label"><i class="fa-solid fa-up-down-left-right"></i></span> Sort Submenus
+                                    </button>
                                 <table class="table table-bordered dt-responsive display w-100" id="sub-menu-management">
                                     <thead>
                                         <tr>
@@ -119,21 +122,6 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php $count = 1; ?>
-                                        @foreach ($sub_menu_management as $s_menu)
-                                            <tr>
-                                                <td>{{ $count }}</td>
-                                                <td id="submenu">{{ $s_menu->submenu }}</td>
-                                                <td id="get-sub-menu">{{ $s_menu->menu->menu }}</td>
-                                                <td id="route">{{ $s_menu->route_name }}</td>
-                                                <td>
-                                                    <button class="btn btn-xs btn-info update-s-btn" data-sub-id="{{ $s_menu->id }}"><i class="fa fa-edit"></i>
-                                                        Edit
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            <?php $count++; ?>
-                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -169,7 +157,32 @@
                 </div>
             </div>
         </div>
+        <div id="sortSubmenuModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="sortSubmenuModalLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fa-solid fa-up-down-left-right text-white"></i> Sort Submenus</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <ul id="sortableUserSubmenu" class="list-group">
+                            @foreach ($sub_menu_management as $submenu)
+                                <li class="list-group-item" data-id="{{ $submenu->id }}">
+                                    <i class="fa fa-bars"></i> {{ $submenu->submenu }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
 
 @endsection
 @include('admin.menu-management.model-menu')
@@ -178,19 +191,13 @@
 @include('admin.menu-management.model-sub-menu')
 @section('ownjs')
     <!-- jQuery UI -->
+
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script>
         $(document).ready(function() {
             setTimeout(function() {
                 $('.alert').fadeOut();
             }, 3000);
-        });
-    </script>
-    <script type="text/javascript">
-        $(document).ready(function() {
-            var table = $('#sub-menu-management').DataTable({
-                responsive: true
-            });
         });
     </script>
     <script type="text/javascript">
@@ -394,6 +401,69 @@
             responsive: true
         });
     });
+</script>
+<script>
+    $(document).ready(function () {
+    $('#sub-menu-management').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('admin.Management.submenu') }}",
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'submenu', name: 'submenu' },
+            { data: 'menu', name: 'menu' },
+            { data: 'route_name', name: 'route_name' },
+            { data: 'action', name: 'action', orderable: false, searchable: false }
+        ],
+        order: [[4, 'asc']], // Order by sort_id
+        responsive: true
+    });
+});
+
+</script>
+<script>
+    $(document).ready(function () {
+        $("#sortableUserSubmenu").sortable({
+            stop: function () {
+                const submenuOrder = [];
+                $("#sortableUserSubmenu > li").each(function () {
+                    submenuOrder.push($(this).data("id"));
+                });
+
+                if (submenuOrder.length === 0) {
+                    toastr.error("No items to sort. Please reorder and try again.");
+                    return;
+                }
+
+                // Send AJAX request to save the new order
+                $.ajax({
+                    url: "{{ route('admin.submenu.updateOrder') }}",
+                    method: "POST",
+                    data: {
+                        submenu_id: submenuOrder,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message || "Submenu order updated successfully.");
+                            $('#sub-menu-management').DataTable().ajax.reload(null, false); // Refresh DataTable
+                        } else {
+                            toastr.error(response.message || "Failed to update submenu order.");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("An error occurred while updating submenu order.");
+                    }
+                });
+            }
+        });
+
+        // Refresh DataTable on modal close
+        $("#sortSubmenuModal").on("hidden.bs.modal", function () {
+            $('#sub-menu-management').DataTable().ajax.reload(null, false);
+        });
+    });
+
 </script>
 
 @endsection
