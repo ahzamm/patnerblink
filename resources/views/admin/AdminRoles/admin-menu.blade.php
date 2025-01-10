@@ -100,6 +100,9 @@
 								<h2 style="font-size: 20px;">Admin - Sub Menu</h2>
 							</div>
 							<a href="{{('#my-sub-menu')}}" data-toggle="modal" class="btn btn-primary" style="margin-bottom:10px;margin-left:15px"><i class="fa fa-plus"> </i> Add Sub-Menu</a>
+                            <button type="button" class="btn btn-info btn-icon float-end btn-sm" onclick="$('#sortSubmenuModal').modal('show');">
+                                <span class="btn-icon-label"><i class="fa-solid fa-up-down-left-right"></i></span> Sort Submenus
+                            </button>
 							<table class="table table-bordered dt-responsive display w-100" id="sub-menu-management">
 								<thead>
 									<tr>
@@ -144,6 +147,31 @@
         </div>
     </div>
 </div>
+<div id="sortSubmenuModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="sortSubmenuModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sort Admin Submenus</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul id="sortableSubmenu" class="list-group">
+                    @foreach ($sub_menu_management as $submenu)
+                        <li class="list-group-item" data-id="{{ $submenu->id }}">
+                            <i class="fa fa-bars"></i> {{ $submenu->submenu }}
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @endsection
 @include('admin.AdminRoles.model-menu')
@@ -366,6 +394,48 @@ location.reload(3000);
         });
     });
 </script>
+<script>
+    $(document).ready(function () {
+        $("#sortableSubmenu").sortable({
+            stop: function () {
+                const submenuOrder = [];
+                $("#sortableSubmenu > li").each(function () {
+                    submenuOrder.push($(this).data("id"));
+                });
 
+                if (submenuOrder.length === 0) {
+                    toastr.error("No items to sort. Please reorder and try again.");
+                    return;
+                }
+
+                // Send AJAX request to save the new order
+                $.ajax({
+                    url: "{{ route('admin.Management.adminsubmenu.updateOrder') }}",
+                    method: "POST",
+                    data: {
+                        submenu_id: submenuOrder,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success("Submenu order updated successfully.");
+                            $('#sub-menu-management').DataTable().ajax.reload(null, false); // Refresh DataTable
+                        } else {
+                            toastr.error("Failed to update submenu order.");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("An error occurred while updating the submenu order.");
+                    }
+                });
+            }
+        });
+
+        // Refresh DataTable on modal close
+        $("#sortSubmenuModal").on("hidden.bs.modal", function () {
+            $('#sub-menu-management').DataTable().ajax.reload(null, false);
+        });
+    });
+</script>
 @endsection
 <!-- Code Finalize -->
