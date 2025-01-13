@@ -633,7 +633,6 @@ class ManagementController extends Controller
     }
     public function update_menu(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'menu' => 'required|sometimes',
             'priority' => 'required|sometimes',
@@ -648,7 +647,6 @@ class ManagementController extends Controller
         if ($request->has('has_submenu') == 'true') {
             $has_menu = 1;
         }
-
 
         $menu_update = ['menu' => $request->get('menu'), 'has_submenu' => $has_menu, 'icon' => $request->get('icon'), 'priority' => $request->get('priority')];
         $update_menu = Menu::where('id', $request->get('menu_id'))->update($menu_update);

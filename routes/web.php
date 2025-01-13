@@ -11,10 +11,12 @@
 |
 */
 
+use App\model\ActionLog;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\admin\DeleteOldConsumerController;
 use App\Http\Controllers\admin\RecreateUserController;
+use App\model\admin\AdminMenu;
 
 
 try {
@@ -231,29 +233,20 @@ try {
 }
 //
 
+Route::get('/phpartisanobserver', function () {
+    // Replace 'GlobalModelObserver' with your desired observer name
+    Artisan::call('make:observer GlobalModelObserver');
+    return 'Observer created successfully!';
+ });
+
 //error Routes
 Route::get('/view-clear', function() {
   $CatchallError = Artisan::call('view:clear');
   return '<h4>View cache cleared</h4>';
 });
-Route::get('/clear-cache', function () {
-    try {
-        // Clear application cache
-        Artisan::call('cache:clear');
-        // Clear config cache
-        Artisan::call('config:clear');
-        // Clear route cache
-        Artisan::call('route:clear');
-        // Clear view cache
-        Artisan::call('view:clear');
-        // Optional: Clear compiled files
-        Artisan::call('clear-compiled');
 
-        return response()->json(['message' => 'Caches cleared successfully.']);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Failed to clear caches: ' . $e->getMessage()], 500);
-    }
-});
+Route::get('/clear-cache', 'CacheController@clearAll');
+
 //
 Route::get('/401', function () {
  return view('users.errors.401');
@@ -414,7 +407,26 @@ Route::group(['prefix'=>'admin'],function(){
    Route::post('/edit/package-attribute','admin\RadGroupReplyController@edit')->name('admin.edit.rad');
    Route::post('/update/package-attribute','admin\RadGroupReplyController@update')->name('admin.update.rad');
    /// END ///
+   Route::get('/create-action', function() {
+    $menu = AdminMenu::orderByDesc('id')->first(); // Replace this with a specific ID if needed
 
+    if (!$menu) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No AdminMenu record found to update.',
+        ]);
+    }
+
+    // Update the record
+    $menu->menu = 'Updated Menu Name'; // Dummy update
+    $menu->icon = 'new-icon-class'; // Dummy update
+    $menu->save(); // Triggers the "updated" observer
+
+    return response()->json([
+        'success' => true,
+        'message' => 'AdminMenu record updated successfully.',
+    ]);
+});
    /// Services ///
    Route::get('service/show', 'admin\ServicesController@index')->name('admin.services');
    Route::post('service/show-list', 'admin\ServicesController@service_list')->name('admin.service_list');

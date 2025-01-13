@@ -1,6 +1,6 @@
 <?php
 
-namespace App\model\Users;
+namespace App\model\Users\Tmp;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -21,5 +21,5 @@ class Ticker extends Authenticatable
         'eng','urdu','last_update'
     ];
 
-   
+
 }
