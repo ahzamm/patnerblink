@@ -161,18 +161,23 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title"><i class="fa-solid fa-up-down-left-right text-white"></i> Sort Submenus</h5>
+                        <h5 class="modal-title">Sort Submenus by Parent Menu</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
+                        <div class="form-group">
+                            <label for="userParentMenuDropdown">Select Parent Menu</label>
+                            <select id="userParentMenuDropdown" class="form-control select2">
+                                <option value="">-- Select Parent Menu --</option>
+                                @foreach ($menu_management as $menu)
+                                    <option value="{{ $menu->id }}">{{ $menu->menu }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <ul id="sortableUserSubmenu" class="list-group">
-                            @foreach ($sub_menu_management as $submenu)
-                                <li class="list-group-item" data-id="{{ $submenu->id }}">
-                                    <i class="fa fa-bars"></i> {{ $submenu->submenu }}
-                                </li>
-                            @endforeach
+                            <!-- Submenus will be dynamically populated here -->
                         </ul>
                     </div>
                     <div class="modal-footer">
@@ -463,6 +468,96 @@
             $('#sub-menu-management').DataTable().ajax.reload(null, false);
         });
     });
+
+</script>
+<script>
+    $(document).ready(function () {
+
+    // Handle parent menu selection
+    $("#userParentMenuDropdown").change(function () {
+        const menuId = $(this).val();
+        if (!menuId) {
+            $("#sortableUserSubmenu").html("");
+            toastr.error("Please select a valid parent menu.");
+            return;
+        }
+
+        // Fetch submenus based on selected parent menu
+        $.ajax({
+            url: "{{ route('admin.submenu.fetch') }}",
+            method: "POST",
+            data: {
+                menu_id: menuId,
+                _token: "{{ csrf_token() }}"
+            },
+            success: function (response) {
+                if (response.success) {
+                    const submenus = response.data;
+                    let submenuList = "";
+
+                    if (submenus.length > 0) {
+                        submenus.forEach(submenu => {
+                            submenuList += `
+                                <li class="list-group-item" data-id="${submenu.id}">
+                                    <i class="fa fa-bars"></i> ${submenu.submenu}
+                                </li>`;
+                        });
+                    } else {
+                        submenuList = '<li class="list-group-item text-center">No submenus available.</li>';
+                    }
+
+                    $("#sortableUserSubmenu").html(submenuList);
+                } else {
+                    toastr.error(response.message || "Failed to fetch submenus.");
+                }
+            },
+            error: function () {
+                toastr.error("An error occurred while fetching submenus.");
+            }
+        });
+    });
+
+    // Initialize sortable for submenus
+    $("#sortableUserSubmenu").sortable({
+        stop: function () {
+            const submenuOrder = [];
+            $("#sortableUserSubmenu > li").each(function () {
+                submenuOrder.push($(this).data("id"));
+            });
+
+            if (submenuOrder.length === 0) {
+                toastr.error("No items to sort. Please reorder and try again.");
+                return;
+            }
+
+            // Save new submenu order
+            $.ajax({
+                url: "{{ route('admin.submenu.updateOrder') }}",
+                method: "POST",
+                data: {
+                    submenu_id: submenuOrder,
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message || "Submenu order updated successfully.");
+                        $('#sub-menu-management').DataTable().ajax.reload(null, false); // Refresh DataTable
+                    } else {
+                        toastr.error(response.message || "Failed to update submenu order.");
+                    }
+                },
+                error: function () {
+                    toastr.error("An error occurred while updating submenu order.");
+                }
+            });
+        }
+    });
+
+    // Refresh DataTable when modal is closed
+    $("#sortSubmenuModal").on("hidden.bs.modal", function () {
+        $('#sub-menu-management').DataTable().ajax.reload(null, false);
+    });
+});
 
 </script>
 
