@@ -582,10 +582,6 @@ class ManagementController extends Controller
     }
 
 
-
-
-
-
     public function store_menu(Request $request)
     {
         $validator = Validator::make($request->all(), [

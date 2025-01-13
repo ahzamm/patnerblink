@@ -369,6 +369,7 @@ Route::group(['prefix'=>'admin'],function(){
    Route::get('/menu-management','admin\ManagementController@sub_menu_list')->name('admin.Management.menu.management');
    Route::post('/sub-menu-management','admin\ManagementController@sub_menu_update')->name('admin.submenu.update');
 
+//    User Menu Management
    Route::get('/menu','admin\ManagementController@menu')->name('admin.Management.menu');
    Route::post('/menu/update-order', 'admin\ManagementController@updateMenuOrder')->name('admin.menu.updateOrder');
    Route::get('/submenu', 'admin\ManagementController@submenu')->name('admin.Management.submenu');
@@ -662,6 +663,7 @@ Route::group(['prefix'=>'admin'],function(){
    /// NEW ADMIN MENU ROUTES added on 2023-12-29
    Route::get('/admin-role/{id}','admin\ManagementController@admin_roles')->name('admin.AdminRoles.index');//
    Route::post('/Admin-menu-management','admin\ManagementController@admin_menu_update')->name('admin.adminsubmenu.update');
+//    Admin Menu Management
    Route::get('/admin-menu','admin\ManagementController@admin_menu')->name('admin.AdminRoles.admin-menu');//
    Route::post('/admin/menu/updateOrder', 'admin\ManagementController@updateOrder')->name('admin.Management.adminmenu.updateOrder');
    Route::get('/admin-submenu', 'admin\ManagementController@admin_submenu')->name('admin.AdminRoles.admin-submenu');
