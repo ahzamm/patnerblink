@@ -158,7 +158,7 @@ a.socialIcon:hover, .socialHoverClass {
 }
 
 .bg {
- background-color: #b9b5b5;   
+ background-color: #b9b5b5;
 }
 .social-circle{
   margin-left: 20px;
@@ -179,7 +179,7 @@ a.socialIcon:hover, .socialHoverClass {
   {
     /* margin-bottom:30px */
     margin-bottom:0;
-    
+
   }
   ul.social-network{
     text-align: center;
@@ -199,23 +199,46 @@ a.socialIcon:hover, .socialHoverClass {
 }
     </style>
   <!-- Site footer -->
-  <footer class="site-footer footer">
-      <div class="row" style="margin: 0">
-      <div class="col-md-6 col-sm-6 col-xs-12">
-          <p class="copyright-text">Copyright &copy; <b>2012</b> Designed and Developed by 
-       <a href="http://squadcloud.co" target="_blank"><span style="color: blue">SquadCloud</span></a>.
-          </p>
-        </div>
-        <div class="col-md-6 col-sm-6 col-xs-12 text-center">
-          <ul class="social-network social-circle">
-            <!-- <li><a href="#" class="icoRss bg" title="Rss"><i class="fa fa-rss"></i></a></li> -->
-            <li><a href="#" class="icoFacebook bg" title="Facebook"><i class="fab fa-facebook"></i></a></li>
-            <li><a href="#" class="icoTwitter bg" title="Twitter"><i class="fab fa-twitter"></i></a></li>
-            <!-- <li><a href="#" class="icoGoogle bg" title="Google +"><i class="fa fa-google-plus"></i></a></li> -->
-            <li><a href="#" class="icoLinkedin bg" title="Linkedin"><i class="fab fa-linkedin"></i></a></li>
-          </ul>
-        </div>
-        
-      </div>
+   <?php
+   use App\model\Users\Domain;
+     $resellerid    = Auth::user()->resellerid      ?? null;
+    if($resellerid){
+        $resellerSocials = Domain::where('resellerid', $resellerid)->first();
+        ?>
+        <footer class="site-footer footer">
+        <div class="row" style="margin: 0">
+        <div class="col-md-6 col-sm-6 col-xs-12">
+            <p class="copyright-text">Copyright &copy; <b>2012</b> Designed and Developed by
+         <a href="http://squadcloud.co" target="_blank"><span style="color: blue">SquadCloud</span></a>.
+            </p>
+          </div>
+          <div class="col-md-6 col-sm-6 col-xs-12 text-center">
+            <ul class="social-network social-circle">
+              <li><a href="<?= $resellerSocials->facebook_url ?? '#' ?>" target="_blank" class="icoFacebook bg" title="Facebook"><i class="fab fa-facebook"></i></a></li>
+              <li><a href="<?= $resellerSocials->twitter_url ?? '#' ?>" target="_blank" class="icoTwitter bg" title="Twitter"><i class="fab fa-twitter"></i></a></li>
+              <li><a href="<?= $resellerSocials->linkedin_url ?? '#' ?>" target="_blank" class="icoLinkedin bg" title="Linkedin"><i class="fab fa-linkedin"></i></a></li>
+            </ul>
+          </div>
 
-</footer>
+        </div>
+
+  </footer>
+  <? } else { ?>
+    <footer class="site-footer footer">
+        <div class="row" style="margin: 0">
+        <div class="col-md-6 col-sm-6 col-xs-12">
+            <p class="copyright-text">Copyright &copy; <b>2012</b> Designed and Developed by
+        <a href="http://squadcloud.co" target="_blank"><span style="color: blue">SquadCloud</span></a>.
+            </p>
+            </div>
+            <div class="col-md-6 col-sm-6 col-xs-12 text-center">
+            <ul class="social-network social-circle">
+                <li><a href="#" class="icoFacebook bg" title="Facebook"><i class="fab fa-facebook"></i></a></li>
+                <li><a href="#" class="icoTwitter bg" title="Twitter"><i class="fab fa-twitter"></i></a></li>
+                <li><a href="#" class="icoLinkedin bg" title="Linkedin"><i class="fab fa-linkedin"></i></a></li>
+            </ul>
+            </div>
+
+        </div>
+    </footer>
+<?php } ?>
