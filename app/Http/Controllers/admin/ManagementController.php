@@ -345,6 +345,20 @@ class ManagementController extends Controller
         return response()->json(['success' => true, 'message' => 'Submenu order updated successfully.']);
     }
 
+    public function getSubmenusByMenu(Request $request)
+    {
+        $menuId = $request->input('menu_id');
+
+        if (!$menuId) {
+            return response()->json(['success' => false, 'message' => 'Invalid menu ID provided.']);
+        }
+
+        $submenus = AdminSubMenu::where('menu_id', $menuId)->orderBy('sort_id', 'asc')->get();
+
+        return response()->json(['success' => true, 'data' => $submenus]);
+    }
+
+
 
 
     public function store_admin_menu(Request $request)

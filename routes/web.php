@@ -665,6 +665,7 @@ Route::group(['prefix'=>'admin'],function(){
    Route::post('/admin/menu/updateOrder', 'admin\ManagementController@updateOrder')->name('admin.Management.adminmenu.updateOrder');
    Route::get('/admin-submenu', 'admin\ManagementController@admin_submenu')->name('admin.AdminRoles.admin-submenu');
    Route::post('/admin/submenu/updateOrder', 'admin\ManagementController@updateSubmenuOrder')->name('admin.Management.adminsubmenu.updateOrder');
+   Route::post('/admin/submenu/fetch', 'admin\ManagementController@getSubmenusByMenu')->name('admin.Management.adminsubmenu.fetch');
 
    Route::post('/Admin-menu-store','admin\ManagementController@store_admin_menu')->name('admin.Management.adminmenu.store');//
    Route::post('/Admin-sub-menu','admin\ManagementController@store_admin_submenu')->name('admin.Management.adminsubmenu.store');
