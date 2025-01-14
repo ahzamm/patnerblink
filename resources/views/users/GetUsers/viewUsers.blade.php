@@ -218,14 +218,14 @@
                                     </select>
                                 </div>
                             </div>
-                            @if ($panelof == 'manager')
-                                @php
-                                    $profiles = \App\model\Users\ManagerProfileRate::where('manager_id', Auth::user()->manager_id)
-                                        ->distinct()
-                                        ->get();
-                                @endphp
-                                <div class="col-md-3 hideable hide" id="profile">
-                                    <div class="form-group position-relative">
+                            <div class="col-md-3 hideable hide" id="profile">
+                                <div class="form-group position-relative">
+                                    @if ($panelof == 'manager')
+                                        @php
+                                            $profiles = \App\model\Users\ManagerProfileRate::where('manager_id', Auth::user()->manager_id)
+                                                ->distinct()
+                                                ->get();
+                                        @endphp
                                         <label for="manager-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                         <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
@@ -235,14 +235,10 @@
                                                 <option value="{{ $profile->name }}">{{ $profile->name }}</option>
                                             @endforeach
                                         </select>
-                                    </div>
-                                </div>
-                                <div id="manager-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
-                            @endif
-                            @if ($panelof == 'reseller')
-                                @php $profiles = \App\model\Users\ResellerProfileRate::where('resellerid', Auth::user()->resellerid)->get(); @endphp
-                                <div class="col-md-3 hideable hide" id="profile">
-                                    <div class="form-group position-relative">
+                                        <div id="manager-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
+                                    @endif
+                                    @if ($panelof == 'reseller')
+                                        @php $profiles = \App\model\Users\ResellerProfileRate::where('resellerid', Auth::user()->resellerid)->get(); @endphp
                                         <label for="reseller-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                         <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
@@ -252,14 +248,10 @@
                                                 <option value="{{ $profile->name }}">{{ $profile->name }}</option>
                                             @endforeach
                                         </select>
-                                    </div>
-                                </div>
-                                <div id="reseller-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
-                            @endif
-                            @if ($panelof == 'dealer')
-                                @php $profiles = \App\model\Users\DealerProfileRate::where('dealerid', Auth::user()->dealerid)->get(); @endphp
-                                <div class="col-md-3 hideable hide" id="profile">
-                                    <div class="form-group position-relative">
+                                        <div id="reseller-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
+                                    @endif
+                                    @if ($panelof == 'dealer')
+                                        @php $profiles = \App\model\Users\DealerProfileRate::where('dealerid', Auth::user()->dealerid)->get(); @endphp
                                         <label for="contractor-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                         <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
@@ -269,18 +261,14 @@
                                                 <option value="{{ $profile->name }}">{{ $profile->name }}</option>
                                             @endforeach
                                         </select>
-                                    </div>
-                                </div>
-                                <div id="contractor-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
-                            @endif
-                            @if ($panelof == 'subdealer')
-                                @php
-                                    $profiles = \App\model\Users\SubdealerProfileRate::where('sub_dealer_id', Auth::user()->sub_dealer_id)
-                                        ->distinct()
-                                        ->get();
-                                @endphp
-                                <div class="col-md-3 hideable hide" id="profile">
-                                    <div class="form-group position-relative">
+                                        <div id="contractor-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
+                                    @endif
+                                    @if ($panelof == 'subdealer')
+                                        @php
+                                            $profiles = \App\model\Users\SubdealerProfileRate::where('sub_dealer_id', Auth::user()->sub_dealer_id)
+                                                ->distinct()
+                                                ->get();
+                                        @endphp
                                         <label for="subdealer-profile-dropdown">Select Profile</label>
                                         <span class="helping-mark"><i class="fa fa-question-circle"></i></span>
                                         <span style="position:absolute; right: 12px;bottom: 7px"><i class="fa fa-chevron-down"></i></span>
@@ -290,10 +278,10 @@
                                                 <option value="{{ $profile->name }}">{{ $profile->name }}</option>
                                             @endforeach
                                         </select>
-                                    </div>
+                                        <div id="subdealer-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
+                                    @endif
                                 </div>
-                                <div id="subdealer-profile-data" style="display:none;">{{ $profiles->toJson() }}</div>
-                            @endif
+                            </div>
                             <div class="col-md-3 hideable hide" id="ip">
                                 <div class="form-group position-relative">
                                     <label for="searchIP">IP Address</label>
@@ -456,6 +444,8 @@
 @section('ownjs')
     <script>
         $(document).ready(function() {
+            const panelOf = "{{ $panelof }}";
+
             const filterMap = {
                 ip: {
                     container: '#ip',
@@ -531,8 +521,33 @@
                     container: '#active',
                     input: '#cardStatus',
                     param: 'cardStatus'
-                },
+                }
             };
+            if (panelOf === 'manager') {
+                filterMap.profile = {
+                    container: '#profile',
+                    input: '#manager-profile-dropdown',
+                    param: 'manager-profile-dropdown'
+                };
+            } else if (panelOf === 'reseller') {
+                filterMap.profile = {
+                    container: '#profile',
+                    input: '#reseller-profile-dropdown',
+                    param: 'reseller-profile-dropdown'
+                };
+            } else if (panelOf === 'dealer') {
+                filterMap.profile = {
+                    container: '#profile',
+                    input: '#contractor-profile-dropdown',
+                    param: 'contractor-profile-dropdown'
+                };
+            } else if (panelOf === 'subdealer') {
+                filterMap.profile = {
+                    container: '#profile',
+                    input: '#subdealer-profile-dropdown',
+                    param: 'subdealer-profile-dropdown'
+                };
+            }
 
             function removeQueryParam(param) {
                 const url = new URL(window.location.href);
@@ -600,7 +615,6 @@
             }
 
             function populateResellerDropdown(selectedValue = null) {
-                console.log('Populating Reseller Profile Dropdown ' + selectedValue);
                 const $resellerDropdown = $('#reseller-dropdown');
 
                 if ($resellerDropdown.length === 0) {
@@ -639,7 +653,6 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
-                        console.log(response);
                         const options = response.dealer.map(dealer => ({
                             value: dealer.username,
                             text: dealer.username,
@@ -803,7 +816,6 @@
                         await populateResellerDropdown();
                     }
                 } else {
-                    console.log("Logged in as Reseller. Skipping Reseller Dropdown Population.");
                 }
 
                 if (params.contractorId) {
@@ -897,7 +909,11 @@
                     const $container = $dropdown.closest('.hideable');
 
                     if (paramValue) {
-                        $container.removeClass('hide');
+                        console.log('Before Removing Class', dropdownId);
+                        console.log('Before Removing Class', $container);
+                        $container.removeClass('hide').show();
+                        console.log(' After Reoving Class', dropdownId);
+                        console.log('After Removing Class', $container);
                         $dropdown.val(paramValue).trigger('change');
                     } else {
                         $container.addClass('hide');
@@ -920,6 +936,10 @@
                 toggleDropdownVisibility('searchAddress', params.searchAddress);
                 toggleDropdownVisibility('searchCityState', params.searchCityState);
                 toggleDropdownVisibility('searchCreation', params.searchCreation);
+                toggleDropdownVisibility('manager-profile-dropdown', params.managerProfile);
+                toggleDropdownVisibility('reseller-profile-dropdown', params.resellerProfile);
+                toggleDropdownVisibility('dealer-profile-dropdown', params.dealerProfile);
+                toggleDropdownVisibility('subdealer-profile-dropdown', params.subdealerProfile);
 
                 const selectedColumns = [];
                 if (params.userStatus) selectedColumns.push('status');
@@ -937,6 +957,10 @@
                 if (params.searchAddress) selectedColumns.push('address');
                 if (params.searchCityState) selectedColumns.push('city');
                 if (params.searchCreation) selectedColumns.push('date');
+                if (params.managerProfile) selectedColumns.push('profile');
+                if (params.resellerProfile) selectedColumns.push('profile');
+                if (params.dealerProfile) selectedColumns.push('profile');
+                if (params.subdealerProfile) selectedColumns.push('profile');
 
                 $('#multiSelect').val(selectedColumns).trigger('change');
 
@@ -993,7 +1017,7 @@
                     data: 'username',
                     name: 'username',
                     title: 'Username',
-                    render: function (data, type, row) {
+                    render: function(data, type, row) {
                         return `
                             <div>
                                 <strong>${row.username}</strong><br>
@@ -1053,7 +1077,6 @@
                     });
                 }
                 if (selectedFilters.includes('ip')) {
-                    console.log("IP filter is selected");
                     columns.push({
                         data: 'ip_address',
                         name: 'ip',
@@ -1115,11 +1138,29 @@
                     });
                 }
 
-                if (selectedFilters.includes('profile')) {
+                if (panelOf === 'manager') {
                     columns.push({
                         data: 'name',
                         name: 'name',
-                        title: 'Internet Profile'
+                        title: 'Manager Profile'
+                    });
+                } else if (panelOf === 'reseller') {
+                    columns.push({
+                        data: 'name',
+                        name: 'name',
+                        title: 'Reseller Profile'
+                    });
+                } else if (panelOf === 'dealer') {
+                    columns.push({
+                        data: 'name',
+                        name: 'name',
+                        title: 'Dealer Profile'
+                    });
+                } else if (panelOf === 'subdealer') {
+                    columns.push({
+                        data: 'name',
+                        name: 'name',
+                        title: 'Subdealer Profile'
                     });
                 }
 
@@ -1188,7 +1229,6 @@
                     await populateFilters(queryParams);
                     fetchData(queryParams);
                 } else {
-                    console.log('No query parameters present. Skipping fetchData.');
                 }
             })();
 

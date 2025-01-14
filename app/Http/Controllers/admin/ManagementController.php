@@ -524,7 +524,11 @@ class ManagementController extends Controller
         }
 
         foreach ($menuIds as $index => $id) {
-            Menu::where('id', $id)->update(['sort_id' => $index + 1]);
+            $menu = Menu::find($id); // Retrieve the model instance
+            if ($menu) {
+                $menu->sort_id = $index + 1;
+                $menu->save(); // Save the model to trigger the 'updated' event
+            }
         }
 
         return response()->json(['success' => true, 'message' => 'Menu order updated successfully.']);

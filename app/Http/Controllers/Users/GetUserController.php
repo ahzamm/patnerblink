@@ -24,6 +24,7 @@ class GetUserController extends Controller
                         'user_info.username',
                         'user_info.firstname',
                         'user_info.lastname',
+                        'user_info.name',
                         'user_info.email',
                         'user_info.status',
                         'user_info.mobilephone',
