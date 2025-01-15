@@ -23,7 +23,6 @@
                             <th>After Update</th>
                             <th>Operation</th>
                             <th>Performed By</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                 </table>
@@ -43,11 +42,10 @@
             columns: [
                 { data: 'id', name: 'id' },
                 { data: 'model', name: 'model' },
-                { data: 'beforeupdate', name: 'beforeupdate' },
-                { data: 'afterupdate', name: 'afterupdate' },
+                { data: 'beforeupdate', name: 'beforeupdate', orderable: false, searchable: false },
+                { data: 'afterupdate', name: 'afterupdate', orderable: false, searchable: false },
                 { data: 'operation', name: 'operation' },
                 { data: 'performed_by', name: 'performed_by' },
-                { data: 'action', name: 'action', orderable: false, searchable: false },
             ],
         });
     });
