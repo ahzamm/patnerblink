@@ -32,9 +32,12 @@ class ActionLogController extends Controller
                 $query->where('operation', $request->operation);
             }
 
-            $data = $query->select(['id', 'model', 'beforeupdate', 'afterupdate', 'operation', 'performed_by'])->get();
+            $data = $query->select(['id', 'model', 'beforeupdate', 'afterupdate', 'operation', 'performed_by', 'created_at'])->get();
 
             return DataTables::of($data)
+                ->editColumn('operation', function ($row) {
+                    return '<strong>' . ucfirst($row->operation) . '</strong><br><small>' . \Carbon\Carbon::parse($row->created_at)->format('F j, Y, g:i a') . '</small>';
+                })
                 ->editColumn('beforeupdate', function ($row) {
                     $before = json_decode($row->beforeupdate, true);
                     return $this->formatUpdateData($before);
@@ -43,7 +46,7 @@ class ActionLogController extends Controller
                     $after = json_decode($row->afterupdate, true);
                     return $this->formatUpdateData($after);
                 })
-                ->rawColumns(['beforeupdate', 'afterupdate'])
+                ->rawColumns(['beforeupdate', 'afterupdate', 'operation'])
                 ->make(true);
         }
     }
