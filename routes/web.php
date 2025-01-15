@@ -408,6 +408,11 @@ Route::group(['prefix'=>'admin'],function(){
    Route::post('/store/package-attribute','admin\RadGroupReplyController@store')->name('admin.store.rad');
    Route::post('/edit/package-attribute','admin\RadGroupReplyController@edit')->name('admin.edit.rad');
    Route::post('/update/package-attribute','admin\RadGroupReplyController@update')->name('admin.update.rad');
+
+    //    Action Logs Rotues
+    Route::get('/action-logs', 'admin\ActionLogController@index')->name('admin.action-logs.index');
+    Route::get('/admin/action-logs/data', 'admin\ActionLogController@getActionLogs')->name('admin.action-logs.data');
+
    /// END ///
    Route::get('/create-action', function() {
     $menu = AdminMenu::orderByDesc('id')->first(); // Replace this with a specific ID if needed
