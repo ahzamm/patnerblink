@@ -1,6 +1,5 @@
 <?php
 
-// ActionLogController.php
 namespace App\Http\Controllers\admin;
 
 use Illuminate\Http\Request;
@@ -10,7 +9,6 @@ use App\Http\Controllers\Controller;
 
 class ActionLogController extends Controller
 {
-    // Function to return the view
     public function index()
     {
         return view('admin.action_logs.index');
@@ -21,18 +19,15 @@ class ActionLogController extends Controller
         if ($request->ajax()) {
             $query = ActionLog::query();
 
-            // Filter by performed_by (username from user_info)
             if ($request->filled('performed_by')) {
                 $query->where('performed_by', 'like', '%' . $request->performed_by . '%');
-                }
+            }
 
-            // Filter by date range
             if ($request->filled('date_range')) {
                 [$start, $end] = explode(' to ', $request->date_range);
                 $query->whereBetween('created_at', [$start, $end]);
             }
 
-            // Filter by operation type
             if ($request->filled('operation')) {
                 $query->where('operation', $request->operation);
             }
@@ -65,5 +60,4 @@ class ActionLogController extends Controller
         }
         return '<em>No Data</em>';
     }
-
 }
