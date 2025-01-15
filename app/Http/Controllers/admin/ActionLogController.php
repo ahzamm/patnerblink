@@ -19,7 +19,26 @@ class ActionLogController extends Controller
     public function getActionLogs(Request $request)
     {
         if ($request->ajax()) {
-            $data = ActionLog::select(['id', 'model', 'beforeupdate', 'afterupdate', 'operation', 'performed_by']);
+            $query = ActionLog::query();
+
+            // Filter by performed_by (username from user_info)
+            if ($request->filled('performed_by')) {
+                $query->where('performed_by', 'like', '%' . $request->performed_by . '%');
+                }
+
+            // Filter by date range
+            if ($request->filled('date_range')) {
+                [$start, $end] = explode(' to ', $request->date_range);
+                $query->whereBetween('created_at', [$start, $end]);
+            }
+
+            // Filter by operation type
+            if ($request->filled('operation')) {
+                $query->where('operation', $request->operation);
+            }
+
+            $data = $query->select(['id', 'model', 'beforeupdate', 'afterupdate', 'operation', 'performed_by'])->get();
+
             return DataTables::of($data)
                 ->editColumn('beforeupdate', function ($row) {
                     $before = json_decode($row->beforeupdate, true);
